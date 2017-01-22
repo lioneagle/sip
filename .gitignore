@@ -11,7 +11,11 @@ sina.html
 #golang
 pkg
 bin
-*.log
+*_cover.out
+*.exe
+*_coverage.html
+*_cpu.out
+test_temp
 
 # C extensions
 *.so
