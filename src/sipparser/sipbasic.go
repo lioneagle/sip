@@ -14,6 +14,34 @@ func (err *SipParseError) Error() string {
 	return fmt.Sprintf("%s at %s", err.description, string(err.pos))
 }
 
+type SipToken struct {
+	value []byte
+}
+
+func (this *SipToken) String() string        { return string(this.value) }
+func (this *SipToken) Used() bool            { return len(this.value) != 0 }
+func (this *SipToken) SetValue(value []byte) { this.value = value }
+
+func (this *SipToken) Parse(src []byte, pos int, isInCharset func(ch byte) bool) (newPos int, err error) {
+	begin, end, newPos, err := parseToken(src, pos, isInCharset)
+	if err != nil {
+		return newPos, err
+	}
+
+	this.value = src[begin:end]
+	return newPos, nil
+}
+
+func (this *SipToken) ParseEscapable(src []byte, pos int, isInCharset func(ch byte) bool) (newPos int, err error) {
+	begin, end, newPos, err := parseTokenEscapable(src, pos, isInCharset)
+	if err != nil {
+		return newPos, err
+	}
+
+	this.value = src[begin:end]
+	return newPos, nil
+}
+
 type SipList struct {
 	list.List
 }

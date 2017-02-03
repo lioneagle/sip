@@ -165,7 +165,7 @@ func TestSipHostPortParseOk(t *testing.T) {
 		}
 
 		if newPos != v.newPos {
-			t.Errorf("TestSipHostPortParseOk[%d] failed, newPos = %d, wanted = %d\n", i, newPos, len(v.wanted))
+			t.Errorf("TestSipHostPortParseOk[%d] failed, newPos = %d, wanted = %d\n", i, newPos, v.newPos)
 			continue
 		}
 
