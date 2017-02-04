@@ -60,7 +60,7 @@ func (this *SipUri) Parse(src []byte, pos int) (newPos int, err error) {
 		return newPos, nil
 	}
 
-	if src[newPos] == '&' {
+	if src[newPos] == '?' {
 		newPos, err = this.headers.Parse(src, newPos+1)
 		if err != nil {
 			return newPos, err
@@ -177,6 +177,15 @@ func (this *SipUriParam) Parse(src []byte, pos int) (newPos int, err error) {
 	return newPos, nil
 }
 
+func (this *SipUriParam) String() string {
+	str := this.name.String()
+	if this.value.Used() {
+		str += "="
+		str += this.value.String()
+	}
+	return str
+}
+
 type SipUriParams struct {
 	maps map[string]*SipUriParam
 }
@@ -185,6 +194,23 @@ func NewSipUriParams() *SipUriParams { return &SipUriParams{maps: make(map[strin
 
 func (this *SipUriParams) Init() {
 	this.maps = make(map[string]*SipUriParam)
+}
+
+func (this *SipUriParams) String() string {
+	if len(this.maps) == 0 {
+		return ""
+	}
+
+	str := ""
+	i := 0
+	for _, v := range this.maps {
+		if i > 0 {
+			str += ";"
+		}
+		str += v.String()
+		i++
+	}
+	return str
 }
 
 func (this *SipUriParams) Empty() bool { return len(this.maps) == 0 }
@@ -214,6 +240,7 @@ func (this *SipUriParams) Parse(src []byte, pos int) (newPos int, err error) {
 		if src[newPos] != ';' {
 			return newPos, nil
 		}
+		newPos++
 	}
 
 	return newPos, err
@@ -240,6 +267,15 @@ func (this *SipUriHeader) Parse(src []byte, pos int) (newPos int, err error) {
 	}
 
 	return newPos, nil
+}
+
+func (this *SipUriHeader) String() string {
+	str := this.name.String()
+	str += "="
+	if this.value.Used() {
+		str += this.value.String()
+	}
+	return str
 }
 
 type SipUriHeaders struct {
@@ -279,7 +315,25 @@ func (this *SipUriHeaders) Parse(src []byte, pos int) (newPos int, err error) {
 		if src[newPos] != '&' {
 			return newPos, nil
 		}
+		newPos++
 	}
 
 	return newPos, err
+}
+
+func (this *SipUriHeaders) String() string {
+	if len(this.maps) == 0 {
+		return ""
+	}
+
+	str := ""
+	i := 0
+	for _, v := range this.maps {
+		if i > 0 {
+			str += "&"
+		}
+		str += v.String()
+		i++
+	}
+	return str
 }

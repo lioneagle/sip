@@ -20,7 +20,7 @@ func TestSipUriParseOK(t *testing.T) {
 		//params   []string
 		//headers  []string
 	}{
-		{"sip:123@abc.com;user=phone", "123", "", "abc.com"},
+		{"sip:123@abc.com;user=phone;ttl=10?xx=yy&x1=aa", "123", "", "abc.com"},
 		{"sip:123:tsdd@[1080::8:800:200c:417a]:5061", "123", "tsdd", "[1080::8:800:200c:417a]:5061"},
 		{"sip:123:@10.43.12.14", "123", "", "10.43.12.14"},
 	}
@@ -53,6 +53,9 @@ func TestSipUriParseOK(t *testing.T) {
 			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, host wrong, host = %s, wanted = %s", i, uri.hostport, v.hostport)
 			continue
 		}
+
+		fmt.Printf("params = %s, headers = %s\n", uri.params.String(), uri.headers.String())
+
 	}
 }
 

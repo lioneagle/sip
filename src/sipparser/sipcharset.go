@@ -39,7 +39,7 @@ var charset0 = [256]uint32{
 	0x00702000, /* position 035  '#', */
 	0xbff82000, /* position 036  '$', */
 	0x0072a000, /* position 037  '%', */
-	0xbff82000, /* position 038  '&', */
+	0xbbf82000, /* position 038  '&', */
 	0xbff6a000, /* position 039  ''', */
 	0xbff72000, /* position 040  '(', */
 	0xbff72000, /* position 041  ')', */
