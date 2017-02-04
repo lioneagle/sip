@@ -1,0 +1,4 @@
+set OLDGOPATH=%GOPATH%
+set GOPATH=%OLDGOPATH%;%~dp0
+set OLDGOBIN=%GOBIN%
+set GOBIN=%~dp0bin

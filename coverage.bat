@@ -4,10 +4,8 @@ if exist coverage.bat goto ok
 echo coverage.bat must be run from its folder
 goto end
 : ok
-set OLDGOPATH=%GOPATH%
-set GOPATH=%~dp0
-set OLDGOBIN=%GOBIN%
-set GOBIN=%~dp0bin
+
+call env.bat
 
 if not exist test_temp mkdir test_temp
 

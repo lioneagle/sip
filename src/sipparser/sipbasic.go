@@ -38,7 +38,7 @@ func (this *SipToken) ParseEscapable(src []byte, pos int, isInCharset func(ch by
 		return newPos, err
 	}
 
-	this.value = src[begin:end]
+	this.value = Unescape(src[begin:end])
 	return newPos, nil
 }
 
