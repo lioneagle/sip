@@ -7,11 +7,6 @@ import (
 
 func TestSipUriParseOK(t *testing.T) {
 
-	type test_param struct {
-		name  string
-		value string
-	}
-
 	testdata := []struct {
 		test     string
 		user     string
@@ -20,9 +15,10 @@ func TestSipUriParseOK(t *testing.T) {
 		//params   []string
 		//headers  []string
 	}{
-		{"sip:123@abc.com;user=phone;ttl=10?xx=yy&x1=aa", "123", "", "abc.com"},
+		{"sip:123@abc.com;ttl=10;user=phone;a;b;c;d;e?xx=yy&x1=aa", "123", "", "abc.com"},
 		{"sip:123:tsdd@[1080::8:800:200c:417a]:5061", "123", "tsdd", "[1080::8:800:200c:417a]:5061"},
 		{"sip:123:@10.43.12.14", "123", "", "10.43.12.14"},
+		{"sip:%23123%31:@10.43.12.14", "#1231", "", "10.43.12.14"},
 	}
 
 	for i, v := range testdata {
@@ -54,8 +50,7 @@ func TestSipUriParseOK(t *testing.T) {
 			continue
 		}
 
-		fmt.Printf("params = %s, headers = %s\n", uri.params.String(), uri.headers.String())
-
+		//fmt.Printf("uri encode = %s\n", uri)
 	}
 }
 
@@ -69,6 +64,8 @@ func TestSipUriUserinfoParseNOK(t *testing.T) {
 		{"sip::asas@abc.com", len("sip:")},
 		{"sip:#123@abc.com", len("sip:")},
 		{"sip:123:2#@abc.com", len("sip:123:2")},
+		{"sip:123:2@abc.com;;", len("sip:123:2@abc.com;")},
+		{"sip:123:2@abc.com;a=;", len("sip:123:2@abc.com;a=")},
 	}
 
 	for i, v := range testdata {
@@ -82,6 +79,36 @@ func TestSipUriUserinfoParseNOK(t *testing.T) {
 
 		if newPos != v.newPos {
 			t.Errorf("TestSipUriUserinfoParseNOK[%d] failed, newPos = %d, wanted = %d\n", i, newPos, v.newPos)
+			continue
+		}
+	}
+}
+
+func TestSipUriEncode(t *testing.T) {
+
+	testdata := []struct {
+		src string
+		dst string
+	}{
+		{"sip:123@abc.com;ttl=10;user=phone;a;b;c;d;e?xx=yy&x1=aa", "sip:123@abc.com;ttl=10;user=phone;a;b;c;d;e?xx=yy&x1=aa"},
+		{"sip:123:tsdd@[1080::8:800:200c:417a]:5061", "sip:123:tsdd@[1080::8:800:200c:417a]:5061"},
+		{"sip:123:@10.43.12.14", "sip:123:@10.43.12.14"},
+		{"sip:%23123%31:@10.43.12.14", "sip:%231231:@10.43.12.14"},
+	}
+
+	for i, v := range testdata {
+		uri := NewSipUri()
+
+		_, err := uri.Parse([]byte(v.src), 0)
+		if err != nil {
+			t.Errorf("TestSipUriEncode[%d] failed, parse failed, err = %s\n", i, err.Error())
+			continue
+		}
+
+		str := uri.String()
+
+		if str != v.dst {
+			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, uri = %s, wanted = %s\n", i, str, v.dst)
 			continue
 		}
 	}

@@ -1,8 +1,9 @@
 package sipparser
 
 import (
-	"container/list"
+	//"container/list"
 	"fmt"
+	"strings"
 )
 
 type SipParseError struct {
@@ -15,12 +16,19 @@ func (err *SipParseError) Error() string {
 }
 
 type SipToken struct {
+	exist bool
 	value []byte
 }
 
-func (this *SipToken) String() string        { return string(this.value) }
-func (this *SipToken) Used() bool            { return len(this.value) != 0 }
+func (this *SipToken) String() string { return string(this.value) }
+func (this *SipToken) Exist() bool    { return this.exist }
+func (this *SipToken) Empty() bool    { return len(this.value) == 0 }
+func (this *SipToken) SetExist()      { this.exist = true }
+func (this *SipToken) SetNonExist()   { this.exist = false }
+
 func (this *SipToken) SetValue(value []byte) { this.value = value }
+func (this *SipToken) ToLower() string       { return strings.ToLower(string(this.value)) }
+func (this *SipToken) ToUpper() string       { return strings.ToUpper(string(this.value)) }
 
 func (this *SipToken) Parse(src []byte, pos int, isInCharset func(ch byte) bool) (newPos int, err error) {
 	begin, end, newPos, err := parseToken(src, pos, isInCharset)
@@ -42,6 +50,7 @@ func (this *SipToken) ParseEscapable(src []byte, pos int, isInCharset func(ch by
 	return newPos, nil
 }
 
+/*
 type SipList struct {
 	list.List
 }
@@ -52,7 +61,7 @@ func (this *SipList) RemoveAll() {
 		n = e.Next()
 		this.Remove(e)
 	}
-}
+}*/
 
 func ToUpperHex(ch byte) byte {
 	return "0123456789ABCDEF"[ch&0x0F]
