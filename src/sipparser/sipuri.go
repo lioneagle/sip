@@ -35,6 +35,12 @@ func (this *SipUri) Parse(src []byte, pos int) (newPos int, err error) {
 		return newPos, err
 	}
 
+	return this.ParseAfterScheme(src, newPos)
+}
+
+func (this *SipUri) ParseAfterScheme(src []byte, pos int) (newPos int, err error) {
+	newPos = pos
+
 	newPos, err = this.ParseUserinfo(src, newPos)
 	if err != nil {
 		return newPos, err
@@ -203,7 +209,7 @@ func (this *SipUri) ParseScheme(src []byte, pos int) (newPos int, err error) {
 
 	scheme := &SipToken{}
 
-	newPos, err = scheme.Parse(src, newPos, IsSipScheme)
+	newPos, err = scheme.Parse(src, newPos, IsUriScheme)
 	if err != nil {
 		return newPos, err
 	}
@@ -286,7 +292,7 @@ type SipUriParam struct {
 }
 
 func (this *SipUriParam) Parse(src []byte, pos int) (newPos int, err error) {
-	newPos, err = this.name.ParseEscapable(src, pos, IsSipParamChar)
+	newPos, err = this.name.ParseEscapable(src, pos, IsSipPname)
 	if err != nil {
 		return newPos, err
 	}
@@ -298,7 +304,7 @@ func (this *SipUriParam) Parse(src []byte, pos int) (newPos int, err error) {
 	this.name.SetExist()
 
 	if src[newPos] == '=' {
-		newPos, err = this.value.ParseEscapable(src, newPos+1, IsSipParamChar)
+		newPos, err = this.value.ParseEscapable(src, newPos+1, IsSipPvalue)
 		if err != nil {
 			return newPos, err
 		}
@@ -312,10 +318,10 @@ func (this *SipUriParam) Parse(src []byte, pos int) (newPos int, err error) {
 }
 
 func (this *SipUriParam) String() string {
-	str := this.name.String()
+	str := string(Escape([]byte(this.name.String()), IsSipPname))
 	if this.value.Exist() {
 		str += "="
-		str += string(Escape([]byte(this.value.String()), IsSipParamChar))
+		str += string(Escape([]byte(this.value.String()), IsSipPvalue))
 	}
 	return str
 }
@@ -392,7 +398,7 @@ type SipUriHeader struct {
 }
 
 func (this *SipUriHeader) Parse(src []byte, pos int) (newPos int, err error) {
-	newPos, err = this.name.ParseEscapable(src, pos, IsSipHeaderChar)
+	newPos, err = this.name.ParseEscapable(src, pos, IsSipHname)
 	if err != nil {
 		return newPos, err
 	}
@@ -410,7 +416,7 @@ func (this *SipUriHeader) Parse(src []byte, pos int) (newPos int, err error) {
 		return newPos, &SipParseError{"parse header failed: no = after hname", src[newPos:]}
 	}
 
-	newPos, err = this.value.ParseEscapable(src, newPos+1, IsSipHeaderChar)
+	newPos, err = this.value.ParseEscapable(src, newPos+1, IsSipHvalue)
 	if err != nil {
 		return newPos, err
 	}
@@ -421,10 +427,10 @@ func (this *SipUriHeader) Parse(src []byte, pos int) (newPos int, err error) {
 }
 
 func (this *SipUriHeader) String() string {
-	str := this.name.String()
+	str := string(Escape([]byte(this.name.String()), IsSipHname))
 	str += "="
 	if this.value.Exist() {
-		str += string(Escape([]byte(this.value.String()), IsSipHeaderChar))
+		str += string(Escape([]byte(this.value.String()), IsSipHvalue))
 	}
 	return str
 }
