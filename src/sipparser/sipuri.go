@@ -126,6 +126,8 @@ func (this *SipUri) ParseScheme(src []byte, pos int) (newPos int, err error) {
 		this.SetSipsUri()
 	} else if !bytes.Equal(scheme.value, []byte("sip")) {
 		return newPos, &SipParseError{"parse scheme failed: not sip-uri nor sips-uri", src[newPos:]}
+	} else {
+		this.SetSipUri()
 	}
 
 	if newPos >= len(src) {
@@ -307,10 +309,15 @@ func (this *SipUriHeader) Parse(src []byte, pos int) (newPos int, err error) {
 	if err != nil {
 		return newPos, err
 	}
+
 	if this.name.Empty() {
 		return newPos, &SipParseError{"parse sip-uri header failed: empty hname", src[newPos:]}
 	}
 	this.name.SetExist()
+
+	if newPos >= len(src) {
+		return newPos, &SipParseError{"parse header failed: no = after hname", src[newPos-1:]}
+	}
 
 	if src[newPos] != '=' {
 		return newPos, &SipParseError{"parse header failed: no = after hname", src[newPos:]}
@@ -350,7 +357,7 @@ func (this *SipUriHeaders) Init() {
 }
 
 func (this *SipUriHeaders) Empty() bool { return len(this.maps) == 0 }
-func (this *SipUriHeaders) GetParam(name string) (val *SipUriHeader, ok bool) {
+func (this *SipUriHeaders) GetHeader(name string) (val *SipUriHeader, ok bool) {
 	val, ok = this.maps[strings.ToLower(name)]
 	return val, ok
 }
