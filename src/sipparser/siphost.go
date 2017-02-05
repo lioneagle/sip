@@ -61,7 +61,7 @@ func (this *SipHost) GetIpString() string { return net.IP(this.data).String() }
 
 func (this *SipHost) Parse(src []byte, pos int) (newPos int, err error) {
 	if pos >= len(src) {
-		return pos, &SipParseError{"parse failed", []byte("end")}
+		return pos, &AbnfError{"parse failed", src, newPos}
 	}
 
 	newPos = pos
@@ -104,12 +104,12 @@ func (this *SipHost) parseIpv6(src []byte, pos int) (newPos int, err error) {
 	}
 
 	if newPos >= len(src) {
-		return newPos, &SipParseError{"no \"]\" for ipv6-reference", src[newPos:]}
+		return newPos, &AbnfError{"no \"]\" for ipv6-reference", src, newPos}
 	}
 
 	ipv6 := net.ParseIP(string(src[pos:newPos]))
 	if ipv6 == nil {
-		return newPos, &SipParseError{"parse ipv6 failed", src[newPos:]}
+		return newPos, &AbnfError{"parse ipv6 failed", src, newPos}
 	}
 	this.SetIpv6(ipv6)
 	return newPos + 1, nil
@@ -159,7 +159,7 @@ func (this *SipHost) parseHostname(src []byte, pos int) (newPos int, err error) 
 	}
 
 	if newPos <= pos {
-		return newPos, &SipParseError{"null hostname", src[newPos:]}
+		return newPos, &AbnfError{"null hostname", src, newPos}
 	}
 	this.SetHostname(src[pos:newPos])
 	return newPos, nil
@@ -217,11 +217,11 @@ func (this *SipHostPort) Parse(src []byte, pos int) (newPos int, err error) {
 
 	digit, newPos, ok = ParseUInt(src, newPos)
 	if !ok {
-		return newPos, &SipParseError{"parse port failed after \":\"", src[newPos:]}
+		return newPos, &AbnfError{"parse port failed after \":\"", src, newPos}
 	}
 
 	if digit < 0 || digit > 0xffff {
-		return newPos, &SipParseError{"port wrong range \":\"", src[newPos:]}
+		return newPos, &AbnfError{"port wrong range \":\"", src, newPos}
 	}
 
 	this.SetPort(uint16(digit))

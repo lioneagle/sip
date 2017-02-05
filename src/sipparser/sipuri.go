@@ -7,8 +7,8 @@ import (
 
 type SipUri struct {
 	isSecure bool
-	user     SipToken
-	password SipToken
+	user     AbnfToken
+	password AbnfToken
 	hostport SipHostPort
 	params   SipUriParams
 	headers  SipUriHeaders
@@ -20,7 +20,6 @@ func (this *SipUri) IsSipUri() bool  { return !this.isSecure }
 func (this *SipUri) IsSipsUri() bool { return this.isSecure }
 
 func NewSipUri() *SipUri {
-	//return &SipUri{params: NewSipUriParams(), headers: NewSipUriHeaders()}
 	uri := &SipUri{}
 	uri.params.Init()
 	uri.headers.Init()
@@ -197,19 +196,7 @@ func (this *SipUri) equalSpecParams(rhs *SipUri) bool {
 }
 
 func (this *SipUri) ParseScheme(src []byte, pos int) (newPos int, err error) {
-	newPos = pos
-
-	if newPos >= len(src) {
-		return newPos, &SipParseError{"parse scheme failed: reach end", src[newPos:]}
-	}
-
-	if !IsAlpha(src[newPos]) {
-		return newPos, &SipParseError{"parse scheme failed: fisrt char is not alpha", src[newPos:]}
-	}
-
-	scheme := &SipToken{}
-
-	newPos, err = scheme.Parse(src, newPos, IsUriScheme)
+	newPos, scheme, err := ParseUriScheme(src, pos)
 	if err != nil {
 		return newPos, err
 	}
@@ -217,20 +204,10 @@ func (this *SipUri) ParseScheme(src []byte, pos int) (newPos int, err error) {
 	if EqualNoCase(scheme.value, []byte("sips")) {
 		this.SetSipsUri()
 	} else if !EqualNoCase(scheme.value, []byte("sip")) {
-		return newPos, &SipParseError{"parse scheme failed: not sip-uri nor sips-uri", src[newPos:]}
+		return newPos, &AbnfError{"parse scheme failed: not sip-uri nor sips-uri", src, newPos}
 	} else {
 		this.SetSipUri()
 	}
-
-	if newPos >= len(src) {
-		return newPos, &SipParseError{"parse scheme failed: no ':' and reach end", src[newPos:]}
-	}
-
-	if src[newPos] != ':' {
-		return newPos, &SipParseError{"parse scheme failed: no ':'", src[newPos:]}
-	}
-
-	newPos++
 
 	return newPos, nil
 }
@@ -244,13 +221,14 @@ func (this *SipUri) ParseUserinfo(src []byte, pos int) (newPos int, err error) {
 			return newPos, err
 		}
 
-		if this.user.Empty() {
-			return newPos, &SipParseError{"parse user-info failed: empty user", src[newPos:]}
+		if newPos >= len(src) {
+			return newPos, &AbnfError{"parse user-info failed: reach end after user", src, newPos}
 		}
 
-		if newPos >= len(src) {
-			return newPos, &SipParseError{"parse user-info failed: reach end after user", src[newPos:]}
+		if this.user.Empty() {
+			return newPos, &AbnfError{"parse user-info failed: empty user", src, newPos}
 		}
+
 		this.user.SetExist()
 
 		if src[newPos] == ':' {
@@ -262,11 +240,11 @@ func (this *SipUri) ParseUserinfo(src []byte, pos int) (newPos int, err error) {
 		}
 
 		if newPos >= len(src) {
-			return newPos, &SipParseError{"parse user-info failed: reach end, and no '@'", src[newPos:]}
+			return newPos, &AbnfError{"parse user-info failed: reach end, and no '@'", src, newPos}
 		}
 
 		if src[newPos] != '@' {
-			return newPos, &SipParseError{"parse user-info failed: no '@'", src[newPos:]}
+			return newPos, &AbnfError{"parse user-info failed: no '@'", src, newPos}
 		}
 
 		newPos++
@@ -287,8 +265,8 @@ func findUserinfo(src []byte, pos int) bool {
 }
 
 type SipUriParam struct {
-	name  SipToken
-	value SipToken
+	name  AbnfToken
+	value AbnfToken
 }
 
 func (this *SipUriParam) Parse(src []byte, pos int) (newPos int, err error) {
@@ -298,7 +276,7 @@ func (this *SipUriParam) Parse(src []byte, pos int) (newPos int, err error) {
 	}
 
 	if this.name.Empty() {
-		return newPos, &SipParseError{"parse sip-uri param failed: empty pname", src[newPos:]}
+		return newPos, &AbnfError{"parse sip-uri param failed: empty pname", src, newPos}
 	}
 
 	this.name.SetExist()
@@ -310,7 +288,7 @@ func (this *SipUriParam) Parse(src []byte, pos int) (newPos int, err error) {
 		}
 
 		if this.value.Empty() {
-			return newPos, &SipParseError{"parse sip-uri param failed: empty pvalue", src[newPos:]}
+			return newPos, &AbnfError{"parse sip-uri param failed: empty pvalue", src, newPos}
 		}
 		this.value.SetExist()
 	}
@@ -366,7 +344,7 @@ func (this *SipUriParams) GetParam(name string) (val *SipUriParam, ok bool) {
 func (this *SipUriParams) Parse(src []byte, pos int) (newPos int, err error) {
 	newPos = pos
 	if newPos >= len(src) {
-		return newPos, &SipParseError{"parse uri-param failed: reach end after ';'", src[newPos:]}
+		return newPos, &AbnfError{"parse sip-uri param failed: reach end after ';'", src, newPos}
 	}
 
 	for newPos < len(src) {
@@ -389,12 +367,12 @@ func (this *SipUriParams) Parse(src []byte, pos int) (newPos int, err error) {
 		newPos++
 	}
 
-	return newPos, err
+	return newPos, nil
 }
 
 type SipUriHeader struct {
-	name  SipToken
-	value SipToken
+	name  AbnfToken
+	value AbnfToken
 }
 
 func (this *SipUriHeader) Parse(src []byte, pos int) (newPos int, err error) {
@@ -404,16 +382,16 @@ func (this *SipUriHeader) Parse(src []byte, pos int) (newPos int, err error) {
 	}
 
 	if this.name.Empty() {
-		return newPos, &SipParseError{"parse sip-uri header failed: empty hname", src[newPos:]}
+		return newPos, &AbnfError{"parse sip-uri header failed: empty hname", src, newPos}
 	}
 	this.name.SetExist()
 
 	if newPos >= len(src) {
-		return newPos, &SipParseError{"parse header failed: no = after hname", src[newPos-1:]}
+		return newPos, &AbnfError{"parse header failed: no = after hname", src, newPos}
 	}
 
 	if src[newPos] != '=' {
-		return newPos, &SipParseError{"parse header failed: no = after hname", src[newPos:]}
+		return newPos, &AbnfError{"parse header failed: no = after hname", src, newPos}
 	}
 
 	newPos, err = this.value.ParseEscapable(src, newPos+1, IsSipHvalue)
@@ -459,7 +437,7 @@ func (this *SipUriHeaders) GetHeader(name string) (val *SipUriHeader, ok bool) {
 func (this *SipUriHeaders) Parse(src []byte, pos int) (newPos int, err error) {
 	newPos = pos
 	if newPos >= len(src) {
-		return newPos, &SipParseError{"parse uri-header failed: reach end after ';'", src[newPos:]}
+		return newPos, &AbnfError{"parse uri-header failed: reach end after ';'", src, newPos}
 	}
 
 	for newPos < len(src) {

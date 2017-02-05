@@ -7,45 +7,49 @@ import (
 	"strings"
 )
 
-type SipParseError struct {
+type AbnfError struct {
 	description string
-	pos         []byte
+	src         []byte
+	pos         int
 }
 
-func (err *SipParseError) Error() string {
-	return fmt.Sprintf("%s at %s", err.description, string(err.pos))
+func (err *AbnfError) Error() string {
+	if err.pos < len(err.src) {
+		return fmt.Sprintf("%s at %s", err.description, string(err.src[err.pos:]))
+	}
+	return fmt.Sprintf("%s at end")
 }
 
-type SipToken struct {
+type AbnfToken struct {
 	exist bool
 	value []byte
 }
 
-func (this *SipToken) String() string { return string(this.value) }
-func (this *SipToken) Exist() bool    { return this.exist }
-func (this *SipToken) Empty() bool    { return len(this.value) == 0 }
-func (this *SipToken) SetExist()      { this.exist = true }
-func (this *SipToken) SetNonExist()   { this.exist = false }
+func (this *AbnfToken) String() string { return string(this.value) }
+func (this *AbnfToken) Exist() bool    { return this.exist }
+func (this *AbnfToken) Empty() bool    { return len(this.value) == 0 }
+func (this *AbnfToken) SetExist()      { this.exist = true }
+func (this *AbnfToken) SetNonExist()   { this.exist = false }
 
-func (this *SipToken) SetValue(value []byte) { this.value = value }
-func (this *SipToken) ToLower() string       { return strings.ToLower(string(this.value)) }
-func (this *SipToken) ToUpper() string       { return strings.ToUpper(string(this.value)) }
+func (this *AbnfToken) SetValue(value []byte) { this.value = value }
+func (this *AbnfToken) ToLower() string       { return strings.ToLower(string(this.value)) }
+func (this *AbnfToken) ToUpper() string       { return strings.ToUpper(string(this.value)) }
 
-func (this *SipToken) Equal(rhs *SipToken) bool {
+func (this *AbnfToken) Equal(rhs *AbnfToken) bool {
 	if (this.exist && !rhs.exist) || (!this.exist && rhs.exist) {
 		return false
 	}
 	return bytes.Equal(this.value, rhs.value)
 }
 
-func (this *SipToken) EqualNoCase(rhs *SipToken) bool {
+func (this *AbnfToken) EqualNoCase(rhs *AbnfToken) bool {
 	if (this.exist && !rhs.exist) || (!this.exist && rhs.exist) {
 		return false
 	}
 	return EqualNoCase(this.value, rhs.value)
 }
 
-func (this *SipToken) Parse(src []byte, pos int, isInCharset func(ch byte) bool) (newPos int, err error) {
+func (this *AbnfToken) Parse(src []byte, pos int, isInCharset func(ch byte) bool) (newPos int, err error) {
 	begin, end, newPos, err := parseToken(src, pos, isInCharset)
 	if err != nil {
 		return newPos, err
@@ -55,7 +59,7 @@ func (this *SipToken) Parse(src []byte, pos int, isInCharset func(ch byte) bool)
 	return newPos, nil
 }
 
-func (this *SipToken) ParseEscapable(src []byte, pos int, isInCharset func(ch byte) bool) (newPos int, err error) {
+func (this *AbnfToken) ParseEscapable(src []byte, pos int, isInCharset func(ch byte) bool) (newPos int, err error) {
 	begin, end, newPos, err := parseTokenEscapable(src, pos, isInCharset)
 	if err != nil {
 		return newPos, err
@@ -178,10 +182,10 @@ func parseTokenEscapable(src []byte, pos int, isInCharset func(ch byte) bool) (t
 	for newPos = pos; newPos < len(src); newPos++ {
 		if src[newPos] == '%' {
 			if (newPos + 2) >= len(src) {
-				return tokenBegin, newPos, newPos, &SipParseError{"parse escape token failed: reach end", src[newPos:]}
+				return tokenBegin, newPos, newPos, &AbnfError{"parse escape token failed: reach end", src, newPos}
 			}
 			if !IsHex(src[newPos+1]) || !IsHex(src[newPos+2]) {
-				return tokenBegin, newPos, newPos, &SipParseError{"parse escape token failed: no hex after %", src[newPos:]}
+				return tokenBegin, newPos, newPos, &AbnfError{"parse escape token failed: no hex after %", src, newPos}
 			}
 			newPos += 2
 		} else if !isInCharset(src[newPos]) {
@@ -209,4 +213,35 @@ func ParseUInt(src []byte, pos int) (digit, newPos int, ok bool) {
 
 	return digit, newPos, true
 
+}
+
+func ParseUriScheme(src []byte, pos int) (newPos int, scheme *AbnfToken, err error) {
+	newPos = pos
+
+	if newPos >= len(src) {
+		return newPos, nil, &AbnfError{"parse scheme failed: reach end", src, newPos}
+	}
+
+	if !IsAlpha(src[newPos]) {
+		return newPos, nil, &AbnfError{"parse scheme failed: fisrt char is not alpha", src, newPos}
+	}
+
+	scheme = &AbnfToken{}
+
+	newPos, err = scheme.Parse(src, newPos, IsUriScheme)
+	if err != nil {
+		return newPos, nil, err
+	}
+
+	if newPos >= len(src) {
+		return newPos, nil, &AbnfError{"parse scheme failed: no ':' and reach end", src, newPos}
+	}
+
+	if src[newPos] != ':' {
+		return newPos, nil, &AbnfError{"parse scheme failed: no ':'", src, newPos}
+	}
+
+	newPos++
+
+	return newPos, scheme, nil
 }
