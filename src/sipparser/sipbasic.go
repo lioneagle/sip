@@ -27,6 +27,7 @@ type AbnfToken struct {
 
 func (this *AbnfToken) String() string { return string(this.value) }
 func (this *AbnfToken) Exist() bool    { return this.exist }
+func (this *AbnfToken) Size() int      { return len(this.value) }
 func (this *AbnfToken) Empty() bool    { return len(this.value) == 0 }
 func (this *AbnfToken) SetExist()      { this.exist = true }
 func (this *AbnfToken) SetNonExist()   { this.exist = false }

@@ -299,13 +299,13 @@ var charset1 = [256]uint32{
 	0x00000000, /* position 037  '%', */
 	0x00000044, /* position 038  '&', */
 	0x00000047, /* position 039  ''', */
-	0x0000005f, /* position 040  '(', */
-	0x0000005f, /* position 041  ')', */
+	0x000000df, /* position 040  '(', */
+	0x000000df, /* position 041  ')', */
 	0x00000047, /* position 042  '*', */
 	0x00000047, /* position 043  '+', */
 	0x00000004, /* position 044  ',', */
-	0x0000007f, /* position 045  '-', */
-	0x0000005f, /* position 046  '.', */
+	0x000000ff, /* position 045  '-', */
+	0x000000df, /* position 046  '.', */
 	0x00000047, /* position 047  '/', */
 	0x0000007f, /* position 048  '0', */
 	0x0000007f, /* position 049  '1', */
@@ -556,43 +556,45 @@ const MASK_TEL_PHONE_DIGIT uint32 = (0x00000008)
 const MASK_TEL_PHONE_DIGIT_HEX uint32 = (0x00000010)
 const MASK_TEL_PNAME uint32 = (0x00000020)
 const MASK_TEL_PVALUE uint32 = (0x00000040)
+const MASK_TEL_VISUAL_SPERATOR uint32 = (0x00000080)
 
-func IsDigit(ch byte) bool            { return (charset0[ch] & MASK_DIGIT) != 0 }
-func IsAlpha(ch byte) bool            { return (charset0[ch] & MASK_ALPHA) != 0 }
-func IsLower(ch byte) bool            { return (charset0[ch] & MASK_LOWER) != 0 }
-func IsUpper(ch byte) bool            { return (charset0[ch] & MASK_UPPER) != 0 }
-func IsAlphanum(ch byte) bool         { return (charset0[ch] & MASK_ALPHANUM) != 0 }
-func IsLowerHexAlpha(ch byte) bool    { return (charset0[ch] & MASK_LOWER_HEX_ALPHA) != 0 }
-func IsUpperHexAlpha(ch byte) bool    { return (charset0[ch] & MASK_UPPER_HEX_ALPHA) != 0 }
-func IsLowerHex(ch byte) bool         { return (charset0[ch] & MASK_LOWER_HEX) != 0 }
-func IsUpperHex(ch byte) bool         { return (charset0[ch] & MASK_UPPER_HEX) != 0 }
-func IsHex(ch byte) bool              { return (charset0[ch] & MASK_HEX) != 0 }
-func IsCrlfChar(ch byte) bool         { return (charset0[ch] & MASK_CRLF_CHAR) != 0 }
-func IsWspChar(ch byte) bool          { return (charset0[ch] & MASK_WSP_CHAR) != 0 }
-func IsLwsChar(ch byte) bool          { return (charset0[ch] & MASK_LWS_CHAR) != 0 }
-func IsUtf8Char(ch byte) bool         { return (charset0[ch] & MASK_UTF8_CHAR) != 0 }
-func IsHostname(ch byte) bool         { return (charset0[ch] & MASK_HOSTNAME) != 0 }
-func IsUriUnreserved(ch byte) bool    { return (charset0[ch] & MASK_URI_UNRESERVED) != 0 }
-func IsUriReserved(ch byte) bool      { return (charset0[ch] & MASK_URI_RESERVED) != 0 }
-func IsUriScheme(ch byte) bool        { return (charset0[ch] & MASK_URI_SCHEME) != 0 }
-func IsUriUric(ch byte) bool          { return (charset0[ch] & MASK_URI_URIC) != 0 }
-func IsUriUricNoSlash(ch byte) bool   { return (charset0[ch] & MASK_URI_URIC_NO_SLASH) != 0 }
-func IsUriPchar(ch byte) bool         { return (charset0[ch] & MASK_URI_PCHAR) != 0 }
-func IsUriRegName(ch byte) bool       { return (charset0[ch] & MASK_URI_REG_NAME) != 0 }
-func IsSipToken(ch byte) bool         { return (charset0[ch] & MASK_SIP_TOKEN) != 0 }
-func IsSipSeparators(ch byte) bool    { return (charset0[ch] & MASK_SIP_SEPARATORS) != 0 }
-func IsSipWord(ch byte) bool          { return (charset0[ch] & MASK_SIP_WORD) != 0 }
-func IsSipQuotedPair(ch byte) bool    { return (charset0[ch] & MASK_SIP_QUOTED_PAIR) != 0 }
-func IsSipQuotedString(ch byte) bool  { return (charset0[ch] & MASK_SIP_QUOTED_STRING) != 0 }
-func IsSipComment(ch byte) bool       { return (charset0[ch] & MASK_SIP_COMMENT) != 0 }
-func IsSipUser(ch byte) bool          { return (charset0[ch] & MASK_SIP_USER) != 0 }
-func IsSipPassword(ch byte) bool      { return (charset0[ch] & MASK_SIP_PASSWORD) != 0 }
-func IsSipPname(ch byte) bool         { return (charset0[ch] & MASK_SIP_PNAME) != 0 }
-func IsSipPvalue(ch byte) bool        { return (charset0[ch] & MASK_SIP_PVALUE) != 0 }
-func IsSipHname(ch byte) bool         { return (charset1[ch] & MASK_SIP_HNAME) != 0 }
-func IsSipHvalue(ch byte) bool        { return (charset1[ch] & MASK_SIP_HVALUE) != 0 }
-func IsSipReasonPhrase(ch byte) bool  { return (charset1[ch] & MASK_SIP_REASON_PHRASE) != 0 }
-func IsTelPhoneDigit(ch byte) bool    { return (charset1[ch] & MASK_TEL_PHONE_DIGIT) != 0 }
-func IsTelPhoneDigitHex(ch byte) bool { return (charset1[ch] & MASK_TEL_PHONE_DIGIT_HEX) != 0 }
-func IsTelPname(ch byte) bool         { return (charset1[ch] & MASK_TEL_PNAME) != 0 }
-func IsTelPvalue(ch byte) bool        { return (charset1[ch] & MASK_TEL_PVALUE) != 0 }
+func IsDigit(ch byte) bool             { return (charset0[ch] & MASK_DIGIT) != 0 }
+func IsAlpha(ch byte) bool             { return (charset0[ch] & MASK_ALPHA) != 0 }
+func IsLower(ch byte) bool             { return (charset0[ch] & MASK_LOWER) != 0 }
+func IsUpper(ch byte) bool             { return (charset0[ch] & MASK_UPPER) != 0 }
+func IsAlphanum(ch byte) bool          { return (charset0[ch] & MASK_ALPHANUM) != 0 }
+func IsLowerHexAlpha(ch byte) bool     { return (charset0[ch] & MASK_LOWER_HEX_ALPHA) != 0 }
+func IsUpperHexAlpha(ch byte) bool     { return (charset0[ch] & MASK_UPPER_HEX_ALPHA) != 0 }
+func IsLowerHex(ch byte) bool          { return (charset0[ch] & MASK_LOWER_HEX) != 0 }
+func IsUpperHex(ch byte) bool          { return (charset0[ch] & MASK_UPPER_HEX) != 0 }
+func IsHex(ch byte) bool               { return (charset0[ch] & MASK_HEX) != 0 }
+func IsCrlfChar(ch byte) bool          { return (charset0[ch] & MASK_CRLF_CHAR) != 0 }
+func IsWspChar(ch byte) bool           { return (charset0[ch] & MASK_WSP_CHAR) != 0 }
+func IsLwsChar(ch byte) bool           { return (charset0[ch] & MASK_LWS_CHAR) != 0 }
+func IsUtf8Char(ch byte) bool          { return (charset0[ch] & MASK_UTF8_CHAR) != 0 }
+func IsHostname(ch byte) bool          { return (charset0[ch] & MASK_HOSTNAME) != 0 }
+func IsUriUnreserved(ch byte) bool     { return (charset0[ch] & MASK_URI_UNRESERVED) != 0 }
+func IsUriReserved(ch byte) bool       { return (charset0[ch] & MASK_URI_RESERVED) != 0 }
+func IsUriScheme(ch byte) bool         { return (charset0[ch] & MASK_URI_SCHEME) != 0 }
+func IsUriUric(ch byte) bool           { return (charset0[ch] & MASK_URI_URIC) != 0 }
+func IsUriUricNoSlash(ch byte) bool    { return (charset0[ch] & MASK_URI_URIC_NO_SLASH) != 0 }
+func IsUriPchar(ch byte) bool          { return (charset0[ch] & MASK_URI_PCHAR) != 0 }
+func IsUriRegName(ch byte) bool        { return (charset0[ch] & MASK_URI_REG_NAME) != 0 }
+func IsSipToken(ch byte) bool          { return (charset0[ch] & MASK_SIP_TOKEN) != 0 }
+func IsSipSeparators(ch byte) bool     { return (charset0[ch] & MASK_SIP_SEPARATORS) != 0 }
+func IsSipWord(ch byte) bool           { return (charset0[ch] & MASK_SIP_WORD) != 0 }
+func IsSipQuotedPair(ch byte) bool     { return (charset0[ch] & MASK_SIP_QUOTED_PAIR) != 0 }
+func IsSipQuotedString(ch byte) bool   { return (charset0[ch] & MASK_SIP_QUOTED_STRING) != 0 }
+func IsSipComment(ch byte) bool        { return (charset0[ch] & MASK_SIP_COMMENT) != 0 }
+func IsSipUser(ch byte) bool           { return (charset0[ch] & MASK_SIP_USER) != 0 }
+func IsSipPassword(ch byte) bool       { return (charset0[ch] & MASK_SIP_PASSWORD) != 0 }
+func IsSipPname(ch byte) bool          { return (charset0[ch] & MASK_SIP_PNAME) != 0 }
+func IsSipPvalue(ch byte) bool         { return (charset0[ch] & MASK_SIP_PVALUE) != 0 }
+func IsSipHname(ch byte) bool          { return (charset1[ch] & MASK_SIP_HNAME) != 0 }
+func IsSipHvalue(ch byte) bool         { return (charset1[ch] & MASK_SIP_HVALUE) != 0 }
+func IsSipReasonPhrase(ch byte) bool   { return (charset1[ch] & MASK_SIP_REASON_PHRASE) != 0 }
+func IsTelPhoneDigit(ch byte) bool     { return (charset1[ch] & MASK_TEL_PHONE_DIGIT) != 0 }
+func IsTelPhoneDigitHex(ch byte) bool  { return (charset1[ch] & MASK_TEL_PHONE_DIGIT_HEX) != 0 }
+func IsTelPname(ch byte) bool          { return (charset1[ch] & MASK_TEL_PNAME) != 0 }
+func IsTelPvalue(ch byte) bool         { return (charset1[ch] & MASK_TEL_PVALUE) != 0 }
+func IsTelVisualSperator(ch byte) bool { return (charset1[ch] & MASK_TEL_VISUAL_SPERATOR) != 0 }

@@ -50,6 +50,44 @@ func (this *TelUri) String() string {
 	return str
 }
 
+func (this *TelUri) Equal(rhs *TelUri) bool {
+	if (this.isGlobalNumber && !rhs.isGlobalNumber) || (!this.isGlobalNumber && rhs.isGlobalNumber) {
+		return false
+	}
+
+	if !this.number.Equal(&rhs.number) {
+		return false
+	}
+
+	if !this.context.desc.EqualNoCase(&rhs.context.desc) {
+		return false
+	}
+
+	if !this.EqualParams(rhs) {
+		return false
+	}
+
+	return true
+}
+
+func (this *TelUri) EqualParams(rhs *TelUri) bool {
+	if this.params.Size() != rhs.params.Size() {
+		return false
+	}
+
+	for _, v := range this.params.maps {
+		param, ok := rhs.params.GetParam(v.name.String())
+		if ok {
+			if !param.value.EqualNoCase(&v.value) {
+				return false
+			}
+		} else {
+			return false
+		}
+	}
+	return true
+}
+
 func (this *TelUri) ParseScheme(src []byte, pos int) (newPos int, err error) {
 	newPos, scheme, err := ParseUriScheme(src, pos)
 	if err != nil {
@@ -94,13 +132,15 @@ func (this *TelUri) ParseGlobalNumber(src []byte, pos int) (newPos int, err erro
 		return newPos, err
 	}
 
-	if this.number.Empty() {
+	this.number.value = src[pos:newPos]
+
+	this.number.value = this.RemoveVisualSeperator(this.number.value)
+
+	if this.number.Size() <= 1 {
 		return newPos, &AbnfError{"parse global-number failed: empty number", src, newPos}
 	}
 
-	this.number.value = src[pos:newPos]
-
-	/*@@TODO: remove visual-seperator */
+	this.number.SetExist()
 
 	return newPos, nil
 }
@@ -111,13 +151,25 @@ func (this *TelUri) ParseLocalNumber(src []byte, pos int) (newPos int, err error
 		return newPos, err
 	}
 
-	/*@@TODO: remove visual-seperator */
+	this.number.value = this.RemoveVisualSeperator(this.number.value)
 
 	if this.number.Empty() {
 		return newPos, &AbnfError{"parse global-number failed: empty number", src, newPos}
 	}
 
+	this.number.SetExist()
+
 	return newPos, nil
+}
+
+func (this *TelUri) RemoveVisualSeperator(number []byte) []byte {
+	newNumber := make([]byte, 0)
+	for _, v := range number {
+		if !IsTelVisualSperator(v) {
+			newNumber = append(newNumber, v)
+		}
+	}
+	return newNumber
 }
 
 func (this *TelUri) ParseParams(src []byte, pos int) (newPos int, err error) {
@@ -143,6 +195,9 @@ func (this *TelUri) ParseParams(src []byte, pos int) (newPos int, err error) {
 			this.context.exist = true
 			this.context.isDomainName = (param.value.value[0] != '+')
 			this.context.desc = param.value
+			if !this.context.isDomainName {
+				this.context.desc.value = this.RemoveVisualSeperator(this.context.desc.value)
+			}
 		} else {
 			this.params.orders = append(this.params.orders, name)
 			this.params.maps[name] = param

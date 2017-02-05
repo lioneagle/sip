@@ -14,6 +14,7 @@ func TestTelUriParseOK(t *testing.T) {
 		phoneContextIsDomainName bool
 	}{
 		{"tel:+861234", true, "+861234", "", false},
+		{"tel:+86-12.(34)", true, "+861234", "", false},
 		{"tel:861234;phone-context=+123", false, "861234", "+123", false},
 		{"tel:861234;phone-context=+123", false, "861234", "+123", false},
 		{"tel:861234;phone-context=a.com", false, "861234", "a.com", true},
@@ -114,15 +115,43 @@ func TestTelUriParamsParseOK(t *testing.T) {
 	}
 }
 
+func TestTelUriParseNOK(t *testing.T) {
+
+	testdata := []struct {
+		src    string
+		newPos int
+	}{
+		{"tel1:+86123", len("tel1:")},
+		{"tel:+", len("tel:+")},
+	}
+
+	for i, v := range testdata {
+		uri := NewTelUri()
+
+		newPos, err := uri.Parse([]byte(v.src), 0)
+		if err == nil {
+			t.Errorf("TestTelUriParseNOK[%d] failed", i)
+			continue
+		}
+
+		if newPos != v.newPos {
+			t.Errorf("TestTelUriParseNOK[%d] failed, newPos = %d, wanted = %d\n", i, newPos, v.newPos)
+			continue
+		}
+	}
+}
+
 func TestTelUriEncode(t *testing.T) {
 
 	testdata := []struct {
 		src string
 		dst string
 	}{
+		{"tel:+861234", "tel:+861234"},
 		{"tel:+861234;phonex=+123", "tel:+861234;phonex=+123"},
 		{"tel:861234;phone-context=+123", "tel:861234;phone-context=+123"},
-		{"tel:861234;x1=5;y;phone-context=+123;zz", "tel:861234;phone-context=+123;x1=5;y;zz"},
+		{"tel:861234;x1=5;y;phone-context=+1-2.3(56);zz", "tel:861234;phone-context=+12356;x1=5;y;zz"},
+		{"tel:861234;x1=5;y;phone-context=abc.com;zz", "tel:861234;phone-context=abc.com;x1=5;y;zz"},
 	}
 
 	for i, v := range testdata {
@@ -138,6 +167,52 @@ func TestTelUriEncode(t *testing.T) {
 
 		if str != v.dst {
 			t.Errorf("TestTelUriEncode[%d] failed, uri = %s, wanted = %s\n", i, str, v.dst)
+			continue
+		}
+	}
+}
+
+func TestTelUriEqual(t *testing.T) {
+	testdata := []struct {
+		uri1  string
+		uri2  string
+		equal bool
+	}{
+		{"tel:+86123", "tel:+8.6-1(2)3", true},
+		{"tel:+86123;x1", "tel:+8.6-1(2)3;x1", true},
+		{"tel:+86123;X2;x1", "tel:+8.6-1(2)3;X1;x2", true},
+		{"tel:861234;x1=5;y;phone-context=abc.com;zz", "tel:861234;phone-context=abc.com;x1=5;y;zz", true},
+
+		{"tel:+86123", "tel:8.6-1(2)3", false},
+		{"tel:+86123", "tel:+18.6-1(2)3", false},
+		{"tel:+86123;x1", "tel:+8.6-1(2)3", false},
+		{"tel:+86123;x1=ab", "tel:+8.6-1(2)3;x1=cd", false},
+		{"tel:861234;x1=5;y;phone-context=abc.com;zz", "tel:861234;phone-context=abcq.com;x1=5;y;zz", false},
+	}
+
+	for i, v := range testdata {
+		uri1 := NewTelUri()
+		uri2 := NewTelUri()
+
+		_, err := uri1.Parse([]byte(v.uri1), 0)
+		if err != nil {
+			t.Errorf("TestTelUriEqual[%d] failed, uri1 parse failed, err = %s\n", i, err.Error())
+			continue
+		}
+
+		_, err = uri2.Parse([]byte(v.uri2), 0)
+		if err != nil {
+			t.Errorf("TestTelUriEqual[%d] failed, uri2 parse failed, err = %s\n", i, err.Error())
+			continue
+		}
+
+		if v.equal && !uri1.Equal(uri2) {
+			t.Errorf("TestTelUriEqual[%d] failed, should be equal, uri1 = %s, uri2 = %s\n", i, v.uri1, v.uri2)
+			continue
+		}
+
+		if !v.equal && uri1.Equal(uri2) {
+			t.Errorf("TestTelUriEqual[%d] failed, should be not equal, uri1 = %s, uri2 = %s\n", i, v.uri1, v.uri2)
 			continue
 		}
 	}

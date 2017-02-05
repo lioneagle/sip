@@ -152,7 +152,7 @@ func (this *SipUri) EqualParams(rhs *SipUri) bool {
 		return false
 	}
 
-	for _, v := range this.params.maps {
+	for _, v := range uri1.params.maps {
 		param, ok := uri2.params.GetParam(v.name.String())
 		if ok {
 			if !param.value.EqualNoCase(&v.value) {

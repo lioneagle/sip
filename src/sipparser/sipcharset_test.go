@@ -49,6 +49,7 @@ func TestCharset(t *testing.T) {
 		{IsTelPhoneDigitHex, []byte("ABCDEFabcdef()-.0123456789")},
 		{IsTelPname, []byte("-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")},
 		{IsTelPvalue, []byte("!$&'()*+-./0123456789:ABCDEFGHIJKLMNOPQRSTUVWXYZ[]_abcdefghijklmnopqrstuvwxyz~")},
+		{IsTelVisualSperator, []byte("()-.")},
 	}
 
 	for i, v := range wanted {

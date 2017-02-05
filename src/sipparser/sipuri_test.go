@@ -165,7 +165,7 @@ func TestSipUriHeadersParseOK(t *testing.T) {
 func TestSipUriUserinfoParseNOK(t *testing.T) {
 
 	testdata := []struct {
-		test   string
+		src    string
 		newPos int
 	}{
 		{"sipx:@abc.com", len("sipx:")},
@@ -182,7 +182,7 @@ func TestSipUriUserinfoParseNOK(t *testing.T) {
 	for i, v := range testdata {
 		uri := NewSipUri()
 
-		newPos, err := uri.Parse([]byte(v.test), 0)
+		newPos, err := uri.Parse([]byte(v.src), 0)
 		if err == nil {
 			t.Errorf("TestSipUriUserinfoParseNOK[%d] failed", i)
 			continue
