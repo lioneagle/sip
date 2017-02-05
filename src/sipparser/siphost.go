@@ -2,6 +2,7 @@ package sipparser
 
 import (
 	//"fmt"
+	"bytes"
 	"net"
 	"strconv"
 )
@@ -81,6 +82,17 @@ func (this *SipHost) Parse(src []byte, pos int) (newPos int, err error) {
 		return this.parseHostname(src, pos)
 	}
 	return newPos, nil
+}
+
+func (this *SipHost) Equal(rhs *SipHost) bool {
+	if this.id != rhs.id {
+		return false
+	}
+	if this.IsHostname() {
+		return EqualNoCase(this.data, rhs.data)
+	}
+	return bytes.Equal(this.data, rhs.data)
+
 }
 
 func (this *SipHost) parseIpv6(src []byte, pos int) (newPos int, err error) {
@@ -215,4 +227,12 @@ func (this *SipHostPort) Parse(src []byte, pos int) (newPos int, err error) {
 	this.SetPort(uint16(digit))
 
 	return newPos, nil
+}
+
+func (this *SipHostPort) Equal(rhs *SipHostPort) bool {
+	if (this.hasPort && !rhs.hasPort) || (!this.hasPort && rhs.hasPort) {
+		return false
+	}
+
+	return this.SipHost.Equal(&rhs.SipHost)
 }

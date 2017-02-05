@@ -2,6 +2,7 @@ package sipparser
 
 import (
 	//"container/list"
+	"bytes"
 	"fmt"
 	"strings"
 )
@@ -29,6 +30,20 @@ func (this *SipToken) SetNonExist()   { this.exist = false }
 func (this *SipToken) SetValue(value []byte) { this.value = value }
 func (this *SipToken) ToLower() string       { return strings.ToLower(string(this.value)) }
 func (this *SipToken) ToUpper() string       { return strings.ToUpper(string(this.value)) }
+
+func (this *SipToken) Equal(rhs *SipToken) bool {
+	if (this.exist && !rhs.exist) || (!this.exist && rhs.exist) {
+		return false
+	}
+	return bytes.Equal(this.value, rhs.value)
+}
+
+func (this *SipToken) EqualNoCase(rhs *SipToken) bool {
+	if (this.exist && !rhs.exist) || (!this.exist && rhs.exist) {
+		return false
+	}
+	return EqualNoCase(this.value, rhs.value)
+}
 
 func (this *SipToken) Parse(src []byte, pos int, isInCharset func(ch byte) bool) (newPos int, err error) {
 	begin, end, newPos, err := parseToken(src, pos, isInCharset)

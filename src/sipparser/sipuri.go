@@ -1,7 +1,6 @@
 package sipparser
 
 import (
-	"bytes"
 	//"fmt"
 	"strings"
 )
@@ -104,6 +103,93 @@ func (this *SipUri) String() string {
 	return str
 }
 
+func (this *SipUri) Equal(rhs *SipUri) bool {
+	if (this.isSecure && !rhs.isSecure) || (!this.isSecure && rhs.isSecure) {
+		return false
+	}
+
+	if !this.EqualUserinfo(rhs) {
+		return false
+	}
+
+	if !this.hostport.Equal(&rhs.hostport) {
+		return false
+	}
+
+	if !this.EqualParams(rhs) {
+		return false
+	}
+
+	if !this.EqualHeaders(rhs) {
+		return false
+	}
+
+	return true
+}
+
+func (this *SipUri) EqualUserinfo(rhs *SipUri) bool {
+	if (this.user.Exist() && !rhs.user.Exist()) || (!this.user.Exist() && rhs.user.Exist()) {
+		return false
+	}
+	ret := this.user.Equal(&rhs.user) && this.password.Equal(&rhs.password)
+	return ret
+}
+
+func (this *SipUri) EqualParams(rhs *SipUri) bool {
+	uri1 := this
+	uri2 := rhs
+
+	if uri1.params.Size() < uri2.params.Size() {
+		uri1, uri2 = uri2, uri1
+	}
+
+	if !uri1.equalSpecParams(uri2) {
+		return false
+	}
+
+	for _, v := range this.params.maps {
+		param, ok := uri2.params.GetParam(v.name.String())
+		if ok {
+			if !param.value.EqualNoCase(&v.value) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func (this *SipUri) EqualHeaders(rhs *SipUri) bool {
+	if this.headers.Size() != rhs.headers.Size() {
+		return false
+	}
+
+	for _, v := range this.headers.maps {
+		header, ok := rhs.headers.GetHeader(v.name.String())
+		if ok {
+			if !header.value.EqualNoCase(&v.value) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func (this *SipUri) equalSpecParams(rhs *SipUri) bool {
+	specParams := []string{"user", "ttl", "method"}
+
+	for _, v := range specParams {
+		_, ok := this.params.GetParam(v)
+		if ok {
+			_, ok = rhs.params.GetParam(v)
+			if !ok {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
 func (this *SipUri) ParseScheme(src []byte, pos int) (newPos int, err error) {
 	newPos = pos
 
@@ -122,9 +208,9 @@ func (this *SipUri) ParseScheme(src []byte, pos int) (newPos int, err error) {
 		return newPos, err
 	}
 
-	if bytes.Equal(scheme.value, []byte("sips")) {
+	if EqualNoCase(scheme.value, []byte("sips")) {
 		this.SetSipsUri()
-	} else if !bytes.Equal(scheme.value, []byte("sip")) {
+	} else if !EqualNoCase(scheme.value, []byte("sip")) {
 		return newPos, &SipParseError{"parse scheme failed: not sip-uri nor sips-uri", src[newPos:]}
 	} else {
 		this.SetSipUri()
@@ -264,6 +350,7 @@ func (this *SipUriParams) String() string {
 	return str
 }
 
+func (this *SipUriParams) Size() int   { return len(this.maps) }
 func (this *SipUriParams) Empty() bool { return len(this.maps) == 0 }
 func (this *SipUriParams) GetParam(name string) (val *SipUriParam, ok bool) {
 	val, ok = this.maps[strings.ToLower(name)]
@@ -356,6 +443,7 @@ func (this *SipUriHeaders) Init() {
 	this.maps = make(map[string]*SipUriHeader)
 }
 
+func (this *SipUriHeaders) Size() int   { return len(this.maps) }
 func (this *SipUriHeaders) Empty() bool { return len(this.maps) == 0 }
 func (this *SipUriHeaders) GetHeader(name string) (val *SipUriHeader, ok bool) {
 	val, ok = this.maps[strings.ToLower(name)]
