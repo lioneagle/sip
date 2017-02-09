@@ -232,6 +232,10 @@ func ParseUInt(src []byte, pos int) (digit, newPos int, ok bool) {
 }
 
 func ParseUriScheme(src []byte, pos int) (newPos int, scheme *AbnfToken, err error) {
+	/* RFC3261 Section 25.1, page 223
+	 *
+	 * scheme         =  ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
+	 */
 	newPos = pos
 
 	if newPos >= len(src) {
@@ -261,4 +265,67 @@ func ParseUriScheme(src []byte, pos int) (newPos int, scheme *AbnfToken, err err
 	scheme.SetExist()
 
 	return newPos, scheme, nil
+}
+
+func ParseSWS(src []byte, pos int) (newPos int, err error) {
+	/* RFC3261 Section 25.1, page 220
+	 *
+	 * SWS  =  [LWS] ; sep whitespace
+	 */
+	if newPos >= len(src) {
+		return newPos, nil
+	}
+
+	if !IsLwsChar(src[newPos]) {
+		return newPos, nil
+	}
+
+	return ParseLWS(src, pos)
+}
+
+func ParseLWS(src []byte, pos int) (newPos int, err error) {
+	/* RFC3261 Section 25.1, page 220
+	 *
+	 * LWS  =  [*WSP CRLF] 1*WSP ; linear whitespace
+	 * WSP  =  ( SP | HTAB )
+	 *
+	 * NOTE:
+	 *
+	 * 1. this defination of LWS is different from that in RFC2616 (HTTP/1.1)
+	 *    RFC2616 Section 2.2, page 16:
+	 *
+	 *    LWS  = [CRLF] 1*( SP | HTAB )
+	 *
+	 * 2. WSP's defination is from RFC2234 Section 6.1, page 12
+	 *
+	 */
+	for newPos = pos; newPos < len(src); newPos++ {
+		if !IsWspChar(src[newPos]) {
+			break
+		}
+	}
+
+	if newPos >= len(src) {
+		return newPos, nil
+	}
+
+	if (newPos+1 < len(src)) && (src[newPos] == '\r') && (src[newPos+1] == '\n') {
+		newPos += 2
+
+		if newPos >= len(src) {
+			return newPos, &AbnfError{"no char after CRLF in LWS", src, newPos}
+		}
+
+		if !IsWspChar(src[newPos]) {
+			return newPos, &AbnfError{"no WSP after CRLF in LWS", src, newPos}
+		}
+
+		for ; newPos < len(src); newPos++ {
+			if !IsWspChar(src[newPos]) {
+				break
+			}
+		}
+	}
+
+	return newPos, nil
 }
