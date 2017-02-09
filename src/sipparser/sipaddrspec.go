@@ -1,0 +1,45 @@
+package sipparser
+
+import (
+//"fmt"
+//"strings"
+)
+
+type SipAddrSpec struct {
+	uri URI
+}
+
+func NewSipAddrSpec() *SipAddrSpec {
+	return &SipAddrSpec{}
+}
+
+func (this *SipAddrSpec) Parse(src []byte, pos int) (newPos int, err error) {
+	newPos, scheme, err := ParseUriScheme(src, pos)
+	if err != nil {
+		return newPos, err
+	}
+
+	if scheme.EqualStringNoCase("sip") || scheme.EqualStringNoCase("sips") {
+		sipuri := NewSipUri()
+		this.uri = sipuri
+		return sipuri.Parse(src, pos)
+	}
+
+	if scheme.EqualStringNoCase("tel") {
+		teluri := NewTelUri()
+		this.uri = teluri
+		return teluri.Parse(src, pos)
+	}
+
+	return newPos, &AbnfError{"unsupported uri", src, newPos}
+}
+
+func (this *SipAddrSpec) IsSipUri() (sipuri *SipUri, ok bool) {
+	sipuri, ok = this.uri.(*SipUri)
+	return sipuri, ok
+}
+
+func (this *SipAddrSpec) IsTelUri() (teluri *TelUri, ok bool) {
+	teluri, ok = this.uri.(*TelUri)
+	return teluri, ok
+}

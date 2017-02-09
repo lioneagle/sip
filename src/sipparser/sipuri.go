@@ -27,6 +27,13 @@ func NewSipUri() *SipUri {
 
 }
 
+func (this *SipUri) Scheme() string {
+	if this.isSecure {
+		return "sips"
+	}
+	return "sip"
+}
+
 func (this *SipUri) Parse(src []byte, pos int) (newPos int, err error) {
 
 	newPos, err = this.ParseScheme(src, pos)

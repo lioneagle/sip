@@ -24,6 +24,10 @@ func NewTelUri() *TelUri {
 	return uri
 }
 
+func (this *TelUri) Scheme() string {
+	return "tel"
+}
+
 func (this *TelUri) Parse(src []byte, pos int) (newPos int, err error) {
 
 	newPos, err = this.ParseScheme(src, pos)

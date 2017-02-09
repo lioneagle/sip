@@ -50,6 +50,21 @@ func (this *AbnfToken) EqualNoCase(rhs *AbnfToken) bool {
 	return EqualNoCase(this.value, rhs.value)
 }
 
+func (this *AbnfToken) EqualString(str string) bool {
+	if !this.exist {
+		return false
+	}
+	return bytes.Equal(this.value, []byte(str))
+}
+
+func (this *AbnfToken) EqualStringNoCase(str string) bool {
+	if !this.exist {
+		return false
+	}
+
+	return EqualNoCase(this.value, []byte(str))
+}
+
 func (this *AbnfToken) Parse(src []byte, pos int, isInCharset func(ch byte) bool) (newPos int, err error) {
 	begin, end, newPos, err := parseToken(src, pos, isInCharset)
 	if err != nil {
@@ -243,6 +258,7 @@ func ParseUriScheme(src []byte, pos int) (newPos int, scheme *AbnfToken, err err
 	}
 
 	newPos++
+	scheme.SetExist()
 
 	return newPos, scheme, nil
 }
