@@ -13,6 +13,14 @@ func NewSipAddrSpec() *SipAddrSpec {
 	return &SipAddrSpec{}
 }
 
+func (this *SipAddrSpec) String() string {
+	return this.uri.String()
+}
+
+func (this *SipAddrSpec) Equal(rhs *SipAddrSpec) bool {
+	return this.uri.Equal(rhs.uri)
+}
+
 func (this *SipAddrSpec) Parse(src []byte, pos int) (newPos int, err error) {
 	newPos, scheme, err := ParseUriScheme(src, pos)
 	if err != nil {
@@ -31,7 +39,7 @@ func (this *SipAddrSpec) Parse(src []byte, pos int) (newPos int, err error) {
 		return teluri.Parse(src, pos)
 	}
 
-	return newPos, &AbnfError{"unsupported uri", src, newPos}
+	return newPos, &AbnfError{"addr-spec parse: unsupported uri", src, newPos}
 }
 
 func (this *SipAddrSpec) IsSipUri() (sipuri *SipUri, ok bool) {

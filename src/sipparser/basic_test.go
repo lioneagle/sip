@@ -136,7 +136,7 @@ func TestEscape(t *testing.T) {
 		{"IsSipSeparators", IsSipSeparators},
 		{"IsSipWord", IsSipWord},
 		{"IsSipQuotedPair", IsSipQuotedPair},
-		{"IsSipQuotedString", IsSipQuotedString},
+		{"IsSipQuotedText", IsSipQuotedText},
 		{"IsSipComment", IsSipComment},
 		{"IsSipUser", IsSipUser},
 		{"IsSipPassword", IsSipPassword},

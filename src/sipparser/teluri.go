@@ -54,7 +54,12 @@ func (this *TelUri) String() string {
 	return str
 }
 
-func (this *TelUri) Equal(rhs *TelUri) bool {
+func (this *TelUri) Equal(uri URI) bool {
+	rhs, ok := uri.(*TelUri)
+	if !ok {
+		return false
+	}
+
 	if (this.isGlobalNumber && !rhs.isGlobalNumber) || (!this.isGlobalNumber && rhs.isGlobalNumber) {
 		return false
 	}
@@ -99,7 +104,7 @@ func (this *TelUri) ParseScheme(src []byte, pos int) (newPos int, err error) {
 	}
 
 	if !EqualNoCase(scheme.value, []byte("tel")) {
-		return newPos, &AbnfError{"parse scheme failed: not sip-uri nor sips-uri", src, newPos}
+		return newPos, &AbnfError{"tel-uri parse: parse scheme failed: not sip-uri nor sips-uri", src, newPos}
 	}
 
 	return newPos, nil
@@ -141,7 +146,7 @@ func (this *TelUri) ParseGlobalNumber(src []byte, pos int) (newPos int, err erro
 	this.number.value = this.RemoveVisualSeperator(this.number.value)
 
 	if this.number.Size() <= 1 {
-		return newPos, &AbnfError{"parse global-number failed: empty number", src, newPos}
+		return newPos, &AbnfError{"tel-uri parse: parse global-number failed: empty number", src, newPos}
 	}
 
 	this.number.SetExist()
@@ -158,7 +163,7 @@ func (this *TelUri) ParseLocalNumber(src []byte, pos int) (newPos int, err error
 	this.number.value = this.RemoveVisualSeperator(this.number.value)
 
 	if this.number.Empty() {
-		return newPos, &AbnfError{"parse global-number failed: empty number", src, newPos}
+		return newPos, &AbnfError{"tel-uri parse: parse global-number failed: empty number", src, newPos}
 	}
 
 	this.number.SetExist()
@@ -179,7 +184,7 @@ func (this *TelUri) RemoveVisualSeperator(number []byte) []byte {
 func (this *TelUri) ParseParams(src []byte, pos int) (newPos int, err error) {
 	newPos = pos
 	if newPos >= len(src) {
-		return newPos, &AbnfError{"parse tel-uri param failed: reach end after ';'", src, newPos}
+		return newPos, &AbnfError{"tel-uri parse: parse tel-uri param failed: reach end after ';'", src, newPos}
 	}
 
 	for newPos < len(src) {
@@ -235,7 +240,7 @@ func (this *TelUriParam) Parse(src []byte, pos int) (newPos int, err error) {
 	}
 
 	if this.name.Empty() {
-		return newPos, &AbnfError{"parse tel-uri param failed: empty pname", src, newPos}
+		return newPos, &AbnfError{"tel-uri parse: parse tel-uri param failed: empty pname", src, newPos}
 	}
 
 	this.name.SetExist()
@@ -251,7 +256,7 @@ func (this *TelUriParam) Parse(src []byte, pos int) (newPos int, err error) {
 		}
 
 		if this.value.Empty() {
-			return newPos, &AbnfError{"parse tel-uri param failed: empty pvalue", src, newPos}
+			return newPos, &AbnfError{"tel-uri parse: parse tel-uri param failed: empty pvalue", src, newPos}
 		}
 		this.value.SetExist()
 	}

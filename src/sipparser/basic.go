@@ -15,7 +15,7 @@ type AbnfError struct {
 
 func (err *AbnfError) Error() string {
 	if err.pos < len(err.src) {
-		return fmt.Sprintf("%s at %s", err.description, string(err.src[err.pos:]))
+		return fmt.Sprintf("%s at src[%d]: %s", err.description, err.pos, string(err.src[err.pos:]))
 	}
 	return fmt.Sprintf("%s at end")
 }
@@ -25,12 +25,18 @@ type AbnfToken struct {
 	value []byte
 }
 
-func (this *AbnfToken) String() string { return string(this.value) }
-func (this *AbnfToken) Exist() bool    { return this.exist }
-func (this *AbnfToken) Size() int      { return len(this.value) }
-func (this *AbnfToken) Empty() bool    { return len(this.value) == 0 }
-func (this *AbnfToken) SetExist()      { this.exist = true }
-func (this *AbnfToken) SetNonExist()   { this.exist = false }
+func (this *AbnfToken) String() string {
+	if this.exist {
+		return string(this.value)
+	}
+	return ""
+}
+
+func (this *AbnfToken) Exist() bool  { return this.exist }
+func (this *AbnfToken) Size() int    { return len(this.value) }
+func (this *AbnfToken) Empty() bool  { return len(this.value) == 0 }
+func (this *AbnfToken) SetExist()    { this.exist = true }
+func (this *AbnfToken) SetNonExist() { this.exist = false }
 
 func (this *AbnfToken) SetValue(value []byte) { this.value = value }
 func (this *AbnfToken) ToLower() string       { return strings.ToLower(string(this.value)) }
@@ -198,10 +204,10 @@ func parseTokenEscapable(src []byte, pos int, isInCharset func(ch byte) bool) (t
 	for newPos = pos; newPos < len(src); newPos++ {
 		if src[newPos] == '%' {
 			if (newPos + 2) >= len(src) {
-				return tokenBegin, newPos, newPos, &AbnfError{"parse escape token failed: reach end", src, newPos}
+				return tokenBegin, newPos, newPos, &AbnfError{"token parse: parse escape token failed: reach end", src, newPos}
 			}
 			if !IsHex(src[newPos+1]) || !IsHex(src[newPos+2]) {
-				return tokenBegin, newPos, newPos, &AbnfError{"parse escape token failed: no hex after %", src, newPos}
+				return tokenBegin, newPos, newPos, &AbnfError{"token parse: parse escape token failed: no hex after %", src, newPos}
 			}
 			newPos += 2
 		} else if !isInCharset(src[newPos]) {
@@ -239,11 +245,11 @@ func ParseUriScheme(src []byte, pos int) (newPos int, scheme *AbnfToken, err err
 	newPos = pos
 
 	if newPos >= len(src) {
-		return newPos, nil, &AbnfError{"parse scheme failed: reach end", src, newPos}
+		return newPos, nil, &AbnfError{"uri-scheme parse: parse scheme failed: reach end", src, newPos}
 	}
 
 	if !IsAlpha(src[newPos]) {
-		return newPos, nil, &AbnfError{"parse scheme failed: fisrt char is not alpha", src, newPos}
+		return newPos, nil, &AbnfError{"uri-scheme parse: parse scheme failed: fisrt char is not alpha", src, newPos}
 	}
 
 	scheme = &AbnfToken{}
@@ -254,11 +260,11 @@ func ParseUriScheme(src []byte, pos int) (newPos int, scheme *AbnfToken, err err
 	}
 
 	if newPos >= len(src) {
-		return newPos, nil, &AbnfError{"parse scheme failed: no ':' and reach end", src, newPos}
+		return newPos, nil, &AbnfError{"uri-scheme parse: parse scheme failed: no ':' and reach end", src, newPos}
 	}
 
 	if src[newPos] != ':' {
-		return newPos, nil, &AbnfError{"parse scheme failed: no ':'", src, newPos}
+		return newPos, nil, &AbnfError{"uri-scheme parse: parse scheme failed: no ':'", src, newPos}
 	}
 
 	newPos++
@@ -272,6 +278,7 @@ func ParseSWS(src []byte, pos int) (newPos int, err error) {
 	 *
 	 * SWS  =  [LWS] ; sep whitespace
 	 */
+	newPos = pos
 	if newPos >= len(src) {
 		return newPos, nil
 	}
@@ -280,7 +287,7 @@ func ParseSWS(src []byte, pos int) (newPos int, err error) {
 		return newPos, nil
 	}
 
-	return ParseLWS(src, pos)
+	return ParseLWS(src, newPos)
 }
 
 func ParseLWS(src []byte, pos int) (newPos int, err error) {
@@ -313,11 +320,11 @@ func ParseLWS(src []byte, pos int) (newPos int, err error) {
 		newPos += 2
 
 		if newPos >= len(src) {
-			return newPos, &AbnfError{"no char after CRLF in LWS", src, newPos}
+			return newPos, &AbnfError{"LWS parse: no char after CRLF in LWS", src, newPos}
 		}
 
 		if !IsWspChar(src[newPos]) {
-			return newPos, &AbnfError{"no WSP after CRLF in LWS", src, newPos}
+			return newPos, &AbnfError{"LWS parse: no WSP after CRLF in LWS", src, newPos}
 		}
 
 		for ; newPos < len(src); newPos++ {
@@ -328,4 +335,50 @@ func ParseLWS(src []byte, pos int) (newPos int, err error) {
 	}
 
 	return newPos, nil
+}
+
+func ParseLeftAngleQuote(src []byte, pos int) (newPos int, err error) {
+	/* RFC3261 Section 25.1, page 221
+	 *
+	 * LAQUOT  =  SWS "<"; left angle quote
+	 *
+	 */
+	newPos = pos
+
+	if newPos >= len(src) {
+		return newPos, &AbnfError{"LAQUOT parse: reach end at begining", src, newPos}
+	}
+
+	newPos, err = ParseSWS(src, newPos)
+	if err != nil {
+		return newPos, err
+	}
+
+	if newPos >= len(src) {
+		return newPos, &AbnfError{"LAQUOT parse: reach end before <", src, newPos}
+	}
+
+	if src[newPos] != '<' {
+		return newPos, &AbnfError{"LAQUOT parse: no <", src, newPos}
+	}
+
+	return newPos + 1, nil
+}
+
+func ParseRightAngleQuote(src []byte, pos int) (newPos int, err error) {
+	/* RFC3261 Section 25.1, page 221
+	 *
+	 * RAQUOT  =  ">" SWS ; right angle quote
+	 *
+	 */
+	newPos = pos
+	if newPos >= len(src) {
+		return newPos, &AbnfError{"RAQUOT parse: reach end at begining", src, newPos}
+	}
+
+	if src[newPos] != '>' {
+		return newPos, &AbnfError{"RAQUOT parse: no >", src, newPos}
+	}
+
+	return ParseSWS(src, newPos+1)
 }

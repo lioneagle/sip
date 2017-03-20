@@ -1,41 +1,41 @@
 package sipparser
 
 var charset0 = [256]uint32{
-	0x0e000000, /* position 000 */
-	0x0e000000, /* position 001 */
-	0x0e000000, /* position 002 */
-	0x0e000000, /* position 003 */
-	0x0e000000, /* position 004 */
-	0x0e000000, /* position 005 */
-	0x0e000000, /* position 006 */
-	0x0e000000, /* position 007 */
-	0x0e000000, /* position 008 */
+	0x0a000000, /* position 000 */
+	0x0a000000, /* position 001 */
+	0x0a000000, /* position 002 */
+	0x0a000000, /* position 003 */
+	0x0a000000, /* position 004 */
+	0x0a000000, /* position 005 */
+	0x0a000000, /* position 006 */
+	0x0a000000, /* position 007 */
+	0x0a000000, /* position 008 */
 	0x0e001800, /* position 009 */
 	0x0c001400, /* position 010 */
-	0x0e800000, /* position 011 */
-	0x0e000000, /* position 012 */
+	0x0a800000, /* position 011 */
+	0x0a000000, /* position 012 */
 	0x0c001400, /* position 013 */
-	0x0e000000, /* position 014 */
-	0x0e000000, /* position 015 */
-	0x0e000000, /* position 016 */
-	0x0e000000, /* position 017 */
-	0x0e000000, /* position 018 */
-	0x0e000000, /* position 019 */
-	0x0e000000, /* position 020 */
-	0x0e000000, /* position 021 */
-	0x0e000000, /* position 022 */
-	0x0e000000, /* position 023 */
-	0x0e000000, /* position 024 */
-	0x0e000000, /* position 025 */
-	0x0e000000, /* position 026 */
-	0x0e000000, /* position 027 */
-	0x0e000000, /* position 028 */
-	0x0e000000, /* position 029 */
-	0x0e000000, /* position 030 */
-	0x0e000000, /* position 031 */
+	0x0a000000, /* position 014 */
+	0x0a000000, /* position 015 */
+	0x0a000000, /* position 016 */
+	0x0a000000, /* position 017 */
+	0x0a000000, /* position 018 */
+	0x0a000000, /* position 019 */
+	0x0a000000, /* position 020 */
+	0x0a000000, /* position 021 */
+	0x0a000000, /* position 022 */
+	0x0a000000, /* position 023 */
+	0x0a000000, /* position 024 */
+	0x0a000000, /* position 025 */
+	0x0a000000, /* position 026 */
+	0x0a000000, /* position 027 */
+	0x0a000000, /* position 028 */
+	0x0a000000, /* position 029 */
+	0x0a000000, /* position 030 */
+	0x0a000000, /* position 031 */
 	0x0e801800, /* position 032  ' ', */
 	0xff7ca000, /* position 033  '!', */
-	0x0f802000, /* position 034  '"', */
+	0x0b802000, /* position 034  '"', */
 	0x0e002000, /* position 035  '#', */
 	0xfe3d2000, /* position 036  '$', */
 	0x0f402000, /* position 037  '%', */
@@ -93,7 +93,7 @@ var charset0 = [256]uint32{
 	0xff7ee01a, /* position 089  'Y', */
 	0xff7ee01a, /* position 090  'Z', */
 	0xcf802000, /* position 091  '[', */
-	0x0f802000, /* position 092  '\', */
+	0x0b802000, /* position 092  '\', */
 	0xcf802000, /* position 093  ']', */
 	0x0e002000, /* position 094  '^', */
 	0xff7ca000, /* position 095  '_', */
@@ -128,7 +128,7 @@ var charset0 = [256]uint32{
 	0x0e002000, /* position 124  '|', */
 	0x0f802000, /* position 125  '}', */
 	0xff7ca000, /* position 126  '~', */
-	0x0e000000, /* position 127 */
+	0x0a000000, /* position 127 */
 	0x00002000, /* position 128 */
 	0x00002000, /* position 129 */
 	0x00002000, /* position 130 */
@@ -543,7 +543,7 @@ const MASK_SIP_TOKEN uint32 = (0x00400000)
 const MASK_SIP_SEPARATORS uint32 = (0x00800000)
 const MASK_SIP_WORD uint32 = (0x01000000)
 const MASK_SIP_QUOTED_PAIR uint32 = (0x02000000)
-const MASK_SIP_QUOTED_STRING uint32 = (0x04000000)
+const MASK_SIP_QUOTED_TEXT uint32 = (0x04000000)
 const MASK_SIP_COMMENT uint32 = (0x08000000)
 const MASK_SIP_USER uint32 = (0x10000000)
 const MASK_SIP_PASSWORD uint32 = (0x20000000)
@@ -584,7 +584,7 @@ func IsSipToken(ch byte) bool          { return (charset0[ch] & MASK_SIP_TOKEN) 
 func IsSipSeparators(ch byte) bool     { return (charset0[ch] & MASK_SIP_SEPARATORS) != 0 }
 func IsSipWord(ch byte) bool           { return (charset0[ch] & MASK_SIP_WORD) != 0 }
 func IsSipQuotedPair(ch byte) bool     { return (charset0[ch] & MASK_SIP_QUOTED_PAIR) != 0 }
-func IsSipQuotedString(ch byte) bool   { return (charset0[ch] & MASK_SIP_QUOTED_STRING) != 0 }
+func IsSipQuotedText(ch byte) bool     { return (charset0[ch] & MASK_SIP_QUOTED_TEXT) != 0 }
 func IsSipComment(ch byte) bool        { return (charset0[ch] & MASK_SIP_COMMENT) != 0 }
 func IsSipUser(ch byte) bool           { return (charset0[ch] & MASK_SIP_USER) != 0 }
 func IsSipPassword(ch byte) bool       { return (charset0[ch] & MASK_SIP_PASSWORD) != 0 }

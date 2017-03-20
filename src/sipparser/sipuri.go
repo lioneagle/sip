@@ -115,7 +115,12 @@ func (this *SipUri) String() string {
 	return str
 }
 
-func (this *SipUri) Equal(rhs *SipUri) bool {
+func (this *SipUri) Equal(uri URI) bool {
+	rhs, ok := uri.(*SipUri)
+	if !ok {
+		return false
+	}
+
 	if (this.isSecure && !rhs.isSecure) || (!this.isSecure && rhs.isSecure) {
 		return false
 	}
@@ -211,7 +216,7 @@ func (this *SipUri) ParseScheme(src []byte, pos int) (newPos int, err error) {
 	if EqualNoCase(scheme.value, []byte("sips")) {
 		this.SetSipsUri()
 	} else if !EqualNoCase(scheme.value, []byte("sip")) {
-		return newPos, &AbnfError{"parse scheme failed: not sip-uri nor sips-uri", src, newPos}
+		return newPos, &AbnfError{"sip-uri parse: parse scheme failed: not sip-uri nor sips-uri", src, newPos}
 	} else {
 		this.SetSipUri()
 	}
@@ -229,11 +234,11 @@ func (this *SipUri) ParseUserinfo(src []byte, pos int) (newPos int, err error) {
 		}
 
 		if newPos >= len(src) {
-			return newPos, &AbnfError{"parse user-info failed: reach end after user", src, newPos}
+			return newPos, &AbnfError{"sip-uri parse: parse user-info failed: reach end after user", src, newPos}
 		}
 
 		if this.user.Empty() {
-			return newPos, &AbnfError{"parse user-info failed: empty user", src, newPos}
+			return newPos, &AbnfError{"sip-uri parse: parse user-info failed: empty user", src, newPos}
 		}
 
 		this.user.SetExist()
@@ -247,11 +252,11 @@ func (this *SipUri) ParseUserinfo(src []byte, pos int) (newPos int, err error) {
 		}
 
 		if newPos >= len(src) {
-			return newPos, &AbnfError{"parse user-info failed: reach end, and no '@'", src, newPos}
+			return newPos, &AbnfError{"sip-uri parse: parse user-info failed: reach end, and no '@'", src, newPos}
 		}
 
 		if src[newPos] != '@' {
-			return newPos, &AbnfError{"parse user-info failed: no '@'", src, newPos}
+			return newPos, &AbnfError{"sip-uri parse: parse user-info failed: no '@'", src, newPos}
 		}
 
 		newPos++
@@ -283,7 +288,7 @@ func (this *SipUriParam) Parse(src []byte, pos int) (newPos int, err error) {
 	}
 
 	if this.name.Empty() {
-		return newPos, &AbnfError{"parse sip-uri param failed: empty pname", src, newPos}
+		return newPos, &AbnfError{"sip-uri parse: parse sip-uri param failed: empty pname", src, newPos}
 	}
 
 	this.name.SetExist()
@@ -295,7 +300,7 @@ func (this *SipUriParam) Parse(src []byte, pos int) (newPos int, err error) {
 		}
 
 		if this.value.Empty() {
-			return newPos, &AbnfError{"parse sip-uri param failed: empty pvalue", src, newPos}
+			return newPos, &AbnfError{"sip-uri parse: parse sip-uri param failed: empty pvalue", src, newPos}
 		}
 		this.value.SetExist()
 	}
@@ -351,7 +356,7 @@ func (this *SipUriParams) GetParam(name string) (val *SipUriParam, ok bool) {
 func (this *SipUriParams) Parse(src []byte, pos int) (newPos int, err error) {
 	newPos = pos
 	if newPos >= len(src) {
-		return newPos, &AbnfError{"parse sip-uri param failed: reach end after ';'", src, newPos}
+		return newPos, &AbnfError{"sip-uri parse: parse sip-uri param failed: reach end after ';'", src, newPos}
 	}
 
 	for newPos < len(src) {
@@ -389,16 +394,16 @@ func (this *SipUriHeader) Parse(src []byte, pos int) (newPos int, err error) {
 	}
 
 	if this.name.Empty() {
-		return newPos, &AbnfError{"parse sip-uri header failed: empty hname", src, newPos}
+		return newPos, &AbnfError{"sip-uri parse: parse sip-uri header failed: empty hname", src, newPos}
 	}
 	this.name.SetExist()
 
 	if newPos >= len(src) {
-		return newPos, &AbnfError{"parse header failed: no = after hname", src, newPos}
+		return newPos, &AbnfError{"sip-uri parse: parse header failed: no = after hname", src, newPos}
 	}
 
 	if src[newPos] != '=' {
-		return newPos, &AbnfError{"parse header failed: no = after hname", src, newPos}
+		return newPos, &AbnfError{"sip-uri parse: parse header failed: no = after hname", src, newPos}
 	}
 
 	newPos, err = this.value.ParseEscapable(src, newPos+1, IsSipHvalue)
@@ -444,7 +449,7 @@ func (this *SipUriHeaders) GetHeader(name string) (val *SipUriHeader, ok bool) {
 func (this *SipUriHeaders) Parse(src []byte, pos int) (newPos int, err error) {
 	newPos = pos
 	if newPos >= len(src) {
-		return newPos, &AbnfError{"parse uri-header failed: reach end after ';'", src, newPos}
+		return newPos, &AbnfError{"sip-uri parse: parse uri-header failed: reach end after ';'", src, newPos}
 	}
 
 	for newPos < len(src) {
