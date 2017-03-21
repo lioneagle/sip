@@ -1,8 +1,9 @@
 package sipparser
 
 import (
-//"fmt"
-//"strings"
+	//"fmt"
+	//"strings"
+	"bytes"
 )
 
 type SipDisplayName struct {
@@ -13,6 +14,14 @@ type SipDisplayName struct {
 
 func NewSipDisplayName() *SipDisplayName {
 	return &SipDisplayName{}
+}
+
+func (this *SipDisplayName) Encode(buf *bytes.Buffer) {
+	if this.isQuotedString {
+		this.quotedstring.Encode(buf)
+	} else {
+		this.name.Encode(buf)
+	}
 }
 
 func (this *SipDisplayName) String() string {
@@ -73,6 +82,11 @@ type SipNameAddr struct {
 
 func NewSipNameAddr() *SipNameAddr {
 	return &SipNameAddr{}
+}
+
+func (this *SipNameAddr) Encode(buf *bytes.Buffer) {
+	this.displayname.Encode(buf)
+	this.addrsepc.Encode(buf)
 }
 
 func (this *SipNameAddr) String() string {

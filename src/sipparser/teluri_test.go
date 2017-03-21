@@ -2,6 +2,7 @@ package sipparser
 
 import (
 	//"fmt"
+	"bytes"
 	"testing"
 )
 
@@ -215,5 +216,49 @@ func TestTelUriEqual(t *testing.T) {
 			t.Errorf("TestTelUriEqual[%d] failed, should be not equal, uri1 = %s, uri2 = %s\n", i, v.uri1, v.uri2)
 			continue
 		}
+	}
+}
+
+func BenchmarkTelUriParse(b *testing.B) {
+	b.StopTimer()
+	v := []byte("tel:861234;x1=5;y;phone-context=abc.com;zz")
+
+	b.ReportAllocs()
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		uri := NewTelUri()
+		uri.Parse(v, 0)
+	}
+}
+
+func BenchmarkTelUriString(b *testing.B) {
+	b.StopTimer()
+	v := "tel:861234;x1=5;y;phone-context=abc.com;zz"
+	uri := NewTelUri()
+	uri.Parse([]byte(v), 0)
+	b.ReportAllocs()
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		uri.String()
+	}
+}
+
+func BenchmarkTelUriEncode(b *testing.B) {
+	b.StopTimer()
+	v := "tel:861234;x1=5;y;phone-context=abc.com;zz"
+	uri := NewTelUri()
+	uri.Parse([]byte(v), 0)
+	b.ReportAllocs()
+
+	buf := bytes.NewBuffer(make([]byte, 1024*1024))
+	//buf := &bytes.Buffer{}
+
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		buf.Reset()
+		uri.Encode(buf)
 	}
 }

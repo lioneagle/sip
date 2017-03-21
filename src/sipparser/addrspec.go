@@ -1,8 +1,9 @@
 package sipparser
 
 import (
-//"fmt"
-//"strings"
+	//"fmt"
+	//"strings"
+	"bytes"
 )
 
 type SipAddrSpec struct {
@@ -11,6 +12,10 @@ type SipAddrSpec struct {
 
 func NewSipAddrSpec() *SipAddrSpec {
 	return &SipAddrSpec{}
+}
+
+func (this *SipAddrSpec) Encode(buf *bytes.Buffer) {
+	this.uri.Encode(buf)
 }
 
 func (this *SipAddrSpec) String() string {

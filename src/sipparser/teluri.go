@@ -2,6 +2,7 @@ package sipparser
 
 import (
 	//"fmt"
+	"bytes"
 	"strings"
 )
 
@@ -52,6 +53,19 @@ func (this *TelUri) String() string {
 	}
 
 	return str
+}
+
+func (this *TelUri) Encode(buf *bytes.Buffer) {
+	buf.WriteString("tel:")
+	this.number.Encode(buf)
+
+	if !this.isGlobalNumber {
+		this.context.Encode(buf)
+	}
+
+	if !this.params.Empty() {
+		this.params.Encode(buf)
+	}
 }
 
 func (this *TelUri) Equal(uri URI) bool {
@@ -222,6 +236,11 @@ type TelUriContext struct {
 	desc         AbnfToken
 }
 
+func (this *TelUriContext) Encode(buf *bytes.Buffer) {
+	buf.WriteString(";phone-context=")
+	this.desc.Encode(buf)
+}
+
 func (this *TelUriContext) String() string {
 	str := ";phone-context="
 	str += this.desc.String()
@@ -263,11 +282,19 @@ func (this *TelUriParam) Parse(src []byte, pos int) (newPos int, err error) {
 	return newPos, nil
 }
 
+func (this *TelUriParam) Encode(buf *bytes.Buffer) {
+	buf.Write(Escape(this.name.value, IsTelPname))
+	if this.value.Exist() {
+		buf.WriteByte('=')
+		buf.Write(Escape(this.value.value, IsTelPvalue))
+	}
+}
+
 func (this *TelUriParam) String() string {
-	str := string(Escape([]byte(this.name.String()), IsTelPname))
+	str := string(Escape(this.name.value, IsTelPname))
 	if this.value.Exist() {
 		str += "="
-		str += string(Escape([]byte(this.value.String()), IsTelPvalue))
+		str += string(Escape(this.value.value, IsTelPvalue))
 	}
 	return str
 }
@@ -290,16 +317,22 @@ func (this *TelUriParams) GetParam(name string) (val *TelUriParam, ok bool) {
 	return val, ok
 }
 
+func (this *TelUriParams) Encode(buf *bytes.Buffer) {
+	for _, v := range this.orders {
+		buf.WriteByte(';')
+		this.maps[v].Encode(buf)
+	}
+}
+
 func (this *TelUriParams) String() string {
 	if len(this.maps) == 0 {
 		return ""
 	}
 
 	str := ""
-	for i, v := range this.orders {
+	for _, v := range this.orders {
 		str += ";"
 		str += this.maps[v].String()
-		i++
 	}
 	return str
 }

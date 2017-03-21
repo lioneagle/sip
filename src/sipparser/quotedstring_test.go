@@ -54,7 +54,6 @@ func TestSipQuotedStringParseNOK(t *testing.T) {
 		{"\r\n \"abc€", len("\r\n \"abc") + 1},
 	}
 
-	fmt.Print("here")
 	for i, v := range testdata {
 		quotedString := NewSipQuotedString()
 

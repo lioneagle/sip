@@ -32,6 +32,12 @@ func (this *AbnfToken) String() string {
 	return ""
 }
 
+func (this *AbnfToken) Encode(buf *bytes.Buffer) {
+	if this.exist {
+		buf.Write(this.value)
+	}
+}
+
 func (this *AbnfToken) Exist() bool  { return this.exist }
 func (this *AbnfToken) Size() int    { return len(this.value) }
 func (this *AbnfToken) Empty() bool  { return len(this.value) == 0 }
@@ -93,15 +99,15 @@ func (this *AbnfToken) ParseEscapable(src []byte, pos int, isInCharset func(ch b
 
 /*
 type SipList struct {
-	list.List
+    list.List
 }
 
 func (this *SipList) RemoveAll() {
-	var n *list.Element
-	for e := this.Front(); e != nil; e = n {
-		n = e.Next()
-		this.Remove(e)
-	}
+    var n *list.Element
+    for e := this.Front(); e != nil; e = n {
+        n = e.Next()
+        this.Remove(e)
+    }
 }*/
 
 func ToUpperHex(ch byte) byte {
@@ -271,6 +277,35 @@ func ParseUriScheme(src []byte, pos int) (newPos int, scheme *AbnfToken, err err
 	scheme.SetExist()
 
 	return newPos, scheme, nil
+}
+
+func ParseSWSMark(src []byte, pos int, mark byte) (newPos int, err error) {
+	/* RFC3261 Section 25.1, page 220
+	 *
+	 * STAR    =  SWS "*" SWS ; asterisk
+	 * SLASH   =  SWS "/" SWS ; slash
+	 * EQUAL   =  SWS "=" SWS ; equal
+	 * LPAREN  =  SWS "(" SWS ; left parenthesis
+	 * RPAREN  =  SWS ")" SWS ; right parenthesis
+	 * COMMA   =  SWS "," SWS ; comma
+	 * SEMI    =  SWS ";" SWS ; semicolon
+	 * COLON   =  SWS ":" SWS ; colon
+	 */
+	newPos = pos
+	newPos, err = ParseSWS(src, newPos)
+	if err != nil {
+		return newPos, nil
+	}
+
+	if newPos >= len(src) {
+		return newPos, &AbnfError{"SWSMark parse: reach end before mark", src, newPos}
+	}
+
+	if src[newPos] != mark {
+		return newPos, &AbnfError{"SWSMark parse: not expected mark after SWS", src, newPos}
+	}
+
+	return ParseSWS(src, newPos)
 }
 
 func ParseSWS(src []byte, pos int) (newPos int, err error) {

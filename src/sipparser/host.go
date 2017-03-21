@@ -23,6 +23,20 @@ func (this *SipHost) Init() {
 	this.id = HOST_TYPE_UNKNOWN
 }
 
+func (this *SipHost) Encode(buf *bytes.Buffer) {
+	if this.id == HOST_TYPE_UNKNOWN {
+		buf.WriteString("unknown host")
+	} else if this.IsIpv4() {
+		buf.WriteString(this.GetIpString())
+	} else if this.IsIpv6() {
+		buf.WriteByte('[')
+		buf.WriteString(this.GetIpString())
+		buf.WriteByte(']')
+	} else {
+		buf.Write(this.data)
+	}
+}
+
 func (this *SipHost) String() string {
 	if this.id == HOST_TYPE_UNKNOWN {
 		return "unknown host"
@@ -184,6 +198,14 @@ func (this *SipHostPort) GetPort() uint16 { return this.port }
 func (this *SipHostPort) SetPort(port uint16) {
 	this.hasPort = true
 	this.port = port
+}
+
+func (this *SipHostPort) Encode(buf *bytes.Buffer) {
+	this.SipHost.Encode(buf)
+	if this.hasPort {
+		buf.WriteByte(':')
+		buf.WriteString(strconv.FormatUint(uint64(this.port), 10))
+	}
 }
 
 func (this *SipHostPort) String() string {

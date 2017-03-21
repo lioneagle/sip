@@ -1,6 +1,7 @@
 package sipparser
 
 import (
+	"bytes"
 	"fmt"
 )
 
@@ -10,6 +11,12 @@ type SipQuotedString struct {
 
 func NewSipQuotedString() *SipQuotedString {
 	return &SipQuotedString{}
+}
+
+func (this *SipQuotedString) Encode(buf *bytes.Buffer) {
+	buf.WriteByte('"')
+	buf.Write(this.value)
+	buf.WriteByte('"')
 }
 
 func (this *SipQuotedString) String() string        { return fmt.Sprintf("\"%s\"", string(this.value)) }

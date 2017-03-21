@@ -1,7 +1,8 @@
 package sipparser
 
 import (
-	"fmt"
+	"bytes"
+	//"fmt"
 	"testing"
 )
 
@@ -282,18 +283,46 @@ func TestSipUriEqual(t *testing.T) {
 	}
 }
 
-func BenchmarkSipUri(b *testing.B) {
+func BenchmarkSipUriParse(b *testing.B) {
+	b.StopTimer()
+	v := []byte("sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com")
 
-	for i := 0; i < 10000; i++ {
-		fmt.Sprintf("hello")
+	b.ReportAllocs()
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		uri := NewSipUri()
+		uri.Parse(v, 0)
 	}
-
 }
 
-func BenchmarkSipUri2(b *testing.B) {
+func BenchmarkSipUriString(b *testing.B) {
+	b.StopTimer()
+	v := "sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com"
+	uri := NewSipUri()
+	uri.Parse([]byte(v), 0)
+	b.ReportAllocs()
+	b.StartTimer()
 
-	for i := 0; i < 1000000; i++ {
-		fmt.Sprintf("hello")
+	for i := 0; i < b.N; i++ {
+		uri.String()
 	}
+}
 
+func BenchmarkSipUriEncode(b *testing.B) {
+	b.StopTimer()
+	v := "sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com"
+	uri := NewSipUri()
+	uri.Parse([]byte(v), 0)
+	b.ReportAllocs()
+
+	buf := bytes.NewBuffer(make([]byte, 1024*1024))
+	//buf := &bytes.Buffer{}
+
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		buf.Reset()
+		uri.Encode(buf)
+	}
 }

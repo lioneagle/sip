@@ -2,6 +2,7 @@ package sipparser
 
 import (
 	//"fmt"
+	"bytes"
 	"strings"
 )
 
@@ -83,13 +84,39 @@ func (this *SipUri) ParseAfterScheme(src []byte, pos int) (newPos int, err error
 
 }
 
-func (this *SipUri) String() string {
-	str := ""
-	if this.isSecure {
-		str = "sips:"
-	} else {
-		str = "sip:"
+func (this *SipUri) Encode(buf *bytes.Buffer) {
+	buf.WriteString(this.Scheme())
+	buf.WriteByte(':')
+
+	if this.user.Exist() {
+		buf.Write(Escape(this.user.value, IsSipUser))
+		if this.password.Exist() {
+			buf.WriteByte(':')
+			buf.Write(Escape(this.password.value, IsSipPassword))
+		}
+		buf.WriteByte('@')
 	}
+
+	this.hostport.Encode(buf)
+
+	if !this.params.Empty() {
+		buf.WriteByte(';')
+		this.params.Encode(buf)
+	}
+
+	if !this.headers.Empty() {
+		buf.WriteByte('?')
+		this.headers.Encode(buf)
+	}
+}
+
+func (this *SipUri) String() string {
+	/*var buf bytes.Buffer
+	this.Encode(&buf)
+	return buf.String()*/
+	//*
+	str := this.Scheme()
+	str += ":"
 
 	if this.user.Exist() {
 		str += string(Escape([]byte(this.user.String()), IsSipUser))
@@ -112,7 +139,7 @@ func (this *SipUri) String() string {
 		str += this.headers.String()
 	}
 
-	return str
+	return str //*/
 }
 
 func (this *SipUri) Equal(uri URI) bool {
@@ -307,6 +334,14 @@ func (this *SipUriParam) Parse(src []byte, pos int) (newPos int, err error) {
 	return newPos, nil
 }
 
+func (this *SipUriParam) Encode(buf *bytes.Buffer) {
+	buf.Write(Escape(this.name.value, IsSipPname))
+	if this.value.Exist() {
+		buf.WriteByte('=')
+		buf.Write(Escape(this.value.value, IsSipPvalue))
+	}
+}
+
 func (this *SipUriParam) String() string {
 	str := string(Escape([]byte(this.name.String()), IsSipPname))
 	if this.value.Exist() {
@@ -330,6 +365,15 @@ func (this *SipUriParams) Init() {
 	this.maps = make(map[string]*SipUriParam)
 }
 
+func (this *SipUriParams) Encode(buf *bytes.Buffer) {
+	for i, v := range this.orders {
+		if i > 0 {
+			buf.WriteByte(';')
+		}
+		this.maps[v].Encode(buf)
+	}
+}
+
 func (this *SipUriParams) String() string {
 	if len(this.maps) == 0 {
 		return ""
@@ -341,7 +385,6 @@ func (this *SipUriParams) String() string {
 			str += ";"
 		}
 		str += this.maps[v].String()
-		i++
 	}
 	return str
 }
@@ -416,6 +459,14 @@ func (this *SipUriHeader) Parse(src []byte, pos int) (newPos int, err error) {
 	return newPos, nil
 }
 
+func (this *SipUriHeader) Encode(buf *bytes.Buffer) {
+	buf.Write(Escape(this.name.value, IsSipHname))
+	buf.WriteByte('=')
+	if this.value.Exist() {
+		buf.Write(Escape(this.value.value, IsSipHvalue))
+	}
+}
+
 func (this *SipUriHeader) String() string {
 	str := string(Escape([]byte(this.name.String()), IsSipHname))
 	str += "="
@@ -475,6 +526,15 @@ func (this *SipUriHeaders) Parse(src []byte, pos int) (newPos int, err error) {
 	return newPos, err
 }
 
+func (this *SipUriHeaders) Encode(buf *bytes.Buffer) {
+	for i, v := range this.orders {
+		if i > 0 {
+			buf.WriteByte('&')
+		}
+		this.maps[v].Encode(buf)
+	}
+}
+
 func (this *SipUriHeaders) String() string {
 	if len(this.maps) == 0 {
 		return ""
@@ -486,7 +546,6 @@ func (this *SipUriHeaders) String() string {
 			str += "&"
 		}
 		str += this.maps[v].String()
-		i++
 	}
 	return str
 }
