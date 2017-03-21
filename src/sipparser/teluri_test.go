@@ -224,6 +224,7 @@ func BenchmarkTelUriParse(b *testing.B) {
 	v := []byte("tel:861234;x1=5;y;phone-context=abc.com;zz")
 
 	b.ReportAllocs()
+	b.SetBytes(2)
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
@@ -238,6 +239,7 @@ func BenchmarkTelUriString(b *testing.B) {
 	uri := NewTelUri()
 	uri.Parse([]byte(v), 0)
 	b.ReportAllocs()
+	b.SetBytes(2)
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
@@ -251,6 +253,7 @@ func BenchmarkTelUriEncode(b *testing.B) {
 	uri := NewTelUri()
 	uri.Parse([]byte(v), 0)
 	b.ReportAllocs()
+	b.SetBytes(2)
 
 	buf := bytes.NewBuffer(make([]byte, 1024*1024))
 	//buf := &bytes.Buffer{}

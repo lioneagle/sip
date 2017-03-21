@@ -288,6 +288,7 @@ func BenchmarkSipUriParse(b *testing.B) {
 	v := []byte("sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com")
 
 	b.ReportAllocs()
+	b.SetBytes(2)
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
@@ -302,6 +303,7 @@ func BenchmarkSipUriString(b *testing.B) {
 	uri := NewSipUri()
 	uri.Parse([]byte(v), 0)
 	b.ReportAllocs()
+	b.SetBytes(2)
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
@@ -314,6 +316,7 @@ func BenchmarkSipUriEncode(b *testing.B) {
 	v := "sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com"
 	uri := NewSipUri()
 	uri.Parse([]byte(v), 0)
+	b.SetBytes(2)
 	b.ReportAllocs()
 
 	buf := bytes.NewBuffer(make([]byte, 1024*1024))
