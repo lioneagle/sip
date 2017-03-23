@@ -1,11 +1,12 @@
 package sipparser2
 
 import (
-	//"fmt"
-	"bytes"
-	"testing"
+//"fmt"
+//"bytes"
+//"testing"
 )
 
+/*
 func TestTelUriParseOK(t *testing.T) {
 	testdata := []struct {
 		src                      string
@@ -265,3 +266,4 @@ func BenchmarkTelUriEncode(b *testing.B) {
 		uri.Encode(buf)
 	}
 }
+*/

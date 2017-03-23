@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	"testing"
 )
@@ -285,8 +285,8 @@ func TestSipUriEqual(t *testing.T) {
 
 func BenchmarkSipUriParse(b *testing.B) {
 	b.StopTimer()
-	v := []byte("sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com")
-
+	//v := []byte("sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com")
+	v := []byte("sip:abc@biloxi.com;transport=tcp")
 	b.ReportAllocs()
 	b.SetBytes(2)
 	b.StartTimer()
@@ -297,6 +297,7 @@ func BenchmarkSipUriParse(b *testing.B) {
 	}
 }
 
+/*
 func BenchmarkSipUriString(b *testing.B) {
 	b.StopTimer()
 	v := "sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com"
@@ -328,4 +329,4 @@ func BenchmarkSipUriEncode(b *testing.B) {
 		buf.Reset()
 		uri.Encode(buf)
 	}
-}
+}*/

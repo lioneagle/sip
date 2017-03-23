@@ -1,9 +1,10 @@
 package sipparser2
 
 import (
-	"testing"
+//"testing"
 )
 
+/*
 func TestSipNameAddrParseOK(t *testing.T) {
 
 	testdata := []struct {
@@ -24,3 +25,4 @@ func TestSipNameAddrParseOK(t *testing.T) {
 		}
 	}
 }
+//*/

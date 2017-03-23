@@ -201,8 +201,7 @@ func parseToken(src []byte, pos int, isInCharset func(ch byte) bool) (tokenBegin
 			break
 		}
 	}
-	tokenEnd = newPos
-	return tokenBegin, tokenEnd, newPos, nil
+	return tokenBegin, newPos, newPos, nil
 }
 
 func parseTokenEscapable(src []byte, pos int, isInCharset func(ch byte) bool) (tokenBegin, tokenEnd, newPos int, err error) {
@@ -220,8 +219,7 @@ func parseTokenEscapable(src []byte, pos int, isInCharset func(ch byte) bool) (t
 			break
 		}
 	}
-	tokenEnd = newPos
-	return tokenBegin, tokenEnd, newPos, nil
+	return tokenBegin, newPos, newPos, nil
 }
 
 func ParseUInt(src []byte, pos int) (digit, newPos int, ok bool) {

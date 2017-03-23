@@ -1,8 +1,8 @@
 package sipparser2
 
 import (
-	//"container/list"
 	"bytes"
+	//"container/list"
 	"fmt"
 	"reflect"
 	"strings"
@@ -108,22 +108,10 @@ func (this *AbnfToken) ParseEscapable(src []byte, pos int, isInCharset func(ch b
 		return newPos, err
 	}
 
-	this.value = Unescape(src[begin:end])
+	//this.value = Unescape(src[begin:end])
+	this.value = src[begin:end]
 	return newPos, nil
 }
-
-/*
-type SipList struct {
-    list.List
-}
-
-func (this *SipList) RemoveAll() {
-    var n *list.Element
-    for e := this.Front(); e != nil; e = n {
-        n = e.Next()
-        this.Remove(e)
-    }
-}*/
 
 func ToUpperHex(ch byte) byte {
 	return "0123456789ABCDEF"[ch&0x0F]

@@ -2,7 +2,7 @@ package sipparser
 
 import (
 	//"fmt"
-	"bytes"
+	//"bytes"
 	"testing"
 )
 
@@ -219,6 +219,7 @@ func TestTelUriEqual(t *testing.T) {
 	}
 }
 
+/*
 func BenchmarkTelUriParse(b *testing.B) {
 	b.StopTimer()
 	v := []byte("tel:861234;x1=5;y;phone-context=abc.com;zz")
@@ -264,4 +265,4 @@ func BenchmarkTelUriEncode(b *testing.B) {
 		buf.Reset()
 		uri.Encode(buf)
 	}
-}
+}*/

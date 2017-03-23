@@ -3,6 +3,7 @@ package sipparser2
 import (
 	//"fmt"
 	"bytes"
+	//"container/list"
 	"strings"
 )
 
@@ -22,7 +23,8 @@ func (this *SipUri) IsSipsUri() bool { return this.isSecure }
 
 func NewSipUri() *SipUri {
 	uri := &SipUri{}
-	uri.params.Init()
+	uri.params.Init(g_allocator)
+	//uri.params.Init()
 	uri.headers.Init()
 	return uri
 
@@ -36,7 +38,6 @@ func (this *SipUri) Scheme() string {
 }
 
 func (this *SipUri) Parse(src []byte, pos int) (newPos int, err error) {
-
 	newPos, err = this.ParseScheme(src, pos)
 	if err != nil {
 		return newPos, err
@@ -52,6 +53,7 @@ func (this *SipUri) ParseAfterScheme(src []byte, pos int) (newPos int, err error
 	if err != nil {
 		return newPos, err
 	}
+	//return newPos, nil
 
 	newPos, err = this.hostport.Parse(src, newPos)
 	if err != nil {
@@ -191,14 +193,14 @@ func (this *SipUri) EqualParams(rhs *SipUri) bool {
 		return false
 	}
 
-	for _, v := range uri1.params.maps {
+	/*for _, v := range uri1.params.maps {
 		param, ok := uri2.params.GetParam(v.name.String())
 		if ok {
 			if !param.value.EqualNoCase(&v.value) {
 				return false
 			}
 		}
-	}
+	}*/
 	return true
 }
 
@@ -235,20 +237,34 @@ func (this *SipUri) equalSpecParams(rhs *SipUri) bool {
 }
 
 func (this *SipUri) ParseScheme(src []byte, pos int) (newPos int, err error) {
-	newPos, scheme, err := ParseUriScheme(src, pos)
-	if err != nil {
-		return newPos, err
-	}
-
-	if EqualNoCase(scheme.value, Str2bytes("sips")) {
-		this.SetSipsUri()
-	} else if !EqualNoCase(scheme.value, Str2bytes("sip")) {
-		return newPos, &AbnfError{"sip-uri parse: parse scheme failed: not sip-uri nor sips-uri", src, newPos}
-	} else {
+	if len(src) >= 4 && (src[0] == 's') && (src[1] == 'i') && (src[2] == 'p') && (src[3] == ':') {
 		this.SetSipUri()
+		return 4, nil
 	}
 
-	return newPos, nil
+	if len(src) >= 4 && (src[0] == 's') && (src[1] == 'i') && (src[2] == 'p') && (src[3] == 's') && (src[4] == ':') {
+		this.SetSipsUri()
+		return 5, nil
+	}
+
+	return 0, &AbnfError{"sip-uri parse: parse scheme failed: not sip-uri nor sips-uri", src, 0}
+
+	/*
+		newPos, scheme, err := ParseUriScheme(src, pos)
+		if err != nil {
+			return newPos, err
+		}
+
+		if EqualNoCase(scheme.value, Str2bytes("sips")) {
+			this.SetSipsUri()
+		} else if !EqualNoCase(scheme.value, Str2bytes("sip")) {
+			return newPos, &AbnfError{"sip-uri parse: parse scheme failed: not sip-uri nor sips-uri", src, newPos}
+		} else {
+			this.SetSipUri()
+		}
+
+		return newPos, nil
+	*/
 }
 
 func (this *SipUri) ParseUserinfo(src []byte, pos int) (newPos int, err error) {
@@ -293,11 +309,11 @@ func (this *SipUri) ParseUserinfo(src []byte, pos int) (newPos int, err error) {
 }
 
 func findUserinfo(src []byte, pos int) bool {
-	for newPos := pos; newPos < len(src); newPos++ {
-		if src[newPos] == '@' {
+	for _, v := range src[pos:] {
+		if v == '@' {
 			return true
-		} else if src[newPos] == '>' || IsLwsChar(src[newPos]) {
-			return false
+		} else if v == '>' || IsLwsChar(v) {
+			break
 		}
 	}
 	return false
@@ -352,47 +368,52 @@ func (this *SipUriParam) String() string {
 }
 
 type SipUriParams struct {
-	orders []string
-	maps   map[string]*SipUriParam
+	/*
+		orders []string
+		maps   map[string]*SipUriParam*/
+	//list.List
+	SipList
 }
 
 func NewSipUriParams() *SipUriParams {
-	return &SipUriParams{orders: make([]string, 0), maps: make(map[string]*SipUriParam)}
-}
-
-func (this *SipUriParams) Init() {
-	this.orders = make([]string, 0)
-	this.maps = make(map[string]*SipUriParam)
+	return &SipUriParams{}
 }
 
 func (this *SipUriParams) Encode(buf *bytes.Buffer) {
-	for i, v := range this.orders {
+	/*for i, v := range this.orders {
 		if i > 0 {
 			buf.WriteByte(';')
 		}
 		this.maps[v].Encode(buf)
-	}
+	}*/
 }
 
 func (this *SipUriParams) String() string {
-	if len(this.maps) == 0 {
+	str := ""
+	/*if len(this.maps) == 0 {
 		return ""
 	}
 
-	str := ""
+
 	for i, v := range this.orders {
 		if i > 0 {
 			str += ";"
 		}
 		str += this.maps[v].String()
-	}
+	}*/
 	return str
 }
 
-func (this *SipUriParams) Size() int   { return len(this.maps) }
-func (this *SipUriParams) Empty() bool { return len(this.maps) == 0 }
+//func (this *SipUriParams) Size() int   { return len(this.maps) }
+func (this *SipUriParams) Size() int { return this.Len() }
+
+//func (this *SipUriParams) Empty() bool { return len(this.maps) == 0 }
+func (this *SipUriParams) Empty() bool { return this.Len() == 0 }
 func (this *SipUriParams) GetParam(name string) (val *SipUriParam, ok bool) {
-	val, ok = this.maps[strings.ToLower(name)]
+	//val, ok = this.maps[strings.ToLower(name)]
+	for e := this.Front(); e != nil; e = e.Next() {
+
+	}
 	return val, ok
 }
 
@@ -403,14 +424,17 @@ func (this *SipUriParams) Parse(src []byte, pos int) (newPos int, err error) {
 	}
 
 	for newPos < len(src) {
-		param := &SipUriParam{}
+		param := SipUriParam{}
 		newPos, err = param.Parse(src, newPos)
 		if err != nil {
 			return newPos, err
 		}
-		name := param.name.ToLower()
-		this.orders = append(this.orders, name)
-		this.maps[name] = param
+		this.PushBack(param)
+		/*
+			name := param.name.ToLower()
+			this.orders = append(this.orders, name)
+			this.maps[name] = param
+		*/
 
 		if newPos >= len(src) {
 			return newPos, nil
