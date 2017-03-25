@@ -15,10 +15,12 @@ func TestSipNameAddrParseOK(t *testing.T) {
 		{"abc def ee<tel:861234;phone-context=+123>"},
 	}
 
+	context := NewParseContext()
+
 	for i, v := range testdata {
 		nameaddr := NewSipNameAddr()
 
-		_, err := nameaddr.Parse([]byte(v.src), 0)
+		_, err := nameaddr.Parse(context, []byte(v.src), 0)
 		if err != nil {
 			t.Errorf("TestSipNameAddrParseOK[%d] failed, %s\n", i, err.Error())
 			continue

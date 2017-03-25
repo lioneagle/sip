@@ -18,10 +18,12 @@ func TestSipAddrSpecParseOK(t *testing.T) {
 		{"http://861234/phone-context=+123", false, false, false},
 	}
 
+	context := NewParseContext()
+
 	for i, v := range testdata {
 		addrsepc := NewSipAddrSpec()
 
-		_, err := addrsepc.Parse([]byte(v.src), 0)
+		_, err := addrsepc.Parse(context, []byte(v.src), 0)
 		if err != nil && v.parseOk {
 			t.Errorf("TestSipAddrSpecParseOK[%d] failed, %s\n", i, err.Error())
 			continue

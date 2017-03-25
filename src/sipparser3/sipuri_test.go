@@ -29,10 +29,12 @@ func TestSipUriParseOK(t *testing.T) {
 		{"sips:%23123%31:@10.43.12.14", "#1231", "", "10.43.12.14", true},
 	}
 
+	context := NewParseContext()
+
 	for i, v := range testdata {
 		uri := NewSipUri()
 
-		newPos, err := uri.Parse([]byte(v.src), 0)
+		newPos, err := uri.Parse(context, []byte(v.src), 0)
 		if err != nil {
 			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, %s\n", i, err.Error())
 			continue
@@ -75,7 +77,9 @@ func TestSipUriParamsParseOK(t *testing.T) {
 	uri := NewSipUri()
 	src := "sip:123@abc.com;ttl=10;user%32=phone%31;a;b;c;d;e?xx=yy&x1=aa"
 
-	_, err := uri.Parse([]byte(src), 0)
+	context := NewParseContext()
+
+	_, err := uri.Parse(context, []byte(src), 0)
 	if err != nil {
 		t.Errorf("TestSipUriParamsParseOK failed, err = %s\n", err.Error())
 		return
@@ -125,7 +129,9 @@ func TestSipUriHeadersParseOK(t *testing.T) {
 	uri := NewSipUri()
 	src := "sip:123@abc.com;ttl=10;user=phone;a;b;c;d;e?xx=yy&x1=aa"
 
-	_, err := uri.Parse([]byte(src), 0)
+	context := NewParseContext()
+
+	_, err := uri.Parse(context, []byte(src), 0)
 	if err != nil {
 		t.Errorf("TestSipUriHeadersParseOK failed, err = %s\n", err.Error())
 		return
@@ -181,10 +187,12 @@ func TestSipUriUserinfoParseNOK(t *testing.T) {
 		{"sip:123:2@abc.com;a=b?", len("sip:123:2@abc.com;a=b?")},
 	}
 
+	context := NewParseContext()
+
 	for i, v := range testdata {
 		uri := NewSipUri()
 
-		newPos, err := uri.Parse([]byte(v.src), 0)
+		newPos, err := uri.Parse(context, []byte(v.src), 0)
 		if err == nil {
 			t.Errorf("TestSipUriUserinfoParseNOK[%d] failed", i)
 			continue
@@ -210,10 +218,12 @@ func TestSipUriEncode(t *testing.T) {
 		{"sip:%23123%31:@10.43.12.14", "sip:%231231:@10.43.12.14"},
 	}
 
+	context := NewParseContext()
+
 	for i, v := range testdata {
 		uri := NewSipUri()
 
-		_, err := uri.Parse([]byte(v.src), 0)
+		_, err := uri.Parse(context, []byte(v.src), 0)
 		if err != nil {
 			t.Errorf("TestSipUriEncode[%d] failed, parse failed, err = %s\n", i, err.Error())
 			continue
@@ -256,17 +266,19 @@ func TestSipUriEqual(t *testing.T) {
 		{"sip:bob@phone21.boxesbybob.com", "sip:bob@192.0.2.4", false},                        //even though that's what phone21.boxesbybob.com resolves to
 	}
 
+	context := NewParseContext()
+
 	for i, v := range testdata {
 		uri1 := NewSipUri()
 		uri2 := NewSipUri()
 
-		_, err := uri1.Parse([]byte(v.uri1), 0)
+		_, err := uri1.Parse(context, []byte(v.uri1), 0)
 		if err != nil {
 			t.Errorf("TestSipUriEqual[%d] failed, uri1 parse failed, err = %s\n", i, err.Error())
 			continue
 		}
 
-		_, err = uri2.Parse([]byte(v.uri2), 0)
+		_, err = uri2.Parse(context, []byte(v.uri2), 0)
 		if err != nil {
 			t.Errorf("TestSipUriEqual[%d] failed, uri2 parse failed, err = %s\n", i, err.Error())
 			continue
@@ -278,7 +290,7 @@ func TestSipUriEqual(t *testing.T) {
 		}
 
 		if !v.equal && uri1.Equal(uri2) {
-			t.Errorf("TestSipUriEqual[%d] failed, should be not equal, uri1 = %s, uri2 = %s\n", i, v.uri1, v.uri2)
+			t.Errorf("TestSipUriEqual[%d] failed, should not be equal, uri1 = %s, uri2 = %s\n", i, v.uri1, v.uri2)
 			continue
 		}
 	}
@@ -312,6 +324,7 @@ func BenchmarkSipUriParse(b *testing.B) {
 	//v := []byte("sip:biloxi.com")
 	//v := []byte("sip:abc@biloxi.com;transport=tcp")
 	v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
+        context := NewParseContext()
 	uri := NewSipUri()
 
 	b.ReportAllocs()
@@ -319,7 +332,7 @@ func BenchmarkSipUriParse(b *testing.B) {
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
-		uri.Parse(v, 0)
+		uri.Parse(context, v, 0)
 		g_allocator.FreeAll()
 	}
 	//fmt.Printf("uri = %s\n", uri.String())
@@ -331,7 +344,8 @@ func BenchmarkSipUriString(b *testing.B) {
 	b.StopTimer()
 	v := "sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com"
 	uri := NewSipUri()
-	uri.Parse([]byte(v), 0)
+	context := NewParseContext()
+	uri.Parse(context,[]byte(v), 0)
 	b.ReportAllocs()
 	b.SetBytes(2)
 	b.StartTimer()
@@ -347,8 +361,9 @@ func BenchmarkSipUriEncode(b *testing.B) {
 	b.StopTimer()
 	//v := []byte("sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com")
 	v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
+	context := NewParseContext()
 	uri := NewSipUri()
-	uri.Parse(v, 0)
+	uri.Parse(context, v, 0)
 	b.SetBytes(2)
 	b.ReportAllocs()
 

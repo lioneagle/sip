@@ -11,8 +11,8 @@ type SipUriParam struct {
 	value AbnfToken
 }
 
-func (this *SipUriParam) Parse(src []byte, pos int) (newPos int, err error) {
-	newPos, err = this.name.ParseEscapable(src, pos, IsSipPname)
+func (this *SipUriParam) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	newPos, err = this.name.ParseEscapable(context, src, pos, IsSipPname)
 	if err != nil {
 		return newPos, err
 	}
@@ -24,7 +24,7 @@ func (this *SipUriParam) Parse(src []byte, pos int) (newPos int, err error) {
 	this.name.SetExist()
 
 	if src[newPos] == '=' {
-		newPos, err = this.value.ParseEscapable(src, newPos+1, IsSipPvalue)
+		newPos, err = this.value.ParseEscapable(context, src, newPos+1, IsSipPvalue)
 		if err != nil {
 			return newPos, err
 		}
@@ -99,7 +99,7 @@ func (this *SipUriParams) GetParam(name string) (val *SipUriParam, ok bool) {
 	return val, ok
 }
 
-func (this *SipUriParams) Parse(src []byte, pos int) (newPos int, err error) {
+func (this *SipUriParams) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
 	if newPos >= len(src) {
 		return newPos, &AbnfError{"sip-uri parse: parse sip-uri param failed: reach end after ';'", src, newPos}
@@ -107,7 +107,7 @@ func (this *SipUriParams) Parse(src []byte, pos int) (newPos int, err error) {
 
 	for newPos < len(src) {
 		param := &SipUriParam{}
-		newPos, err = param.Parse(src, newPos)
+		newPos, err = param.Parse(context, src, newPos)
 		if err != nil {
 			return newPos, err
 		}

@@ -31,7 +31,7 @@ func (this *SipDisplayName) String() string {
 	return this.name.String()
 }
 
-func (this *SipDisplayName) Parse(src []byte, pos int) (newPos int, err error) {
+func (this *SipDisplayName) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	/* RFC3261 Section 25.1, page 222
 	 *
 	 * display-name   =  *(token LWS)/ quoted-string
@@ -44,7 +44,7 @@ func (this *SipDisplayName) Parse(src []byte, pos int) (newPos int, err error) {
 	}
 
 	if src[newPos] == '"' {
-		newPos, err = this.quotedstring.Parse(src, newPos)
+		newPos, err = this.quotedstring.Parse(context, src, newPos)
 		if err != nil {
 			return newPos, err
 		}
@@ -58,7 +58,7 @@ func (this *SipDisplayName) Parse(src []byte, pos int) (newPos int, err error) {
 			}
 
 			token := AbnfToken{}
-			newPos, err = token.Parse(src, newPos, IsSipToken)
+			newPos, err = token.Parse(context, src, newPos, IsSipToken)
 			if err != nil {
 				break
 			}
@@ -95,7 +95,7 @@ func (this *SipNameAddr) String() string {
 	return str
 }
 
-func (this *SipNameAddr) Parse(src []byte, pos int) (newPos int, err error) {
+func (this *SipNameAddr) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	/* RFC3261 Section 25.1, page 222
 	 *
 	 * name-addr =  [ display-name ] LAQUOT addr-spec RAQUOT
@@ -103,7 +103,7 @@ func (this *SipNameAddr) Parse(src []byte, pos int) (newPos int, err error) {
 	 * LAQUOT  =  SWS "<"; left angle quote
 	 */
 	newPos = pos
-	newPos, err = this.displayname.Parse(src, newPos)
+	newPos, err = this.displayname.Parse(context, src, newPos)
 	if err != nil {
 		return newPos, err
 	}
@@ -113,7 +113,7 @@ func (this *SipNameAddr) Parse(src []byte, pos int) (newPos int, err error) {
 		return newPos, err
 	}
 
-	newPos, err = this.addrsepc.Parse(src, newPos)
+	newPos, err = this.addrsepc.Parse(context, src, newPos)
 	if err != nil {
 		return newPos, err
 	}

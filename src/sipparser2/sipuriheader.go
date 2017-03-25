@@ -11,8 +11,8 @@ type SipUriHeader struct {
 	value AbnfToken
 }
 
-func (this *SipUriHeader) Parse(src []byte, pos int) (newPos int, err error) {
-	newPos, err = this.name.ParseEscapable(src, pos, IsSipHname)
+func (this *SipUriHeader) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	newPos, err = this.name.ParseEscapable(context, src, pos, IsSipHname)
 	if err != nil {
 		return newPos, err
 	}
@@ -30,7 +30,7 @@ func (this *SipUriHeader) Parse(src []byte, pos int) (newPos int, err error) {
 		return newPos, &AbnfError{"sip-uri parse: parse header failed: no = after hname", src, newPos}
 	}
 
-	newPos, err = this.value.ParseEscapable(src, newPos+1, IsSipHvalue)
+	newPos, err = this.value.ParseEscapable(context, src, newPos+1, IsSipHvalue)
 	if err != nil {
 		return newPos, err
 	}
@@ -79,7 +79,7 @@ func (this *SipUriHeaders) GetHeader(name string) (val *SipUriHeader, ok bool) {
 	return nil, false
 }
 
-func (this *SipUriHeaders) Parse(src []byte, pos int) (newPos int, err error) {
+func (this *SipUriHeaders) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
 	if newPos >= len(src) {
 		return newPos, &AbnfError{"sip-uri parse: parse uri-header failed: reach end after ';'", src, newPos}
@@ -87,7 +87,7 @@ func (this *SipUriHeaders) Parse(src []byte, pos int) (newPos int, err error) {
 
 	for newPos < len(src) {
 		header := &SipUriHeader{}
-		newPos, err = header.Parse(src, newPos)
+		newPos, err = header.Parse(context, src, newPos)
 		if err != nil {
 			return newPos, err
 		}

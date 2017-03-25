@@ -18,10 +18,12 @@ func TestSipQuotedStringParseOK(t *testing.T) {
 		{" \t\r\n\t\"abc\\0b\"", true, "\"abc\\0b\""},
 	}
 
+	context := NewParseContext()
+
 	for i, v := range testdata {
 		quotedString := NewSipQuotedString()
 
-		_, err := quotedString.Parse([]byte(v.src), 0)
+		_, err := quotedString.Parse(context, []byte(v.src), 0)
 		if err != nil && v.parseOk {
 			t.Errorf("TestSipQuotedStringParseOK[%d] failed, %s\n", i, err.Error())
 			continue
@@ -54,10 +56,12 @@ func TestSipQuotedStringParseNOK(t *testing.T) {
 		{"\r\n \"abc€", len("\r\n \"abc") + 1},
 	}
 
+	context := NewParseContext()
+
 	for i, v := range testdata {
 		quotedString := NewSipQuotedString()
 
-		newPos, err := quotedString.Parse([]byte(v.src), 0)
+		newPos, err := quotedString.Parse(context, []byte(v.src), 0)
 		if err == nil {
 			t.Errorf("TestSipQuotedStringParseNOK[%d] failed", i)
 			continue

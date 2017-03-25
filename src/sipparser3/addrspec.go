@@ -26,8 +26,8 @@ func (this *SipAddrSpec) Equal(rhs *SipAddrSpec) bool {
 	return this.uri.Equal(rhs.uri)
 }
 
-func (this *SipAddrSpec) Parse(src []byte, pos int) (newPos int, err error) {
-	newPos, scheme, err := ParseUriScheme(src, pos)
+func (this *SipAddrSpec) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	newPos, scheme, err := ParseUriScheme(context, src, pos)
 	if err != nil {
 		return newPos, err
 	}
@@ -35,13 +35,13 @@ func (this *SipAddrSpec) Parse(src []byte, pos int) (newPos int, err error) {
 	if scheme.EqualStringNoCase("sip") || scheme.EqualStringNoCase("sips") {
 		sipuri := NewSipUri()
 		this.uri = sipuri
-		return sipuri.Parse(src, pos)
+		return sipuri.ParseAfterScheme(context, src, newPos)
 	}
 
 	if scheme.EqualStringNoCase("tel") {
 		teluri := NewTelUri()
 		this.uri = teluri
-		return teluri.Parse(src, pos)
+		return teluri.ParseAfterScheme(context, src, newPos)
 	}
 
 	return newPos, &AbnfError{"addr-spec parse: unsupported uri", src, newPos}

@@ -22,7 +22,7 @@ func (this *SipQuotedString) Encode(buf *bytes.Buffer) {
 func (this *SipQuotedString) String() string        { return fmt.Sprintf("\"%s\"", string(this.value)) }
 func (this *SipQuotedString) SetValue(value []byte) { this.value = value }
 
-func (this *SipQuotedString) Parse(src []byte, pos int) (newPos int, err error) {
+func (this *SipQuotedString) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	/* RFC3261 Section 25.1, page 222
 	 *
 	 * quoted-string  =  SWS DQUOTE *(qdtext / quoted-pair ) DQUOTE

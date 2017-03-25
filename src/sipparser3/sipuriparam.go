@@ -1,4 +1,4 @@
-package sipparser2
+package sipparser3
 
 import (
 	"bytes"
@@ -66,10 +66,10 @@ func (this *SipUriParams) Size() int   { return this.Len() }
 func (this *SipUriParams) Empty() bool { return this.Len() == 0 }
 func (this *SipUriParams) GetParam(name string) (val *SipUriParam, ok bool) {
 	for e := this.Front(); e != nil; e = e.Next() {
-		param := e.Value.(*SipUriParam)
+		param := e.Value
 
 		if param.name.EqualStringNoCase(name) {
-			return param, true
+			return &param, true
 		}
 	}
 	return nil, false
@@ -82,7 +82,7 @@ func (this *SipUriParams) Parse(context *ParseContext, src []byte, pos int) (new
 	}
 
 	for newPos < len(src) {
-		param := &SipUriParam{}
+		param := SipUriParam{}
 		newPos, err = param.Parse(context, src, newPos)
 		if err != nil {
 			return newPos, err
@@ -115,7 +115,7 @@ func (this *SipUriParams) EqualRFC3261(rhs *SipUriParams) bool {
 	}
 
 	for e := params1.Front(); e != nil; e = e.Next() {
-		param1 := e.Value.(*SipUriParam)
+		param1 := e.Value
 		param2, ok := params2.GetParam(param1.name.String())
 		if ok {
 			if !param2.value.EqualNoCase(&param1.value) {
@@ -149,7 +149,7 @@ func (this *SipUriParams) Encode(buf *bytes.Buffer) {
 			buf.WriteByte(';')
 		}
 
-		param := e.Value.(*SipUriParam)
+		param := e.Value
 		param.Encode(buf)
 	}
 }
@@ -161,7 +161,7 @@ func (this *SipUriParams) String() string {
 			str += ";"
 		}
 
-		param := e.Value.(*SipUriParam)
+		param := e.Value
 		str += param.String()
 	}
 

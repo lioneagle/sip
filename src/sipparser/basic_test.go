@@ -95,8 +95,10 @@ func TestUnescape(t *testing.T) {
 		{"ac%", "ac%"},
 	}
 
+	context := NewParseContext()
+
 	for i, v := range wanted {
-		u := Unescape([]byte(v.escaped))
+		u := Unescape(context, []byte(v.escaped))
 		if bytes.Compare(u, []byte(v.unescaped)) != 0 {
 			t.Errorf("TestUnescape[%d] failed, ret = %s, wanted = %s\n", i, string(u), v.unescaped)
 		}
@@ -148,10 +150,11 @@ func TestEscape(t *testing.T) {
 	}
 
 	chars := makeFullCharset()
+	context := NewParseContext()
 
 	for i, v := range wanted {
 		u := Escape(chars, v.isInCharset)
-		if bytes.Compare(Unescape(u), chars) != 0 {
+		if bytes.Compare(Unescape(context, u), chars) != 0 {
 			t.Errorf("TestEscape[%d]: %s failed\n", i, v.name)
 		}
 	}
@@ -181,8 +184,10 @@ func TestParseToken(t *testing.T) {
 		{"IsDigit", IsDigit, "ad6789abc", true, 0, 0, 0},
 	}
 
+	context := NewParseContext()
+
 	for i, v := range wanted {
-		begin, end, newPos, err := parseToken([]byte(v.src), 0, v.isInCharset)
+		begin, end, newPos, err := parseToken(context, []byte(v.src), 0, v.isInCharset)
 		if err != nil {
 			if !v.err {
 				t.Errorf("TestParseToken[%d], %s: parse failed, want success\n", i, v.name)
@@ -222,8 +227,10 @@ func TestParseTokenEscapable(t *testing.T) {
 		{"IsDigit", IsDigit, "%3x%31123%F", true, 0, 0, 0},
 	}
 
+	context := NewParseContext()
+
 	for i, v := range wanted {
-		begin, end, newPos, err := parseTokenEscapable([]byte(v.src), 0, v.isInCharset)
+		begin, end, newPos, err := parseTokenEscapable(context, []byte(v.src), 0, v.isInCharset)
 		if err != nil {
 			if !v.err {
 				t.Errorf("TestParseTokenEscapable[%d], %s: parse failed, want success\n", i, v.name)

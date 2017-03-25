@@ -1,4 +1,4 @@
-package sipparser2
+package sipparser3
 
 import (
 	//"fmt"
@@ -28,8 +28,8 @@ type TelUriParam struct {
 	value AbnfToken
 }
 
-func (this *TelUriParam) Parse(src []byte, pos int) (newPos int, err error) {
-	newPos, err = this.name.ParseEscapable(src, pos, IsTelPname)
+func (this *TelUriParam) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	newPos, err = this.name.ParseEscapable(context, src, pos, IsTelPname)
 	if err != nil {
 		return newPos, err
 	}
@@ -45,7 +45,7 @@ func (this *TelUriParam) Parse(src []byte, pos int) (newPos int, err error) {
 	}
 
 	if src[newPos] == '=' {
-		newPos, err = this.value.ParseEscapable(src, newPos+1, IsTelPvalue)
+		newPos, err = this.value.ParseEscapable(context, src, newPos+1, IsTelPvalue)
 		if err != nil {
 			return newPos, err
 		}
@@ -111,4 +111,22 @@ func (this *TelUriParams) String() string {
 		str += this.maps[v].String()
 	}
 	return str
+}
+
+func (this *TelUriParams) Equal(rhs *TelUriParams) bool {
+	if this.Size() != rhs.Size() {
+		return false
+	}
+
+	for _, v := range this.maps {
+		param, ok := rhs.GetParam(v.name.String())
+		if ok {
+			if !param.value.EqualNoCase(&v.value) {
+				return false
+			}
+		} else {
+			return false
+		}
+	}
+	return true
 }

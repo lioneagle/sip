@@ -77,8 +77,8 @@ func (this *AbnfToken) EqualStringNoCase(str string) bool {
 	return EqualNoCase(this.value, []byte(str))
 }
 
-func (this *AbnfToken) Parse(src []byte, pos int, isInCharset func(ch byte) bool) (newPos int, err error) {
-	begin, end, newPos, err := parseToken(src, pos, isInCharset)
+func (this *AbnfToken) Parse(context *ParseContext, src []byte, pos int, isInCharset func(ch byte) bool) (newPos int, err error) {
+	begin, end, newPos, err := parseToken(context, src, pos, isInCharset)
 	if err != nil {
 		return newPos, err
 	}
@@ -87,28 +87,15 @@ func (this *AbnfToken) Parse(src []byte, pos int, isInCharset func(ch byte) bool
 	return newPos, nil
 }
 
-func (this *AbnfToken) ParseEscapable(src []byte, pos int, isInCharset func(ch byte) bool) (newPos int, err error) {
-	begin, end, newPos, err := parseTokenEscapable(src, pos, isInCharset)
+func (this *AbnfToken) ParseEscapable(context *ParseContext, src []byte, pos int, isInCharset func(ch byte) bool) (newPos int, err error) {
+	begin, end, newPos, err := parseTokenEscapable(context, src, pos, isInCharset)
 	if err != nil {
 		return newPos, err
 	}
 
-	this.value = Unescape(src[begin:end])
+	this.value = Unescape(context, src[begin:end])
 	return newPos, nil
 }
-
-/*
-type SipList struct {
-    list.List
-}
-
-func (this *SipList) RemoveAll() {
-    var n *list.Element
-    for e := this.Front(); e != nil; e = n {
-        n = e.Next()
-        this.Remove(e)
-    }
-}*/
 
 func ToUpperHex(ch byte) byte {
 	return "0123456789ABCDEF"[ch&0x0F]
@@ -164,7 +151,7 @@ func EqualNoCase(s1, s2 []byte) bool {
 	return CompareNoCase(s1, s2) == 0
 }
 
-func Unescape(src []byte) (dst []byte) {
+func Unescape(context *ParseContext, src []byte) (dst []byte) {
 	if bytes.IndexByte(src, '%') == -1 {
 		return src
 	}
@@ -197,7 +184,6 @@ func NeedEscape(src []byte, isInCharset func(ch byte) bool) bool {
 
 func Escape(src []byte, isInCharset func(ch byte) bool) (dst []byte) {
 	if !NeedEscape(src, isInCharset) {
-
 		return src
 	}
 
@@ -212,7 +198,7 @@ func Escape(src []byte, isInCharset func(ch byte) bool) (dst []byte) {
 	return dst
 }
 
-func parseToken(src []byte, pos int, isInCharset func(ch byte) bool) (tokenBegin, tokenEnd, newPos int, err error) {
+func parseToken(context *ParseContext, src []byte, pos int, isInCharset func(ch byte) bool) (tokenBegin, tokenEnd, newPos int, err error) {
 	tokenBegin = pos
 	for newPos = pos; newPos < len(src); newPos++ {
 		if !isInCharset(src[newPos]) {
@@ -222,7 +208,7 @@ func parseToken(src []byte, pos int, isInCharset func(ch byte) bool) (tokenBegin
 	return tokenBegin, newPos, newPos, nil
 }
 
-func parseTokenEscapable(src []byte, pos int, isInCharset func(ch byte) bool) (tokenBegin, tokenEnd, newPos int, err error) {
+func parseTokenEscapable(context *ParseContext, src []byte, pos int, isInCharset func(ch byte) bool) (tokenBegin, tokenEnd, newPos int, err error) {
 	tokenBegin = pos
 	for newPos = pos; newPos < len(src); newPos++ {
 		if src[newPos] == '%' {
@@ -259,7 +245,7 @@ func ParseUInt(src []byte, pos int) (digit, newPos int, ok bool) {
 
 }
 
-func ParseUriScheme(src []byte, pos int) (newPos int, scheme *AbnfToken, err error) {
+func ParseUriScheme(context *ParseContext, src []byte, pos int) (newPos int, scheme *AbnfToken, err error) {
 	/* RFC3261 Section 25.1, page 223
 	 *
 	 * scheme         =  ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
@@ -276,7 +262,7 @@ func ParseUriScheme(src []byte, pos int) (newPos int, scheme *AbnfToken, err err
 
 	scheme = &AbnfToken{}
 
-	newPos, err = scheme.Parse(src, newPos, IsUriScheme)
+	newPos, err = scheme.Parse(context, src, newPos, IsUriScheme)
 	if err != nil {
 		return newPos, nil, err
 	}

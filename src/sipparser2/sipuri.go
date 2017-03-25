@@ -42,19 +42,20 @@ func (this *SipUri) Scheme() string {
 	return "sip"
 }
 
-func (this *SipUri) Parse(src []byte, pos int) (newPos int, err error) {
-	newPos, err = this.ParseScheme(src, pos)
+func (this *SipUri) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+
+	newPos, err = this.ParseScheme(context, src, pos)
 	if err != nil {
 		return newPos, err
 	}
 
-	return this.ParseAfterScheme(src, newPos)
+	return this.ParseAfterScheme(context, src, newPos)
 }
 
-func (this *SipUri) ParseAfterScheme(src []byte, pos int) (newPos int, err error) {
+func (this *SipUri) ParseAfterScheme(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
 
-	newPos, err = this.ParseUserinfo(src, newPos)
+	newPos, err = this.ParseUserinfo(context, src, newPos)
 	if err != nil {
 		return newPos, err
 	}
@@ -70,7 +71,7 @@ func (this *SipUri) ParseAfterScheme(src []byte, pos int) (newPos int, err error
 	}
 
 	if src[newPos] == ';' {
-		newPos, err = this.params.Parse(src, newPos+1)
+		newPos, err = this.params.Parse(context, src, newPos+1)
 		if err != nil {
 			return newPos, err
 		}
@@ -81,7 +82,7 @@ func (this *SipUri) ParseAfterScheme(src []byte, pos int) (newPos int, err error
 	}
 
 	if src[newPos] == '?' {
-		newPos, err = this.headers.Parse(src, newPos+1)
+		newPos, err = this.headers.Parse(context, src, newPos+1)
 		if err != nil {
 			return newPos, err
 		}
@@ -190,7 +191,7 @@ func (this *SipUri) EqualUserinfo(rhs *SipUri) bool {
 	return ret
 }
 
-func (this *SipUri) ParseScheme(src []byte, pos int) (newPos int, err error) {
+func (this *SipUri) ParseScheme(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	src1 := src[pos:]
 	if len(src) >= 4 && ((src1[0] | 0x20) == 's') && ((src1[1] | 0x20) == 'i') && ((src1[2] | 0x20) == 'p') && ((src1[3] | 0x20) == ':') {
 		this.SetSipUri()
@@ -223,11 +224,11 @@ func (this *SipUri) ParseScheme(src []byte, pos int) (newPos int, err error) {
 	*/
 }
 
-func (this *SipUri) ParseUserinfo(src []byte, pos int) (newPos int, err error) {
+func (this *SipUri) ParseUserinfo(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
 	hasUserinfo := findUserinfo(src, newPos)
 	if hasUserinfo {
-		newPos, err = this.user.ParseEscapable(src, newPos, IsSipUser)
+		newPos, err = this.user.ParseEscapable(context, src, newPos, IsSipUser)
 		if err != nil {
 			return newPos, err
 		}
@@ -243,7 +244,7 @@ func (this *SipUri) ParseUserinfo(src []byte, pos int) (newPos int, err error) {
 		this.user.SetExist()
 
 		if src[newPos] == ':' {
-			newPos, err = this.password.ParseEscapable(src, newPos+1, IsSipPassword)
+			newPos, err = this.password.ParseEscapable(context, src, newPos+1, IsSipPassword)
 			if err != nil {
 				return newPos, err
 			}
