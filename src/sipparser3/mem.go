@@ -1,4 +1,9 @@
-package sipparser2
+package sipparser3
+
+import (
+	"reflect"
+	"unsafe"
+)
 
 type MemAllocator struct {
 	mem  []byte
@@ -17,7 +22,10 @@ func (this *MemAllocator) Alloc(size int) []byte {
 	}
 	old := this.used
 	this.used += size
-	return this.mem[old : this.used+size]
+	data := this.mem[old : this.used+size]
+	(*reflect.SliceHeader)(unsafe.Pointer(&data)).Len = 0
+	(*reflect.SliceHeader)(unsafe.Pointer(&data)).Cap = size
+	return data
 }
 
 func (this *MemAllocator) FreeAll() {

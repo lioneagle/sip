@@ -1,12 +1,12 @@
 package sipparser2
 
 import (
-	//"bytes"
+	"bytes"
 	"fmt"
 	"testing"
 )
 
-/*
+//*
 func TestSipUriParseOK(t *testing.T) {
 
 	testdata := []struct {
@@ -98,7 +98,7 @@ func TestSipUriParamsParseOK(t *testing.T) {
 	for i, v := range testdata {
 		param, ok := uri.params.GetParam(v.name)
 		if !ok {
-			t.Errorf("TestSipUriParamsParseOK[%d] failed, cannot get ttl param\n", i)
+			t.Errorf("TestSipUriParamsParseOK[%d] failed, cannot get %s param\n", i, v.name)
 			continue
 		}
 
@@ -170,7 +170,8 @@ func TestSipUriUserinfoParseNOK(t *testing.T) {
 		src    string
 		newPos int
 	}{
-		{"sipx:@abc.com", len("sipx:")},
+		//{"sipx:@abc.com", len("sipx:")},
+		{"sipx:@abc.com", 0},
 		{"sip:@abc.com", len("sip:")},
 		{"sip::asas@abc.com", len("sip:")},
 		{"sip:#123@abc.com", len("sip:")},
@@ -278,11 +279,12 @@ func TestSipUriEqual(t *testing.T) {
 		}
 
 		if !v.equal && uri1.Equal(uri2) {
-			t.Errorf("TestSipUriEqual[%d] failed, should be not equal, uri1 = %s, uri2 = %s\n", i, v.uri1, v.uri2)
+			t.Errorf("TestSipUriEqual[%d] failed, should not be equal, uri1 = %s, uri2 = %s\n", i, v.uri1, v.uri2)
 			continue
 		}
 	}
 }
+
 //*/
 
 /*
@@ -319,9 +321,10 @@ func BenchmarkSipUriParse(b *testing.B) {
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
+		uri.Init()
 		uri.Parse(v, 0)
-		g_allocator.FreeAll()
 	}
+	//fmt.Printf("uri = %s\n", uri.String())
 	fmt.Printf("")
 }
 
@@ -338,13 +341,14 @@ func BenchmarkSipUriString(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		uri.String()
 	}
-}
-
+}//*/
+//*
 func BenchmarkSipUriEncode(b *testing.B) {
 	b.StopTimer()
-	v := "sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com"
+	//v := []byte("sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com")
+	v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
 	uri := NewSipUri()
-	uri.Parse([]byte(v), 0)
+	uri.Parse(v, 0)
 	b.SetBytes(2)
 	b.ReportAllocs()
 
@@ -358,4 +362,5 @@ func BenchmarkSipUriEncode(b *testing.B) {
 		uri.Encode(buf)
 	}
 }
+
 //*/

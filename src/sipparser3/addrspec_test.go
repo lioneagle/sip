@@ -1,10 +1,10 @@
-package sipparser2
+package sipparser3
 
 import (
-	"testing"
+//"testing"
 )
 
-//*
+/*
 func TestSipAddrSpecParseOK(t *testing.T) {
 
 	testdata := []struct {
@@ -47,5 +47,4 @@ func TestSipAddrSpecParseOK(t *testing.T) {
 		}
 	}
 }
-
 //*/

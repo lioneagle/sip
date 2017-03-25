@@ -1,11 +1,12 @@
-package sipparser
+package sipparser3
 
 import (
 	"bytes"
-	//"fmt"
+	"fmt"
 	"testing"
 )
 
+/*
 func TestSipUriParseOK(t *testing.T) {
 
 	testdata := []struct {
@@ -277,25 +278,52 @@ func TestSipUriEqual(t *testing.T) {
 		}
 
 		if !v.equal && uri1.Equal(uri2) {
-			t.Errorf("TestSipUriEqual[%d] failed, should not be equal, uri1 = %s, uri2 = %s\n", i, v.uri1, v.uri2)
+			t.Errorf("TestSipUriEqual[%d] failed, should be not equal, uri1 = %s, uri2 = %s\n", i, v.uri1, v.uri2)
 			continue
 		}
 	}
 }
+//*/
+
+/*
+func BenchmarkStrParse(b *testing.B) {
+	b.StopTimer()
+	//v := []byte("sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com")
+	v := []byte("sip:biloxi.com")
+	b.SetBytes(2)
+	b.ReportAllocs()
+
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		for k := 0; k < len(v); k++ {
+			if IsWspChar(v[k]) {
+				//fmt.Printf("k=%d, len(v)=%d\n", k, len(v))
+				break
+			}
+		}
+	}
+	fmt.Printf("")
+}//*/
 
 func BenchmarkSipUriParse(b *testing.B) {
 	b.StopTimer()
 	//v := []byte("sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com")
+	//v := []byte("sip:biloxi.com")
 	//v := []byte("sip:abc@biloxi.com;transport=tcp")
 	v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
+	uri := NewSipUri()
+
 	b.ReportAllocs()
 	b.SetBytes(2)
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
-		uri := NewSipUri()
 		uri.Parse(v, 0)
+		g_allocator.FreeAll()
 	}
+	//fmt.Printf("uri = %s\n", uri.String())
+	fmt.Printf("")
 }
 
 /*

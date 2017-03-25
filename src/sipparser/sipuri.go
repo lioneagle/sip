@@ -3,7 +3,7 @@ package sipparser
 import (
 	//"fmt"
 	"bytes"
-	"strings"
+	//"strings"
 )
 
 type SipUri struct {
@@ -143,6 +143,10 @@ func (this *SipUri) String() string {
 }
 
 func (this *SipUri) Equal(uri URI) bool {
+	return this.EqualRFC3261(uri)
+}
+
+func (this *SipUri) EqualRFC3261(uri URI) bool {
 	rhs, ok := uri.(*SipUri)
 	if !ok {
 		return false
@@ -160,11 +164,11 @@ func (this *SipUri) Equal(uri URI) bool {
 		return false
 	}
 
-	if !this.EqualParams(rhs) {
+	if !this.params.EqualRFC3261(&rhs.params) {
 		return false
 	}
 
-	if !this.EqualHeaders(rhs) {
+	if !this.headers.EqualRFC3261(&rhs.headers) {
 		return false
 	}
 
@@ -177,61 +181,6 @@ func (this *SipUri) EqualUserinfo(rhs *SipUri) bool {
 	}
 	ret := this.user.Equal(&rhs.user) && this.password.Equal(&rhs.password)
 	return ret
-}
-
-func (this *SipUri) EqualParams(rhs *SipUri) bool {
-	uri1 := this
-	uri2 := rhs
-
-	if uri1.params.Size() < uri2.params.Size() {
-		uri1, uri2 = uri2, uri1
-	}
-
-	if !uri1.equalSpecParams(uri2) {
-		return false
-	}
-
-	for _, v := range uri1.params.maps {
-		param, ok := uri2.params.GetParam(v.name.String())
-		if ok {
-			if !param.value.EqualNoCase(&v.value) {
-				return false
-			}
-		}
-	}
-	return true
-}
-
-func (this *SipUri) EqualHeaders(rhs *SipUri) bool {
-	if this.headers.Size() != rhs.headers.Size() {
-		return false
-	}
-
-	for _, v := range this.headers.maps {
-		header, ok := rhs.headers.GetHeader(v.name.String())
-		if ok {
-			if !header.value.EqualNoCase(&v.value) {
-				return false
-			}
-		}
-	}
-	return true
-}
-
-func (this *SipUri) equalSpecParams(rhs *SipUri) bool {
-	specParams := []string{"user", "ttl", "method"}
-
-	for _, v := range specParams {
-		_, ok := this.params.GetParam(v)
-		if ok {
-			_, ok = rhs.params.GetParam(v)
-			if !ok {
-				return false
-			}
-		}
-	}
-
-	return true
 }
 
 func (this *SipUri) ParseScheme(src []byte, pos int) (newPos int, err error) {
@@ -301,251 +250,4 @@ func findUserinfo(src []byte, pos int) bool {
 		}
 	}
 	return false
-}
-
-type SipUriParam struct {
-	name  AbnfToken
-	value AbnfToken
-}
-
-func (this *SipUriParam) Parse(src []byte, pos int) (newPos int, err error) {
-	newPos, err = this.name.ParseEscapable(src, pos, IsSipPname)
-	if err != nil {
-		return newPos, err
-	}
-
-	if this.name.Empty() {
-		return newPos, &AbnfError{"sip-uri parse: parse sip-uri param failed: empty pname", src, newPos}
-	}
-
-	this.name.SetExist()
-
-	if src[newPos] == '=' {
-		newPos, err = this.value.ParseEscapable(src, newPos+1, IsSipPvalue)
-		if err != nil {
-			return newPos, err
-		}
-
-		if this.value.Empty() {
-			return newPos, &AbnfError{"sip-uri parse: parse sip-uri param failed: empty pvalue", src, newPos}
-		}
-		this.value.SetExist()
-	}
-	return newPos, nil
-}
-
-func (this *SipUriParam) Encode(buf *bytes.Buffer) {
-	buf.Write(Escape(this.name.value, IsSipPname))
-	if this.value.Exist() {
-		buf.WriteByte('=')
-		buf.Write(Escape(this.value.value, IsSipPvalue))
-	}
-}
-
-func (this *SipUriParam) String() string {
-	str := string(Escape([]byte(this.name.String()), IsSipPname))
-	if this.value.Exist() {
-		str += "="
-		str += string(Escape([]byte(this.value.String()), IsSipPvalue))
-	}
-	return str
-}
-
-type SipUriParams struct {
-	orders []string
-	maps   map[string]*SipUriParam
-}
-
-func NewSipUriParams() *SipUriParams {
-	return &SipUriParams{orders: make([]string, 0), maps: make(map[string]*SipUriParam)}
-}
-
-func (this *SipUriParams) Init() {
-	this.orders = make([]string, 0)
-	this.maps = make(map[string]*SipUriParam)
-}
-
-func (this *SipUriParams) Encode(buf *bytes.Buffer) {
-	for i, v := range this.orders {
-		if i > 0 {
-			buf.WriteByte(';')
-		}
-		this.maps[v].Encode(buf)
-	}
-}
-
-func (this *SipUriParams) String() string {
-	if len(this.maps) == 0 {
-		return ""
-	}
-
-	str := ""
-	for i, v := range this.orders {
-		if i > 0 {
-			str += ";"
-		}
-		str += this.maps[v].String()
-	}
-	return str
-}
-
-func (this *SipUriParams) Size() int   { return len(this.maps) }
-func (this *SipUriParams) Empty() bool { return len(this.maps) == 0 }
-func (this *SipUriParams) GetParam(name string) (val *SipUriParam, ok bool) {
-	val, ok = this.maps[strings.ToLower(name)]
-	return val, ok
-}
-
-func (this *SipUriParams) Parse(src []byte, pos int) (newPos int, err error) {
-	newPos = pos
-	if newPos >= len(src) {
-		return newPos, &AbnfError{"sip-uri parse: parse sip-uri param failed: reach end after ';'", src, newPos}
-	}
-
-	for newPos < len(src) {
-		param := &SipUriParam{}
-		newPos, err = param.Parse(src, newPos)
-		if err != nil {
-			return newPos, err
-		}
-		name := param.name.ToLower()
-		this.orders = append(this.orders, name)
-		this.maps[name] = param
-
-		if newPos >= len(src) {
-			return newPos, nil
-		}
-
-		if src[newPos] != ';' {
-			return newPos, nil
-		}
-		newPos++
-	}
-
-	return newPos, nil
-}
-
-type SipUriHeader struct {
-	name  AbnfToken
-	value AbnfToken
-}
-
-func (this *SipUriHeader) Parse(src []byte, pos int) (newPos int, err error) {
-	newPos, err = this.name.ParseEscapable(src, pos, IsSipHname)
-	if err != nil {
-		return newPos, err
-	}
-
-	if this.name.Empty() {
-		return newPos, &AbnfError{"sip-uri parse: parse sip-uri header failed: empty hname", src, newPos}
-	}
-	this.name.SetExist()
-
-	if newPos >= len(src) {
-		return newPos, &AbnfError{"sip-uri parse: parse header failed: no = after hname", src, newPos}
-	}
-
-	if src[newPos] != '=' {
-		return newPos, &AbnfError{"sip-uri parse: parse header failed: no = after hname", src, newPos}
-	}
-
-	newPos, err = this.value.ParseEscapable(src, newPos+1, IsSipHvalue)
-	if err != nil {
-		return newPos, err
-	}
-
-	this.value.SetExist()
-
-	return newPos, nil
-}
-
-func (this *SipUriHeader) Encode(buf *bytes.Buffer) {
-	buf.Write(Escape(this.name.value, IsSipHname))
-	buf.WriteByte('=')
-	if this.value.Exist() {
-		buf.Write(Escape(this.value.value, IsSipHvalue))
-	}
-}
-
-func (this *SipUriHeader) String() string {
-	str := string(Escape([]byte(this.name.String()), IsSipHname))
-	str += "="
-	if this.value.Exist() {
-		str += string(Escape([]byte(this.value.String()), IsSipHvalue))
-	}
-	return str
-}
-
-type SipUriHeaders struct {
-	orders []string
-	maps   map[string]*SipUriHeader
-}
-
-func NewSipUriHeaders() *SipUriHeaders {
-	return &SipUriHeaders{orders: make([]string, 0), maps: make(map[string]*SipUriHeader)}
-}
-
-func (this *SipUriHeaders) Init() {
-	this.orders = make([]string, 0)
-	this.maps = make(map[string]*SipUriHeader)
-}
-
-func (this *SipUriHeaders) Size() int   { return len(this.maps) }
-func (this *SipUriHeaders) Empty() bool { return len(this.maps) == 0 }
-func (this *SipUriHeaders) GetHeader(name string) (val *SipUriHeader, ok bool) {
-	val, ok = this.maps[strings.ToLower(name)]
-	return val, ok
-}
-
-func (this *SipUriHeaders) Parse(src []byte, pos int) (newPos int, err error) {
-	newPos = pos
-	if newPos >= len(src) {
-		return newPos, &AbnfError{"sip-uri parse: parse uri-header failed: reach end after ';'", src, newPos}
-	}
-
-	for newPos < len(src) {
-		header := &SipUriHeader{}
-		newPos, err = header.Parse(src, newPos)
-		if err != nil {
-			return newPos, err
-		}
-		name := header.name.ToLower()
-		this.orders = append(this.orders, name)
-		this.maps[name] = header
-
-		if newPos >= len(src) {
-			return newPos, nil
-		}
-
-		if src[newPos] != '&' {
-			return newPos, nil
-		}
-		newPos++
-	}
-
-	return newPos, err
-}
-
-func (this *SipUriHeaders) Encode(buf *bytes.Buffer) {
-	for i, v := range this.orders {
-		if i > 0 {
-			buf.WriteByte('&')
-		}
-		this.maps[v].Encode(buf)
-	}
-}
-
-func (this *SipUriHeaders) String() string {
-	if len(this.maps) == 0 {
-		return ""
-	}
-
-	str := ""
-	for i, v := range this.orders {
-		if i > 0 {
-			str += "&"
-		}
-		str += this.maps[v].String()
-	}
-	return str
 }

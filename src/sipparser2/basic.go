@@ -108,8 +108,8 @@ func (this *AbnfToken) ParseEscapable(src []byte, pos int, isInCharset func(ch b
 		return newPos, err
 	}
 
-	//this.value = Unescape(src[begin:end])
-	this.value = src[begin:end]
+	this.value = Unescape(src[begin:end])
+	//this.value = src[begin:end]
 	return newPos, nil
 }
 
@@ -168,6 +168,10 @@ func EqualNoCase(s1, s2 []byte) bool {
 }
 
 func Unescape(src []byte) (dst []byte) {
+	if bytes.IndexByte(src, '%') == -1 {
+		return src
+	}
+
 	for i := 0; i < len(src); {
 		if (src[i] == '%') && ((i + 2) < len(src)) && IsHex(src[i+1]) && IsHex(src[i+2]) {
 			dst = append(dst, unescapeToByte(src[i:]))
@@ -185,7 +189,20 @@ func unescapeToByte(src []byte) byte {
 	return HexToByte(src[1])<<4 | HexToByte(src[2])
 }
 
+func NeedEscape(src []byte, isInCharset func(ch byte) bool) bool {
+	for _, v := range src {
+		if !isInCharset(v) {
+			return true
+		}
+	}
+	return false
+}
+
 func Escape(src []byte, isInCharset func(ch byte) bool) (dst []byte) {
+	if !NeedEscape(src, isInCharset) {
+		return src
+	}
+
 	for _, v := range src {
 		if isInCharset(v) {
 			dst = append(dst, v)

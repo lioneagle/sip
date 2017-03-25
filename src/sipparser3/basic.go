@@ -1,16 +1,31 @@
-package sipparser
+package sipparser3
 
 import (
-	//"container/list"
 	"bytes"
+	//"container/list"
 	"fmt"
+	"reflect"
 	"strings"
+	"unsafe"
 )
 
 type AbnfError struct {
 	description string
 	src         []byte
 	pos         int
+}
+
+func Str2bytes(s string) []byte {
+	//h := reflect.SliceHeader{Data: uintptr(unsafe.Pointer(&s)), Len: len(s), Cap: len(s)}
+	//x := (*[2]uintptr)(unsafe.Pointer(&s))
+	//h := [3]uintptr{x[0], x[1], x[1]}
+	x := (*reflect.StringHeader)(unsafe.Pointer(&s))
+	h := reflect.SliceHeader{Data: x.Data, Len: x.Len, Cap: x.Len}
+	return *(*[]byte)(unsafe.Pointer(&h))
+}
+
+func Bytes2str(b []byte) string {
+	return *(*string)(unsafe.Pointer(&b))
 }
 
 func (err *AbnfError) Error() string {
@@ -27,7 +42,7 @@ type AbnfToken struct {
 
 func (this *AbnfToken) String() string {
 	if this.exist {
-		return string(this.value)
+		return Bytes2str(this.value)
 	}
 	return ""
 }
@@ -66,7 +81,7 @@ func (this *AbnfToken) EqualString(str string) bool {
 	if !this.exist {
 		return false
 	}
-	return bytes.Equal(this.value, []byte(str))
+	return bytes.Equal(this.value, Str2bytes(str))
 }
 
 func (this *AbnfToken) EqualStringNoCase(str string) bool {
@@ -74,7 +89,7 @@ func (this *AbnfToken) EqualStringNoCase(str string) bool {
 		return false
 	}
 
-	return EqualNoCase(this.value, []byte(str))
+	return EqualNoCase(this.value, Str2bytes(str))
 }
 
 func (this *AbnfToken) Parse(src []byte, pos int, isInCharset func(ch byte) bool) (newPos int, err error) {
@@ -93,22 +108,11 @@ func (this *AbnfToken) ParseEscapable(src []byte, pos int, isInCharset func(ch b
 		return newPos, err
 	}
 
-	this.value = Unescape(src[begin:end])
+	//this.value = Unescape(src[begin:end])
+	this.value = UnescapeEx(src[begin:end], g_allocator)
+	//this.value = src[begin:end]
 	return newPos, nil
 }
-
-/*
-type SipList struct {
-    list.List
-}
-
-func (this *SipList) RemoveAll() {
-    var n *list.Element
-    for e := this.Front(); e != nil; e = n {
-        n = e.Next()
-        this.Remove(e)
-    }
-}*/
 
 func ToUpperHex(ch byte) byte {
 	return "0123456789ABCDEF"[ch&0x0F]
@@ -168,7 +172,6 @@ func Unescape(src []byte) (dst []byte) {
 	if bytes.IndexByte(src, '%') == -1 {
 		return src
 	}
-
 	for i := 0; i < len(src); {
 		if (src[i] == '%') && ((i + 2) < len(src)) && IsHex(src[i+1]) && IsHex(src[i+2]) {
 			dst = append(dst, unescapeToByte(src[i:]))
@@ -177,6 +180,27 @@ func Unescape(src []byte) (dst []byte) {
 			dst = append(dst, src[i])
 			i++
 		}
+	}
+
+	return dst
+}
+
+func UnescapeEx(src []byte, allocator *MemAllocator) (dst []byte) {
+	if bytes.IndexByte(src, '%') == -1 {
+		return src
+	}
+
+	dst = allocator.Alloc(len(src))
+	var j int = 0
+	for i := 0; i < len(src); {
+		if (src[i] == '%') && ((i + 2) < len(src)) && IsHex(src[i+1]) && IsHex(src[i+2]) {
+			dst = append(dst, unescapeToByte(src[i:]))
+			i += 3
+		} else {
+			dst = append(dst, src[i])
+			i++
+		}
+		j++
 	}
 
 	return dst
@@ -197,7 +221,6 @@ func NeedEscape(src []byte, isInCharset func(ch byte) bool) bool {
 
 func Escape(src []byte, isInCharset func(ch byte) bool) (dst []byte) {
 	if !NeedEscape(src, isInCharset) {
-
 		return src
 	}
 
@@ -219,7 +242,8 @@ func parseToken(src []byte, pos int, isInCharset func(ch byte) bool) (tokenBegin
 			break
 		}
 	}
-	return tokenBegin, newPos, newPos, nil
+	tokenEnd = newPos
+	return tokenBegin, tokenEnd, newPos, nil
 }
 
 func parseTokenEscapable(src []byte, pos int, isInCharset func(ch byte) bool) (tokenBegin, tokenEnd, newPos int, err error) {
@@ -237,7 +261,8 @@ func parseTokenEscapable(src []byte, pos int, isInCharset func(ch byte) bool) (t
 			break
 		}
 	}
-	return tokenBegin, newPos, newPos, nil
+	tokenEnd = newPos
+	return tokenBegin, tokenEnd, newPos, nil
 }
 
 func ParseUInt(src []byte, pos int) (digit, newPos int, ok bool) {
