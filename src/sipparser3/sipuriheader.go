@@ -49,12 +49,7 @@ func (this *SipUriHeader) Encode(buf *bytes.Buffer) {
 }
 
 func (this *SipUriHeader) String() string {
-	str := string(Escape([]byte(this.name.String()), IsSipHname))
-	str += "="
-	if this.value.Exist() {
-		str += string(Escape([]byte(this.value.String()), IsSipHvalue))
-	}
-	return str
+	return AbnfEncoderToString(this)
 }
 
 type SipUriHeaders struct {
@@ -136,12 +131,5 @@ func (this *SipUriHeaders) Encode(buf *bytes.Buffer) {
 }
 
 func (this *SipUriHeaders) String() string {
-	str := ""
-	for i, v := range this.headers {
-		if i > 0 {
-			str += "&"
-		}
-		str += v.String()
-	}
-	return str
+	return AbnfEncoderToString(this)
 }

@@ -89,7 +89,23 @@ func (this *SipUri) ParseAfterScheme(context *ParseContext, src []byte, pos int)
 	}
 
 	return newPos, err
+}
 
+func (this *SipUri) ParseAfterSchemeWithoutParam(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	newPos = pos
+
+	newPos, err = this.ParseUserinfo(context, src, newPos)
+	if err != nil {
+		return newPos, err
+	}
+	//return newPos, nil
+
+	newPos, err = this.hostport.Parse(src, newPos)
+	if err != nil {
+		return newPos, err
+	}
+
+	return newPos, nil
 }
 
 func (this *SipUri) Encode(buf *bytes.Buffer) {
@@ -119,35 +135,7 @@ func (this *SipUri) Encode(buf *bytes.Buffer) {
 }
 
 func (this *SipUri) String() string {
-	/*var buf bytes.Buffer
-	this.Encode(&buf)
-	return buf.String()*/
-	//*
-	str := this.Scheme()
-	str += ":"
-
-	if this.user.Exist() {
-		str += Bytes2str(Escape([]byte(this.user.String()), IsSipUser))
-		if this.password.Exist() {
-			str += ":"
-			str += Bytes2str(Escape([]byte(this.password.String()), IsSipPassword))
-		}
-		str += "@"
-	}
-
-	str += this.hostport.String()
-
-	if !this.params.Empty() {
-		str += ";"
-		str += this.params.String()
-	}
-
-	if !this.headers.Empty() {
-		str += "?"
-		str += this.headers.String()
-	}
-
-	return str //*/
+	return AbnfEncoderToString(this)
 }
 
 func (this *SipUri) Equal(uri URI) bool {

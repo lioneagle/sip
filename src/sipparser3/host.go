@@ -209,13 +209,7 @@ func (this *SipHostPort) Encode(buf *bytes.Buffer) {
 }
 
 func (this *SipHostPort) String() string {
-	str := this.SipHost.String()
-	if this.hasPort {
-		str += ":"
-		str += strconv.FormatUint(uint64(this.port), 10)
-	}
-
-	return str
+	return AbnfEncoderToString(this)
 }
 
 func (this *SipHostPort) Parse(src []byte, pos int) (newPos int, err error) {

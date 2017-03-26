@@ -22,9 +22,7 @@ func (this *TelUriContext) Encode(buf *bytes.Buffer) {
 }
 
 func (this *TelUriContext) String() string {
-	str := ";phone-context="
-	str += Bytes2str(Escape(this.desc.value, IsTelPvalue))
-	return str
+	return AbnfEncoderToString(this)
 }
 
 type TelUriParam struct {

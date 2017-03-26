@@ -2,7 +2,7 @@ package sipparser3
 
 import (
 	"bytes"
-	"fmt"
+	//"fmt"
 )
 
 type SipQuotedString struct {
@@ -19,7 +19,7 @@ func (this *SipQuotedString) Encode(buf *bytes.Buffer) {
 	buf.WriteByte('"')
 }
 
-func (this *SipQuotedString) String() string        { return fmt.Sprintf("\"%s\"", Bytes2str(this.value)) }
+func (this *SipQuotedString) String() string        { return AbnfEncoderToString(this) }
 func (this *SipQuotedString) SetValue(value []byte) { this.value = value }
 
 func (this *SipQuotedString) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {

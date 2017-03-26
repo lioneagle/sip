@@ -50,12 +50,7 @@ func (this *SipUriParam) Encode(buf *bytes.Buffer) {
 }
 
 func (this *SipUriParam) String() string {
-	str := string(Escape([]byte(this.name.String()), IsSipPname))
-	if this.value.Exist() {
-		str += "="
-		str += string(Escape([]byte(this.value.String()), IsSipPvalue))
-	}
-	return str
+	return AbnfEncoderToString(this)
 }
 
 type SipUriParams struct {
@@ -160,12 +155,5 @@ func (this *SipUriParams) Encode(buf *bytes.Buffer) {
 }
 
 func (this *SipUriParams) String() string {
-	str := ""
-	for i, v := range this.params {
-		if i > 0 {
-			str += ";"
-		}
-		str += v.String()
-	}
-	return str
+	return AbnfEncoderToString(this)
 }

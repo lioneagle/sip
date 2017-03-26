@@ -45,19 +45,7 @@ func (this *TelUri) Parse(context *ParseContext, src []byte, pos int) (newPos in
 }
 
 func (this *TelUri) String() string {
-	str := "tel:"
-
-	str += this.number.String()
-
-	if !this.isGlobalNumber {
-		str += this.context.String()
-	}
-
-	if !this.params.Empty() {
-		str += this.params.String()
-	}
-
-	return str
+	return AbnfEncoderToString(this)
 }
 
 func (this *TelUri) Encode(buf *bytes.Buffer) {
@@ -120,6 +108,10 @@ func (this *TelUri) ParseAfterScheme(context *ParseContext, src []byte, pos int)
 	}
 
 	return this.ParseParams(context, src, newPos)
+}
+
+func (this *TelUri) ParseAfterSchemeWithoutParam(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	return this.ParseNumber(context, src, pos)
 }
 
 func (this *TelUri) ParseNumber(context *ParseContext, src []byte, pos int) (newPos int, err error) {

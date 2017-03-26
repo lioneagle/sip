@@ -25,10 +25,7 @@ func (this *SipDisplayName) Encode(buf *bytes.Buffer) {
 }
 
 func (this *SipDisplayName) String() string {
-	if this.isQuotedString {
-		return this.quotedstring.String()
-	}
-	return this.name.String()
+	return AbnfEncoderToString(this)
 }
 
 func (this *SipDisplayName) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
@@ -86,13 +83,13 @@ func NewSipNameAddr() *SipNameAddr {
 
 func (this *SipNameAddr) Encode(buf *bytes.Buffer) {
 	this.displayname.Encode(buf)
+	buf.WriteByte('<')
 	this.addrsepc.Encode(buf)
+	buf.WriteByte('>')
 }
 
 func (this *SipNameAddr) String() string {
-	str := this.displayname.String()
-	str += this.addrsepc.String()
-	return str
+	return AbnfEncoderToString(this)
 }
 
 func (this *SipNameAddr) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {

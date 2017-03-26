@@ -323,7 +323,7 @@ func ParseSWSMark(src []byte, pos int, mark byte) (newPos int, err error) {
 		return newPos, &AbnfError{"SWSMark parse: not expected mark after SWS", src, newPos}
 	}
 
-	return ParseSWS(src, newPos)
+	return ParseSWS(src, newPos+1)
 }
 
 func ParseSWS(src []byte, pos int) (newPos int, err error) {

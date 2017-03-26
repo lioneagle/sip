@@ -2,7 +2,7 @@ package sipparser3
 
 import (
 	"bytes"
-	//"fmt"
+	// 	"fmt"
 )
 
 type SipHeaderInfo struct {
@@ -57,9 +57,7 @@ func (this *SipHeader) Encode(buf *bytes.Buffer) {
 }
 
 func (this *SipHeader) String() string {
-	var buf bytes.Buffer
-	this.Encode(&buf)
-	return buf.String()
+	return AbnfEncoderToString(this)
 }
 
 type SipHeaders struct {
@@ -88,9 +86,7 @@ func (this *SipHeaders) Encode(buf *bytes.Buffer) {
 }
 
 func (this *SipHeaders) String() string {
-	var buf bytes.Buffer
-	this.Encode(&buf)
-	return buf.String()
+	return AbnfEncoderToString(this)
 }
 
 func (this *SipHeaders) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
@@ -139,6 +135,7 @@ func ParseHeaderName(context *ParseContext, src []byte, pos int) (name AbnfToken
 	if err != nil {
 		return name, newPos, err
 	}
+	name.SetExist()
 
 	newPos, err = ParseHcolon(src, newPos)
 	return name, newPos, err

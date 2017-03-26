@@ -342,13 +342,14 @@ func BenchmarkSipUriParse(b *testing.B) {
 	fmt.Printf("")
 }
 
-/*
+//*
 func BenchmarkSipUriString(b *testing.B) {
 	b.StopTimer()
-	v := "sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com"
+	//v := "sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com"
+	v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
 	uri := NewSipUri()
 	context := NewParseContext()
-	uri.Parse(context,[]byte(v), 0)
+	uri.Parse(context, v, 0)
 	b.ReportAllocs()
 	b.SetBytes(2)
 	b.StartTimer()
@@ -357,6 +358,7 @@ func BenchmarkSipUriString(b *testing.B) {
 		uri.String()
 	}
 }
+
 //*/
 
 //*

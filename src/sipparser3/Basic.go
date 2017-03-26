@@ -9,10 +9,34 @@ import (
 	"unsafe"
 )
 
+type AbnfIsInCharset func(ch byte) bool
+
+type AbnfEncoder interface {
+	Encode(buf *bytes.Buffer)
+}
+
+func AbnfEncoderToString(encoder AbnfEncoder) string {
+	var buf bytes.Buffer
+	encoder.Encode(&buf)
+	return buf.String()
+}
+
 type AbnfError struct {
 	description string
 	src         []byte
 	pos         int
+}
+
+func (err *AbnfError) Error() string {
+	if err.pos < len(err.src) {
+		return fmt.Sprintf("%s at src[%d]: %s", err.description, err.pos, string(err.src[err.pos:]))
+	}
+	return fmt.Sprintf("%s at end")
+}
+
+type AbnfEncode interface {
+	Encode(buf *bytes.Buffer)
+	String() string
 }
 
 func Str2bytes(s string) []byte {
@@ -26,13 +50,6 @@ func Str2bytes(s string) []byte {
 
 func Bytes2str(b []byte) string {
 	return *(*string)(unsafe.Pointer(&b))
-}
-
-func (err *AbnfError) Error() string {
-	if err.pos < len(err.src) {
-		return fmt.Sprintf("%s at src[%d]: %s", err.description, err.pos, string(err.src[err.pos:]))
-	}
-	return fmt.Sprintf("%s at end")
 }
 
 type AbnfToken struct {
@@ -92,8 +109,8 @@ func (this *AbnfToken) EqualStringNoCase(str string) bool {
 	return EqualNoCase(this.value, Str2bytes(str))
 }
 
-func (this *AbnfToken) Parse(context *ParseContext, src []byte, pos int, isInCharset func(ch byte) bool) (newPos int, err error) {
-	begin, end, newPos, err := parseToken(src, pos, isInCharset)
+func (this *AbnfToken) Parse(context *ParseContext, src []byte, pos int, inCharset AbnfIsInCharset) (newPos int, err error) {
+	begin, end, newPos, err := parseToken(src, pos, inCharset)
 	if err != nil {
 		return newPos, err
 	}
@@ -102,8 +119,8 @@ func (this *AbnfToken) Parse(context *ParseContext, src []byte, pos int, isInCha
 	return newPos, nil
 }
 
-func (this *AbnfToken) ParseEscapable(context *ParseContext, src []byte, pos int, isInCharset func(ch byte) bool) (newPos int, err error) {
-	begin, end, newPos, err := parseTokenEscapable(src, pos, isInCharset)
+func (this *AbnfToken) ParseEscapable(context *ParseContext, src []byte, pos int, inCharset AbnfIsInCharset) (newPos int, err error) {
+	begin, end, newPos, err := parseTokenEscapable(src, pos, inCharset)
 	if err != nil {
 		return newPos, err
 	}
@@ -189,22 +206,22 @@ func unescapeToByte(src []byte) byte {
 	return HexToByte(src[1])<<4 | HexToByte(src[2])
 }
 
-func NeedEscape(src []byte, isInCharset func(ch byte) bool) bool {
+func NeedEscape(src []byte, inCharset AbnfIsInCharset) bool {
 	for _, v := range src {
-		if !isInCharset(v) {
+		if !inCharset(v) {
 			return true
 		}
 	}
 	return false
 }
 
-func Escape(src []byte, isInCharset func(ch byte) bool) (dst []byte) {
-	if !NeedEscape(src, isInCharset) {
+func Escape(src []byte, inCharset AbnfIsInCharset) (dst []byte) {
+	if !NeedEscape(src, inCharset) {
 		return src
 	}
 
 	for _, v := range src {
-		if isInCharset(v) {
+		if inCharset(v) {
 			dst = append(dst, v)
 		} else {
 			dst = append(dst, '%', ToUpperHex(v>>4), ToUpperHex(v))
@@ -214,17 +231,17 @@ func Escape(src []byte, isInCharset func(ch byte) bool) (dst []byte) {
 	return dst
 }
 
-func parseToken(src []byte, pos int, isInCharset func(ch byte) bool) (tokenBegin, tokenEnd, newPos int, err error) {
+func parseToken(src []byte, pos int, inCharset AbnfIsInCharset) (tokenBegin, tokenEnd, newPos int, err error) {
 	tokenBegin = pos
 	for newPos = pos; newPos < len(src); newPos++ {
-		if !isInCharset(src[newPos]) {
+		if !inCharset(src[newPos]) {
 			break
 		}
 	}
 	return tokenBegin, newPos, newPos, nil
 }
 
-func parseTokenEscapable(src []byte, pos int, isInCharset func(ch byte) bool) (tokenBegin, tokenEnd, newPos int, err error) {
+func parseTokenEscapable(src []byte, pos int, inCharset AbnfIsInCharset) (tokenBegin, tokenEnd, newPos int, err error) {
 	tokenBegin = pos
 	for newPos = pos; newPos < len(src); newPos++ {
 		if src[newPos] == '%' {
@@ -235,7 +252,7 @@ func parseTokenEscapable(src []byte, pos int, isInCharset func(ch byte) bool) (t
 				return tokenBegin, newPos, newPos, &AbnfError{"token parse: parse escape token failed: no hex after %", src, newPos}
 			}
 			newPos += 2
-		} else if !isInCharset(src[newPos]) {
+		} else if !inCharset(src[newPos]) {
 			break
 		}
 	}
@@ -343,7 +360,7 @@ func ParseSWSMark(src []byte, pos int, mark byte) (newPos int, err error) {
 		return newPos, &AbnfError{"SWSMark parse: not expected mark after SWS", src, newPos}
 	}
 
-	return ParseSWS(src, newPos)
+	return ParseSWS(src, newPos+1)
 }
 
 func ParseSWS(src []byte, pos int) (newPos int, err error) {
