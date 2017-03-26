@@ -1,4 +1,4 @@
-package sipparser2
+package sipparser3
 
 import (
 	"bytes"
@@ -22,17 +22,11 @@ func (this *SipUri) IsSipsUri() bool { return this.isSecure }
 
 func NewSipUri() *SipUri {
 	uri := &SipUri{}
-	uri.params.Init()
+	uri.params.Init(g_allocator)
+	//uri.params.Init()
 	uri.headers.Init()
 	return uri
-}
 
-func (this *SipUri) Init() {
-	this.user.SetNonExist()
-	this.password.SetNonExist()
-	this.hostport.Init()
-	this.params.Init()
-	this.headers.Init()
 }
 
 func (this *SipUri) Scheme() string {

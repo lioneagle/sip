@@ -1,4 +1,4 @@
-package sipparser2
+package sipparser3
 
 import (
 	"bytes"
@@ -108,7 +108,8 @@ func (this *AbnfToken) ParseEscapable(context *ParseContext, src []byte, pos int
 		return newPos, err
 	}
 
-	this.value = Unescape(context, src[begin:end])
+	//this.value = Unescape(context, src[begin:end])
+	this.value = UnescapeEx(context, src[begin:end], g_allocator)
 	//this.value = src[begin:end]
 	return newPos, nil
 }
@@ -171,7 +172,6 @@ func Unescape(context *ParseContext, src []byte) (dst []byte) {
 	if bytes.IndexByte(src, '%') == -1 {
 		return src
 	}
-
 	for i := 0; i < len(src); {
 		if (src[i] == '%') && ((i + 2) < len(src)) && IsHex(src[i+1]) && IsHex(src[i+2]) {
 			dst = append(dst, unescapeToByte(src[i:]))
@@ -180,6 +180,27 @@ func Unescape(context *ParseContext, src []byte) (dst []byte) {
 			dst = append(dst, src[i])
 			i++
 		}
+	}
+
+	return dst
+}
+
+func UnescapeEx(context *ParseContext, src []byte, allocator *MemAllocator) (dst []byte) {
+	if bytes.IndexByte(src, '%') == -1 {
+		return src
+	}
+
+	dst = allocator.Alloc(len(src))
+	var j int = 0
+	for i := 0; i < len(src); {
+		if (src[i] == '%') && ((i + 2) < len(src)) && IsHex(src[i+1]) && IsHex(src[i+2]) {
+			dst = append(dst, unescapeToByte(src[i:]))
+			i += 3
+		} else {
+			dst = append(dst, src[i])
+			i++
+		}
+		j++
 	}
 
 	return dst

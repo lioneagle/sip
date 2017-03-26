@@ -82,10 +82,6 @@ func (this *SipUriParams) Encode(buf *bytes.Buffer) {
 }
 
 func (this *SipUriParams) String() string {
-	if len(this.maps) == 0 {
-		return ""
-	}
-
 	str := ""
 	for i, v := range this.orders {
 		if i > 0 {

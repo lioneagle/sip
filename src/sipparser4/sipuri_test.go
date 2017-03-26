@@ -1,4 +1,4 @@
-package sipparser2
+package sipparser3
 
 import (
 	"bytes"
@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-//*
+/*
 func TestSipUriParseOK(t *testing.T) {
 
 	testdata := []struct {
@@ -177,8 +177,7 @@ func TestSipUriUserinfoParseNOK(t *testing.T) {
 		src    string
 		newPos int
 	}{
-		//{"sipx:@abc.com", len("sipx:")},
-		{"sipx:@abc.com", 0},
+		{"sipx:@abc.com", len("sipx:")},
 		{"sip:@abc.com", len("sip:")},
 		{"sip::asas@abc.com", len("sip:")},
 		{"sip:#123@abc.com", len("sip:")},
@@ -297,7 +296,6 @@ func TestSipUriEqual(t *testing.T) {
 		}
 	}
 }
-
 //*/
 
 /*
@@ -327,7 +325,7 @@ func BenchmarkSipUriParse(b *testing.B) {
 	//v := []byte("sip:biloxi.com")
 	//v := []byte("sip:abc@biloxi.com;transport=tcp")
 	v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
-	context := NewParseContext()
+        context := NewParseContext()
 	uri := NewSipUri()
 
 	b.ReportAllocs()
@@ -335,8 +333,8 @@ func BenchmarkSipUriParse(b *testing.B) {
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
-		uri.Init()
 		uri.Parse(context, v, 0)
+		g_allocator.FreeAll()
 	}
 	//fmt.Printf("uri = %s\n", uri.String())
 	fmt.Printf("")

@@ -1,9 +1,9 @@
-package sipparser2
+package sipparser3
 
 import (
 	"bytes"
 	//"fmt"
-	//"strings"
+	"strings"
 )
 
 type SipUriHeader struct {
@@ -58,25 +58,24 @@ func (this *SipUriHeader) String() string {
 }
 
 type SipUriHeaders struct {
-	AbnfList
+	orders []string
+	maps   map[string]*SipUriHeader
 }
 
 func NewSipUriHeaders() *SipUriHeaders {
-	ret := &SipUriHeaders{}
-	ret.Init()
-	return ret
+	return &SipUriHeaders{orders: make([]string, 0), maps: make(map[string]*SipUriHeader)}
 }
 
-func (this *SipUriHeaders) Size() int   { return this.Len() }
-func (this *SipUriHeaders) Empty() bool { return this.Len() == 0 }
+func (this *SipUriHeaders) Init() {
+	this.orders = make([]string, 0)
+	this.maps = make(map[string]*SipUriHeader)
+}
+
+func (this *SipUriHeaders) Size() int   { return len(this.maps) }
+func (this *SipUriHeaders) Empty() bool { return len(this.maps) == 0 }
 func (this *SipUriHeaders) GetHeader(name string) (val *SipUriHeader, ok bool) {
-	for e := this.Front(); e != nil; e = e.Next() {
-		header := e.Value.(*SipUriHeader)
-		if header.name.EqualStringNoCase(name) {
-			return header, true
-		}
-	}
-	return nil, false
+	val, ok = this.maps[strings.ToLower(name)]
+	return val, ok
 }
 
 func (this *SipUriHeaders) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
@@ -91,7 +90,9 @@ func (this *SipUriHeaders) Parse(context *ParseContext, src []byte, pos int) (ne
 		if err != nil {
 			return newPos, err
 		}
-		this.PushBack(header)
+		name := header.name.ToLower()
+		this.orders = append(this.orders, name)
+		this.maps[name] = header
 
 		if newPos >= len(src) {
 			return newPos, nil
@@ -107,27 +108,25 @@ func (this *SipUriHeaders) Parse(context *ParseContext, src []byte, pos int) (ne
 }
 
 func (this *SipUriHeaders) Encode(buf *bytes.Buffer) {
-
-	for e := this.Front(); e != nil; e = e.Next() {
-		if e != this.Front() {
+	for i, v := range this.orders {
+		if i > 0 {
 			buf.WriteByte('&')
 		}
-
-		header := e.Value.(*SipUriHeader)
-		header.Encode(buf)
+		this.maps[v].Encode(buf)
 	}
-
 }
 
 func (this *SipUriHeaders) String() string {
+	if len(this.maps) == 0 {
+		return ""
+	}
+
 	str := ""
-	for e := this.Front(); e != nil; e = e.Next() {
-		if e != this.Front() {
+	for i, v := range this.orders {
+		if i > 0 {
 			str += "&"
 		}
-
-		header := e.Value.(*SipUriHeader)
-		str += header.String()
+		str += this.maps[v].String()
 	}
 	return str
 }
@@ -137,11 +136,10 @@ func (this *SipUriHeaders) EqualRFC3261(rhs *SipUriHeaders) bool {
 		return false
 	}
 
-	for e := this.Front(); e != nil; e = e.Next() {
-		header1 := e.Value.(*SipUriHeader)
-		header2, ok := rhs.GetHeader(header1.name.String())
+	for _, v := range this.maps {
+		header, ok := rhs.GetHeader(v.name.String())
 		if ok {
-			if !header2.value.EqualNoCase(&header1.value) {
+			if !header.value.EqualNoCase(&v.value) {
 				return false
 			}
 		}

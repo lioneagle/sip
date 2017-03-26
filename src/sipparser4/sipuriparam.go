@@ -1,4 +1,4 @@
-package sipparser2
+package sipparser3
 
 import (
 	"bytes"
@@ -59,25 +59,21 @@ func (this *SipUriParam) String() string {
 }
 
 type SipUriParams struct {
-	params []SipUriParam
+	SipList
 }
 
 func NewSipUriParams() *SipUriParams {
-	ret := &SipUriParams{}
-	ret.Init()
-	return ret
+	return &SipUriParams{}
 }
 
-func (this *SipUriParams) Init() {
-	this.params = make([]SipUriParam, 0, 2)
-}
-
-func (this *SipUriParams) Size() int   { return len(this.params) }
-func (this *SipUriParams) Empty() bool { return len(this.params) == 0 }
+func (this *SipUriParams) Size() int   { return this.Len() }
+func (this *SipUriParams) Empty() bool { return this.Len() == 0 }
 func (this *SipUriParams) GetParam(name string) (val *SipUriParam, ok bool) {
-	for _, v := range this.params {
-		if v.name.EqualStringNoCase(name) {
-			return &v, true
+	for e := this.Front(); e != nil; e = e.Next() {
+		param := e.Value
+
+		if param.name.EqualStringNoCase(name) {
+			return &param, true
 		}
 	}
 	return nil, false
@@ -95,7 +91,7 @@ func (this *SipUriParams) Parse(context *ParseContext, src []byte, pos int) (new
 		if err != nil {
 			return newPos, err
 		}
-		this.params = append(this.params, param)
+		this.PushBack(param)
 
 		if newPos >= len(src) {
 			return newPos, nil
@@ -122,10 +118,11 @@ func (this *SipUriParams) EqualRFC3261(rhs *SipUriParams) bool {
 		return false
 	}
 
-	for _, v := range params1.params {
-		param, ok := params2.GetParam(v.name.String())
+	for e := params1.Front(); e != nil; e = e.Next() {
+		param1 := e.Value
+		param2, ok := params2.GetParam(param1.name.String())
 		if ok {
-			if !param.value.EqualNoCase(&v.value) {
+			if !param2.value.EqualNoCase(&param1.value) {
 				return false
 			}
 		}
@@ -151,21 +148,26 @@ func (this *SipUriParams) equalSpecParamsRFC3261(rhs *SipUriParams) bool {
 }
 
 func (this *SipUriParams) Encode(buf *bytes.Buffer) {
-	for i, v := range this.params {
-		if i > 0 {
+	for e := this.Front(); e != nil; e = e.Next() {
+		if e != this.Front() {
 			buf.WriteByte(';')
 		}
-		v.Encode(buf)
+
+		param := e.Value
+		param.Encode(buf)
 	}
 }
 
 func (this *SipUriParams) String() string {
 	str := ""
-	for i, v := range this.params {
-		if i > 0 {
+	for e := this.Front(); e != nil; e = e.Next() {
+		if e != this.Front() {
 			str += ";"
 		}
-		str += v.String()
+
+		param := e.Value
+		str += param.String()
 	}
+
 	return str
 }

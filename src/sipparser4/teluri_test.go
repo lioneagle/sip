@@ -1,12 +1,12 @@
-package sipparser2
+package sipparser3
 
 import (
-	//"fmt"
-	"bytes"
-	"testing"
+//"fmt"
+//"bytes"
+//"testing"
 )
 
-//*
+/*
 func TestTelUriParseOK(t *testing.T) {
 	testdata := []struct {
 		src                      string
@@ -224,31 +224,28 @@ func TestTelUriEqual(t *testing.T) {
 		}
 
 		if !v.equal && uri1.Equal(uri2) {
-			t.Errorf("TestTelUriEqual[%d] failed, should not be equal, uri1 = %s, uri2 = %s\n", i, v.uri1, v.uri2)
+			t.Errorf("TestTelUriEqual[%d] failed, should be not equal, uri1 = %s, uri2 = %s\n", i, v.uri1, v.uri2)
 			continue
 		}
 	}
-} //*/
+}
 
 func BenchmarkTelUriParse(b *testing.B) {
 	b.StopTimer()
 	//v := []byte("tel:861234;x1=5;y;phone-context=abc.com;zz")
-	//v := []byte("tel:861234;x1=5;phone-context=abc.com;zz")
-	v := []byte("tel:861234;x1=5;phone-context=abc.com")
+	v := []byte("tel:861234;x1=5;phone-context=abc.com;zz")
 	context := NewParseContext()
-	uri := NewTelUri()
 
 	b.ReportAllocs()
 	b.SetBytes(2)
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
-		uri.Init()
+		uri := NewTelUri()
 		uri.Parse(context, v, 0)
 	}
 }
 
-/*
 func BenchmarkTelUriString(b *testing.B) {
 	b.StopTimer()
 	v := "tel:861234;x1=5;y;phone-context=abc.com;zz"
@@ -262,15 +259,14 @@ func BenchmarkTelUriString(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		uri.String()
 	}
-}//*/
+}
 
 func BenchmarkTelUriEncode(b *testing.B) {
 	b.StopTimer()
-	//v := []byte("tel:861234;x1=5;y;phone-context=abc.com;zz")
-	v := []byte("tel:861234;x1=5;y;phone-context=abc.com")
+	v := "tel:861234;x1=5;y;phone-context=abc.com;zz"
 	context := NewParseContext()
 	uri := NewTelUri()
-	uri.Parse(context, v, 0)
+	uri.Parse(context, []byte(v), 0)
 	b.ReportAllocs()
 	b.SetBytes(2)
 
@@ -284,5 +280,4 @@ func BenchmarkTelUriEncode(b *testing.B) {
 		uri.Encode(buf)
 	}
 }
-
-//*/
+*/

@@ -1,10 +1,10 @@
-package sipparser2
+package sipparser3
 
 import (
-	"testing"
+//"testing"
 )
 
-//*
+/*
 func TestSipAddrSpecParseOK(t *testing.T) {
 
 	testdata := []struct {
@@ -49,9 +49,9 @@ func TestSipAddrSpecParseOK(t *testing.T) {
 		}
 	}
 }
-
 //*/
 
+/*
 func BenchmarkSipAddrSpecParse(b *testing.B) {
 	b.StopTimer()
 	//v := []byte("sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com")
@@ -67,3 +67,4 @@ func BenchmarkSipAddrSpecParse(b *testing.B) {
 		addr.Parse(context, v, 0)
 	}
 }
+//*/
