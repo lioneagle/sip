@@ -17,11 +17,6 @@ func (this *SipUriHeader) Parse(context *ParseContext, src []byte, pos int) (new
 		return newPos, err
 	}
 
-	if this.name.Empty() {
-		return newPos, &AbnfError{"sip-uri parse: parse sip-uri header failed: empty hname", src, newPos}
-	}
-	this.name.SetExist()
-
 	if newPos >= len(src) {
 		return newPos, &AbnfError{"sip-uri parse: parse header failed: no = after hname", src, newPos}
 	}
@@ -30,14 +25,19 @@ func (this *SipUriHeader) Parse(context *ParseContext, src []byte, pos int) (new
 		return newPos, &AbnfError{"sip-uri parse: parse header failed: no = after hname", src, newPos}
 	}
 
-	newPos, err = this.value.ParseEscapable(context, src, newPos+1, IsSipHvalue)
-	if err != nil {
-		return newPos, err
-	}
+	newPos++
 
 	this.value.SetExist()
 
-	return newPos, nil
+	if newPos >= len(src) {
+		return newPos, nil
+	}
+
+	if !IsSipHvalue(src[newPos]) {
+		return newPos, nil
+	}
+
+	return this.value.ParseEscapable(context, src, newPos, IsSipHvalue)
 }
 
 func (this *SipUriHeader) Encode(buf *bytes.Buffer) {
@@ -69,9 +69,9 @@ func (this *SipUriHeaders) Init() {
 func (this *SipUriHeaders) Size() int   { return len(this.headers) }
 func (this *SipUriHeaders) Empty() bool { return len(this.headers) == 0 }
 func (this *SipUriHeaders) GetHeader(name string) (val *SipUriHeader, ok bool) {
-	for _, v := range this.headers {
+	for i, v := range this.headers {
 		if v.name.EqualStringNoCase(name) {
-			return &v, true
+			return &this.headers[i], true
 		}
 	}
 	return nil, false

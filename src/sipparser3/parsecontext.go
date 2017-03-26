@@ -1,7 +1,7 @@
 package sipparser3
 
 type ParseContext struct {
-	FuncName string
+	EncodeHeaderShorName bool
 }
 
 func NewParseContext() *ParseContext {

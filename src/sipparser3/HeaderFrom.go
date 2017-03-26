@@ -21,6 +21,9 @@ func (this *SipHeaderFrom) Init() {
 	this.params.Init()
 }
 
+func (this *SipHeaderFrom) AllowMulti() bool { return false }
+func (this *SipHeaderFrom) HasValue() bool   { return true }
+
 /* RFC3261
  *
  * From        =  ( "From" / "f" ) HCOLON from-spec
@@ -58,4 +61,12 @@ func (this *SipHeaderFrom) Encode(buf *bytes.Buffer) {
 
 func (this *SipHeaderFrom) String() string {
 	return AbnfEncoderToString(this)
+}
+
+func ParseSipFrom(context *ParseContext, src []byte, pos int) (newPos int, parsed SipHeaderParsed, err error) {
+	from := SipHeaderFrom{}
+	from.Init()
+
+	newPos, err = from.ParseValue(context, src, pos)
+	return newPos, &from, err
 }

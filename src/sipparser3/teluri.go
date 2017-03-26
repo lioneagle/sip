@@ -201,7 +201,7 @@ func (this *TelUri) ParseParams(context *ParseContext, src []byte, pos int) (new
 		}
 
 		if param.name.EqualStringNoCase("phone-context") {
-			this.context.exist = true
+			this.context.SetExist()
 			this.context.isDomainName = (param.value.value[0] != '+')
 			this.context.desc = param.value
 			if !this.context.isDomainName {

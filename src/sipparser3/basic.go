@@ -31,12 +31,7 @@ func (err *AbnfError) Error() string {
 	if err.pos < len(err.src) {
 		return fmt.Sprintf("%s at src[%d]: %s", err.description, err.pos, string(err.src[err.pos:]))
 	}
-	return fmt.Sprintf("%s at end")
-}
-
-type AbnfEncode interface {
-	Encode(buf *bytes.Buffer)
-	String() string
+	return fmt.Sprintf("%s at end", err.description)
 }
 
 func Str2bytes(s string) []byte {
@@ -94,6 +89,20 @@ func (this *AbnfToken) EqualNoCase(rhs *AbnfToken) bool {
 	return EqualNoCase(this.value, rhs.value)
 }
 
+func (this *AbnfToken) EqualBytes(rhs []byte) bool {
+	if !this.exist {
+		return false
+	}
+	return bytes.Equal(this.value, rhs)
+}
+
+func (this *AbnfToken) EqualBytesNoCase(rhs []byte) bool {
+	if !this.exist {
+		return false
+	}
+	return EqualNoCase(this.value, rhs)
+}
+
 func (this *AbnfToken) EqualString(str string) bool {
 	if !this.exist {
 		return false
@@ -114,6 +123,10 @@ func (this *AbnfToken) Parse(context *ParseContext, src []byte, pos int, inChars
 	if err != nil {
 		return newPos, err
 	}
+	if begin >= end {
+		return newPos, &AbnfError{"AbnfToken parse: value is empty", src, newPos}
+	}
+	this.SetExist()
 
 	this.value = src[begin:end]
 	return newPos, nil
@@ -124,6 +137,12 @@ func (this *AbnfToken) ParseEscapable(context *ParseContext, src []byte, pos int
 	if err != nil {
 		return newPos, err
 	}
+
+	if begin >= end {
+		return newPos, &AbnfError{"AbnfToken ParseEscapable: value is empty", src, newPos}
+	}
+
+	this.SetExist()
 
 	this.value = Unescape(context, src[begin:end])
 	//this.value = src[begin:end]
@@ -259,12 +278,12 @@ func parseTokenEscapable(src []byte, pos int, inCharset AbnfIsInCharset) (tokenB
 	return tokenBegin, newPos, newPos, nil
 }
 
-func ParseUInt(src []byte, pos int) (digit, newPos int, ok bool) {
+func ParseUInt(src []byte, pos int) (digit, num, newPos int, ok bool) {
 	if pos >= len(src) || !IsDigit(src[pos]) {
-		return 0, pos, false
+		return 0, 0, pos, false
 	}
 
-	num := 0
+	num = 0
 	digit = 0
 	newPos = pos
 
@@ -274,7 +293,7 @@ func ParseUInt(src []byte, pos int) (digit, newPos int, ok bool) {
 		num++
 	}
 
-	return digit, newPos, true
+	return digit, num, newPos, true
 
 }
 
@@ -309,7 +328,6 @@ func ParseUriScheme(context *ParseContext, src []byte, pos int) (newPos int, sch
 	}
 
 	newPos++
-	scheme.SetExist()
 
 	return newPos, scheme, nil
 }
@@ -377,7 +395,11 @@ func ParseSWS(src []byte, pos int) (newPos int, err error) {
 		return newPos, nil
 	}
 
-	return ParseLWS(src, newPos)
+	newPos1, err := ParseLWS(src, newPos)
+	if err == nil {
+		newPos = newPos1
+	}
+	return newPos, nil
 }
 
 func ParseLWS(src []byte, pos int) (newPos int, err error) {

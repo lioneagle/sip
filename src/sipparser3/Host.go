@@ -1,8 +1,8 @@
 package sipparser3
 
 import (
-	//"fmt"
 	"bytes"
+	//"fmt"
 	"net"
 	"strconv"
 )
@@ -38,17 +38,7 @@ func (this *SipHost) Encode(buf *bytes.Buffer) {
 }
 
 func (this *SipHost) String() string {
-	if this.id == HOST_TYPE_UNKNOWN {
-		return "unknown host"
-	}
-	if this.IsIpv4() {
-		return this.GetIpString()
-	}
-
-	if this.IsIpv6() {
-		return "[" + this.GetIpString() + "]"
-	}
-	return Bytes2str(this.data)
+	return AbnfEncoderToString(this)
 }
 
 func (this *SipHost) IsIpv4() bool     { return this.id == HOST_TYPE_IPV4 }
@@ -150,7 +140,7 @@ func (this *SipHost) parseIpv4(src []byte, pos int) (newPos int, ok bool) {
 		var digit int
 		var ok bool
 
-		digit, newPos, ok = ParseUInt(src, newPos)
+		digit, _, newPos, ok = ParseUInt(src, newPos)
 
 		if !ok || digit > 0xff {
 			return newPos, false
@@ -205,6 +195,7 @@ func (this *SipHostPort) Encode(buf *bytes.Buffer) {
 	if this.hasPort {
 		buf.WriteByte(':')
 		buf.WriteString(strconv.FormatUint(uint64(this.port), 10))
+		//buf.WriteString(fmt.Sprintf(":%d", this.port))
 	}
 }
 
@@ -231,7 +222,7 @@ func (this *SipHostPort) Parse(src []byte, pos int) (newPos int, err error) {
 	var digit int
 	var ok bool
 
-	digit, newPos, ok = ParseUInt(src, newPos)
+	digit, _, newPos, ok = ParseUInt(src, newPos)
 	if !ok {
 		return newPos, &AbnfError{"hostport parse: parse port failed after \":\"", src, newPos}
 	}

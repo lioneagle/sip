@@ -17,12 +17,6 @@ func (this *SipUriParam) Parse(context *ParseContext, src []byte, pos int) (newP
 		return newPos, err
 	}
 
-	if this.name.Empty() {
-		return newPos, &AbnfError{"sip-uri parse: parse sip-uri param failed: empty pname", src, newPos}
-	}
-
-	this.name.SetExist()
-
 	if newPos >= len(src) {
 		return newPos, nil
 	}
@@ -32,11 +26,6 @@ func (this *SipUriParam) Parse(context *ParseContext, src []byte, pos int) (newP
 		if err != nil {
 			return newPos, err
 		}
-
-		if this.value.Empty() {
-			return newPos, &AbnfError{"sip-uri parse: parse sip-uri param failed: empty pvalue", src, newPos}
-		}
-		this.value.SetExist()
 	}
 	return newPos, nil
 }
@@ -70,9 +59,9 @@ func (this *SipUriParams) Init() {
 func (this *SipUriParams) Size() int   { return len(this.params) }
 func (this *SipUriParams) Empty() bool { return len(this.params) == 0 }
 func (this *SipUriParams) GetParam(name string) (val *SipUriParam, ok bool) {
-	for _, v := range this.params {
+	for i, v := range this.params {
 		if v.name.EqualStringNoCase(name) {
-			return &v, true
+			return &this.params[i], true
 		}
 	}
 	return nil, false

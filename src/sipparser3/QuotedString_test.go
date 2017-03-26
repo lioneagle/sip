@@ -49,7 +49,7 @@ func TestSipQuotedStringParseNOK(t *testing.T) {
 		newPos int
 	}{
 		{"abc\"", 0},
-		{"\r\n\"abc\\00\"", len("\r\n")},
+		{"\r\n\"abc\\00\"", 0},
 		{"\r\n \"abc\\", len("\r\n\"abc\\")},
 		{"\r\n \"abc\r\n\\", len("\r\n \"abc\r\n")},
 		{"\r\n \"abc", len("\r\n \"abc")},

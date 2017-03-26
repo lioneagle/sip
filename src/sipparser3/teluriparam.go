@@ -17,8 +17,10 @@ func (this *TelUriContext) SetExist()    { this.exist = true }
 func (this *TelUriContext) SetNonExist() { this.exist = false }
 
 func (this *TelUriContext) Encode(buf *bytes.Buffer) {
-	buf.WriteString(";phone-context=")
-	buf.Write(Escape(this.desc.value, IsTelPvalue))
+	if this.exist {
+		buf.WriteString(";phone-context=")
+		buf.Write(Escape(this.desc.value, IsTelPvalue))
+	}
 }
 
 func (this *TelUriContext) String() string {
@@ -36,12 +38,6 @@ func (this *TelUriParam) Parse(context *ParseContext, src []byte, pos int) (newP
 		return newPos, err
 	}
 
-	if this.name.Empty() {
-		return newPos, &AbnfError{"tel-uri parse: parse tel-uri param failed: empty pname", src, newPos}
-	}
-
-	this.name.SetExist()
-
 	if newPos >= len(src) {
 		return newPos, nil
 	}
@@ -51,11 +47,6 @@ func (this *TelUriParam) Parse(context *ParseContext, src []byte, pos int) (newP
 		if err != nil {
 			return newPos, err
 		}
-
-		if this.value.Empty() {
-			return newPos, &AbnfError{"tel-uri parse: parse tel-uri param failed: empty pvalue", src, newPos}
-		}
-		this.value.SetExist()
 	}
 	return newPos, nil
 }
@@ -69,12 +60,7 @@ func (this *TelUriParam) Encode(buf *bytes.Buffer) {
 }
 
 func (this *TelUriParam) String() string {
-	str := Bytes2str(Escape(this.name.value, IsTelPname))
-	if this.value.Exist() {
-		str += "="
-		str += Bytes2str(Escape(this.value.value, IsTelPvalue))
-	}
-	return str
+	return AbnfEncoderToString(this)
 }
 
 type TelUriParams struct {
@@ -89,9 +75,9 @@ func (this *TelUriParams) Size() int   { return len(this.params) }
 func (this *TelUriParams) Empty() bool { return len(this.params) == 0 }
 
 func (this *TelUriParams) GetParam(name string) (val *TelUriParam, ok bool) {
-	for _, v := range this.params {
+	for i, v := range this.params {
 		if v.name.EqualStringNoCase(name) {
-			return &v, true
+			return &this.params[i], true
 		}
 	}
 	return nil, false
@@ -125,11 +111,5 @@ func (this *TelUriParams) Encode(buf *bytes.Buffer) {
 }
 
 func (this *TelUriParams) String() string {
-	str := ""
-	for _, v := range this.params {
-		str += ";"
-		str += v.String()
-	}
-
-	return str
+	return AbnfEncoderToString(this)
 }

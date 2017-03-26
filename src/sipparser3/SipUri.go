@@ -225,16 +225,17 @@ func (this *SipUri) ParseUserinfo(context *ParseContext, src []byte, pos int) (n
 			return newPos, &AbnfError{"sip-uri parse: parse user-info failed: reach end after user", src, newPos}
 		}
 
-		if this.user.Empty() {
-			return newPos, &AbnfError{"sip-uri parse: parse user-info failed: empty user", src, newPos}
-		}
-
-		this.user.SetExist()
-
 		if src[newPos] == ':' {
-			newPos, err = this.password.ParseEscapable(context, src, newPos+1, IsSipPassword)
-			if err != nil {
-				return newPos, err
+			newPos++
+			if newPos >= len(src) {
+				return newPos, &AbnfError{"sip-uri parse: parse user-info failed: reach end after password :", src, newPos}
+			}
+
+			if IsSipPassword(src[newPos]) {
+				newPos, err = this.password.ParseEscapable(context, src, newPos, IsSipPassword)
+				if err != nil {
+					return newPos, err
+				}
 			}
 			this.password.SetExist()
 		}

@@ -14,9 +14,10 @@ func TestSipHeaderFromParse(t *testing.T) {
 		newPos int
 		encode string
 	}{
-		//{"From: sip:abc@a.com;tag=1", true, len("From: sip:abc@a.com;tag=1"), "From: <sip:abc@a.com>;tag=1"},
-		//{"From: <sip:abc@a.com;user=ip>;tag=1", true, len("From: <sip:abc@a.com;user=ip>;tag=1"), "From: <sip:abc@a.com;user=ip>;tag=1"},
+		{"From: sip:abc@a.com;tag=1", true, len("From: sip:abc@a.com;tag=1"), "From: <sip:abc@a.com>;tag=1"},
+		{"From: <sip:abc@a.com;user=ip>;tag=1", true, len("From: <sip:abc@a.com;user=ip>;tag=1"), "From: <sip:abc@a.com;user=ip>;tag=1"},
 		{"From: abc<sip:abc@a.com;user=ip>;tag=1", true, len("From: abc<sip:abc@a.com;user=ip>;tag=1"), "From: abc<sip:abc@a.com;user=ip>;tag=1"},
+		{"From: tel:+12358;tag=123", true, len("From: tel:+12358;tag=123"), "From: <tel:+12358>;tag=123"},
 	}
 
 	context := NewParseContext()

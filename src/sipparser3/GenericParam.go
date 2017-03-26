@@ -17,6 +17,7 @@ type SipGenericParam struct {
 	name      AbnfToken
 	valueType int
 	value     interface{}
+	parsed    interface{}
 }
 
 func NewSipGenericParam() *SipGenericParam {
@@ -33,12 +34,6 @@ func (this *SipGenericParam) Parse(context *ParseContext, src []byte, pos int) (
 	if err != nil {
 		return newPos, err
 	}
-
-	if this.name.Empty() {
-		return newPos, &AbnfError{"generic-param parse: parse name failed: empty gen-name", src, newPos}
-	}
-
-	this.name.SetExist()
 
 	if newPos >= len(src) {
 		return newPos, nil
@@ -61,7 +56,6 @@ func (this *SipGenericParam) Parse(context *ParseContext, src []byte, pos int) (
 		if err != nil {
 			return newPos, err
 		}
-		token.SetExist()
 		this.valueType = SIP_GENERIC_VALUE_TYPE_TOKEN
 		this.value = token
 	} else if (src[newPos] == '"') || IsLwsChar(src[newPos]) {
@@ -117,9 +111,9 @@ func (this *SipGenericParams) Init() {
 func (this *SipGenericParams) Size() int   { return len(this.params) }
 func (this *SipGenericParams) Empty() bool { return len(this.params) == 0 }
 func (this *SipGenericParams) GetParam(name string) (val *SipGenericParam, ok bool) {
-	for _, v := range this.params {
+	for i, v := range this.params {
 		if v.name.EqualStringNoCase(name) {
-			return &v, true
+			return &this.params[i], true
 		}
 	}
 	return nil, false
@@ -142,7 +136,7 @@ func (this *SipGenericParams) Parse(context *ParseContext, src []byte, pos int, 
 
 		newPos, err = ParseSWSMark(src, newPos, seperator)
 		if err != nil {
-			return newPos, err
+			return newPos, nil
 		}
 
 		param := SipGenericParam{}
