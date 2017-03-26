@@ -1,4 +1,4 @@
-package sipparser2
+package sipparser3
 
 import (
 	"bytes"
@@ -58,7 +58,7 @@ func (this *SipUriHeader) String() string {
 }
 
 type SipUriHeaders struct {
-	AbnfList
+	headers []SipUriHeader
 }
 
 func NewSipUriHeaders() *SipUriHeaders {
@@ -67,13 +67,16 @@ func NewSipUriHeaders() *SipUriHeaders {
 	return ret
 }
 
-func (this *SipUriHeaders) Size() int   { return this.Len() }
-func (this *SipUriHeaders) Empty() bool { return this.Len() == 0 }
+func (this *SipUriHeaders) Init() {
+	this.headers = make([]SipUriHeader, 0, 2)
+}
+
+func (this *SipUriHeaders) Size() int   { return len(this.headers) }
+func (this *SipUriHeaders) Empty() bool { return len(this.headers) == 0 }
 func (this *SipUriHeaders) GetHeader(name string) (val *SipUriHeader, ok bool) {
-	for e := this.Front(); e != nil; e = e.Next() {
-		header := e.Value.(*SipUriHeader)
-		if header.name.EqualStringNoCase(name) {
-			return header, true
+	for _, v := range this.headers {
+		if v.name.EqualStringNoCase(name) {
+			return &v, true
 		}
 	}
 	return nil, false
@@ -86,12 +89,12 @@ func (this *SipUriHeaders) Parse(context *ParseContext, src []byte, pos int) (ne
 	}
 
 	for newPos < len(src) {
-		header := &SipUriHeader{}
+		header := SipUriHeader{}
 		newPos, err = header.Parse(context, src, newPos)
 		if err != nil {
 			return newPos, err
 		}
-		this.PushBack(header)
+		this.headers = append(this.headers, header)
 
 		if newPos >= len(src) {
 			return newPos, nil
@@ -106,45 +109,39 @@ func (this *SipUriHeaders) Parse(context *ParseContext, src []byte, pos int) (ne
 	return newPos, err
 }
 
-func (this *SipUriHeaders) Encode(buf *bytes.Buffer) {
+func (this *SipUriHeaders) EqualRFC3261(rhs *SipUriHeaders) bool {
+	if this.Size() != rhs.Size() {
+		return false
+	}
 
-	for e := this.Front(); e != nil; e = e.Next() {
-		if e != this.Front() {
+	for _, v := range this.headers {
+		header, ok := rhs.GetHeader(v.name.String())
+		if ok {
+			if !header.value.EqualNoCase(&v.value) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func (this *SipUriHeaders) Encode(buf *bytes.Buffer) {
+	for i, v := range this.headers {
+		if i > 0 {
 			buf.WriteByte('&')
 		}
-
-		header := e.Value.(*SipUriHeader)
-		header.Encode(buf)
+		v.Encode(buf)
 	}
 
 }
 
 func (this *SipUriHeaders) String() string {
 	str := ""
-	for e := this.Front(); e != nil; e = e.Next() {
-		if e != this.Front() {
+	for i, v := range this.headers {
+		if i > 0 {
 			str += "&"
 		}
-
-		header := e.Value.(*SipUriHeader)
-		str += header.String()
+		str += v.String()
 	}
 	return str
-}
-
-func (this *SipUriHeaders) EqualRFC3261(rhs *SipUriHeaders) bool {
-	if this.Size() != rhs.Size() {
-		return false
-	}
-
-	for e := this.Front(); e != nil; e = e.Next() {
-		header1 := e.Value.(*SipUriHeader)
-		header2, ok := rhs.GetHeader(header1.name.String())
-		if ok {
-			if !header2.value.EqualNoCase(&header1.value) {
-				return false
-			}
-		}
-	}
-	return true
 }

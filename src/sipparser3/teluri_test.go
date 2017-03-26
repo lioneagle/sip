@@ -1,8 +1,8 @@
-package sipparser2
+package sipparser3
 
 import (
-	//"fmt"
 	"bytes"
+	"fmt"
 	"testing"
 )
 
@@ -127,7 +127,7 @@ func TestTelUriParseNOK(t *testing.T) {
 		src    string
 		newPos int
 	}{
-		{"tel1:+86123", len("tel1:")},
+		{"tel1:+86123", 0},
 		{"tel:+", len("tel:+")},
 	}
 
@@ -246,6 +246,8 @@ func BenchmarkTelUriParse(b *testing.B) {
 		uri.Init()
 		uri.Parse(context, v, 0)
 	}
+	//fmt.Printf("uri = %s\n", uri.String())
+	fmt.Printf("")
 }
 
 /*
@@ -268,6 +270,7 @@ func BenchmarkTelUriEncode(b *testing.B) {
 	b.StopTimer()
 	//v := []byte("tel:861234;x1=5;y;phone-context=abc.com;zz")
 	v := []byte("tel:861234;x1=5;y;phone-context=abc.com")
+	//v := []byte("tel:861234")
 	context := NewParseContext()
 	uri := NewTelUri()
 	uri.Parse(context, v, 0)

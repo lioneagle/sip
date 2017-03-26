@@ -1,4 +1,4 @@
-package sipparser2
+package sipparser3
 
 var charset0 = [256]uint32{
 	0x0a000000, /* position 000 */

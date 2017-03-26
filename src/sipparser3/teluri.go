@@ -1,4 +1,4 @@
-package sipparser2
+package sipparser3
 
 import (
 	//"fmt"
@@ -99,16 +99,12 @@ func (this *TelUri) Equal(uri URI) bool {
 }
 
 func (this *TelUri) ParseScheme(context *ParseContext, src []byte, pos int) (newPos int, err error) {
-	newPos, scheme, err := ParseUriScheme(context, src, pos)
-	if err != nil {
-		return newPos, err
+	src1 := src[pos:]
+	if len(src) >= 4 && ((src1[0] | 0x20) == 't') && ((src1[1] | 0x20) == 'e') && ((src1[2] | 0x20) == 'l') && (src1[3] == ':') {
+		return pos + 4, nil
 	}
 
-	if !EqualNoCase(scheme.value, Str2bytes("tel")) {
-		return newPos, &AbnfError{"tel-uri parse: parse scheme failed: not sip-uri nor sips-uri", src, newPos}
-	}
-
-	return newPos, nil
+	return 0, &AbnfError{"tel-uri parse: parse scheme failed: not tel-uri", src, newPos}
 }
 
 func (this *TelUri) ParseAfterScheme(context *ParseContext, src []byte, pos int) (newPos int, err error) {
@@ -205,7 +201,7 @@ func (this *TelUri) ParseParams(context *ParseContext, src []byte, pos int) (new
 			return newPos, nil
 		}
 
-		param := &TelUriParam{}
+		param := TelUriParam{}
 
 		newPos, err = param.Parse(context, src, newPos+1)
 		if err != nil {
@@ -220,7 +216,7 @@ func (this *TelUri) ParseParams(context *ParseContext, src []byte, pos int) (new
 				this.context.desc.value = this.RemoveVisualSeperator(context, this.context.desc.value)
 			}
 		} else {
-			this.params.PushBack(param)
+			this.params.params = append(this.params.params, param)
 		}
 	}
 

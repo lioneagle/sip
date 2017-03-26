@@ -1,4 +1,4 @@
-package sipparser3
+package sipparser4
 
 import (
 	//"fmt"
@@ -92,7 +92,6 @@ func (this *TelUri) Equal(uri URI) bool {
 
 	return true
 }
-
 
 func (this *TelUri) ParseScheme(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos, scheme, err := ParseUriScheme(context, src, pos)

@@ -1,4 +1,4 @@
-package sipparser2
+package sipparser3
 
 import (
 	//"fmt"
@@ -23,7 +23,7 @@ func (this *TelUriContext) Encode(buf *bytes.Buffer) {
 
 func (this *TelUriContext) String() string {
 	str := ";phone-context="
-        str += Bytes2str(Escape(this.desc.value, IsTelPvalue))
+	str += Bytes2str(Escape(this.desc.value, IsTelPvalue))
 	return str
 }
 
@@ -80,18 +80,20 @@ func (this *TelUriParam) String() string {
 }
 
 type TelUriParams struct {
-	AbnfList
+	params []TelUriParam
 }
 
-func (this *TelUriParams) Size() int   { return this.Len() }
-func (this *TelUriParams) Empty() bool { return this.Len() == 0 }
+func (this *TelUriParams) Init() {
+	this.params = make([]TelUriParam, 0, 2)
+}
+
+func (this *TelUriParams) Size() int   { return len(this.params) }
+func (this *TelUriParams) Empty() bool { return len(this.params) == 0 }
 
 func (this *TelUriParams) GetParam(name string) (val *TelUriParam, ok bool) {
-	for e := this.Front(); e != nil; e = e.Next() {
-		param := e.Value.(*TelUriParam)
-
-		if param.name.EqualStringNoCase(name) {
-			return param, true
+	for _, v := range this.params {
+		if v.name.EqualStringNoCase(name) {
+			return &v, true
 		}
 	}
 	return nil, false
@@ -102,11 +104,10 @@ func (this *TelUriParams) Equal(rhs *TelUriParams) bool {
 		return false
 	}
 
-	for e := this.Front(); e != nil; e = e.Next() {
-		param1 := e.Value.(*TelUriParam)
-		param2, ok := rhs.GetParam(param1.name.String())
+	for _, v := range this.params {
+		param, ok := rhs.GetParam(v.name.String())
 		if ok {
-			if !param2.value.EqualNoCase(&param1.value) {
+			if !param.value.EqualNoCase(&v.value) {
 				return false
 			}
 		} else {
@@ -118,20 +119,18 @@ func (this *TelUriParams) Equal(rhs *TelUriParams) bool {
 }
 
 func (this *TelUriParams) Encode(buf *bytes.Buffer) {
-	for e := this.Front(); e != nil; e = e.Next() {
+	for _, v := range this.params {
 		buf.WriteByte(';')
-		param := e.Value.(*TelUriParam)
-		param.Encode(buf)
+		v.Encode(buf)
 	}
 
 }
 
 func (this *TelUriParams) String() string {
 	str := ""
-	for e := this.Front(); e != nil; e = e.Next() {
+	for _, v := range this.params {
 		str += ";"
-		param := e.Value.(*TelUriParam)
-		str += param.String()
+		str += v.String()
 	}
 
 	return str

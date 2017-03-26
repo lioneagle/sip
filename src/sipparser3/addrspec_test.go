@@ -1,4 +1,4 @@
-package sipparser2
+package sipparser3
 
 import (
 	"testing"

@@ -1,4 +1,4 @@
-package sipparser3
+package sipparser4
 
 import (
 	"bytes"
@@ -325,7 +325,7 @@ func BenchmarkSipUriParse(b *testing.B) {
 	//v := []byte("sip:biloxi.com")
 	//v := []byte("sip:abc@biloxi.com;transport=tcp")
 	v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
-        context := NewParseContext()
+	context := NewParseContext()
 	uri := NewSipUri()
 
 	b.ReportAllocs()

@@ -1,4 +1,4 @@
-package sipparser3
+package sipparser4
 
 type ParseContext struct {
 }

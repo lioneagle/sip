@@ -1,4 +1,4 @@
-package sipparser2
+package sipparser3
 
 import (
 	"bytes"
@@ -6,7 +6,7 @@ import (
 
 type SipHeaderParsed interface {
 	IsHeaderList() bool
-	Parse(src []byte, pos int) (newPos int, err error)
+	Parse(context, src []byte, pos int) (newPos int, err error)
 	String() string
 	Encode(buf *bytes.Buffer)
 }
