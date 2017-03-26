@@ -67,6 +67,6 @@ func ParseSipTo(context *ParseContext, src []byte, pos int) (newPos int, parsed 
 	header := SipHeaderTo{}
 	header.Init()
 
-	newPos, err = header.Parse(context, src, pos)
+	newPos, err = header.ParseValue(context, src, pos)
 	return newPos, &header, err
 }

@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestSipHeaderViaParse(t *testing.T) {
+func TestSipHeaderCseqParse(t *testing.T) {
 
 	testdata := []struct {
 		src    string
@@ -14,42 +14,46 @@ func TestSipHeaderViaParse(t *testing.T) {
 		newPos int
 		encode string
 	}{
-		{"Via: SIP/2.0/UDP 10.4.1.1:5070;branch=123", true, len("Via: SIP/2.0/UDP 10.4.1.1:5070;branch=123"), "Via: SIP/2.0/UDP 10.4.1.1:5070;branch=123"},
+		{"CSeq: 1234 INVITE", true, len("CSeq: 1234 INVITE"), "CSeq: 1234 INVITE"},
+
+		{"CSeq: ", false, len("CSeq: "), ""},
+		{"CSeq: 1234", false, len("CSeq: 1234"), ""},
+		{"CSeq: 1234 \r\nINVITE", false, len("CSeq: 1234 \r\n"), ""},
 	}
 
 	context := NewParseContext()
 
 	for i, v := range testdata {
-		header := NewSipHeaderVia()
+		header := NewSipHeaderCseq()
 		newPos, err := header.Parse(context, []byte(v.src), 0)
 
 		if v.ok && err != nil {
-			t.Errorf("TestSipHeaderViaParse[%d] failed, err = %s\n", i, err)
+			t.Errorf("TestSipHeaderCseqParse[%d] failed, err = %s\n", i, err)
 			continue
 		}
 
 		if !v.ok && err == nil {
-			t.Errorf("TestSipHeaderViaParse[%d] failed, should parse failed", i)
+			t.Errorf("TestSipHeaderCseqParse[%d] failed, should parse failed", i)
 			continue
 		}
 
 		if v.newPos != newPos {
-			t.Errorf("TestSipHeaderViaParse[%d] failed, newPos = %d, wanted = %d\n", i, newPos, v.newPos)
+			t.Errorf("TestSipHeaderCseqParse[%d] failed, newPos = %d, wanted = %d\n", i, newPos, v.newPos)
 		}
 
 		if v.ok && v.encode != header.String() {
-			t.Errorf("TestSipHeaderViaParse[%d] failed, encode = %s, wanted = %s\n", i, header.String(), v.encode)
+			t.Errorf("TestSipHeaderCseqParse[%d] failed, encode = %s, wanted = %s\n", i, header.String(), v.encode)
 			continue
 		}
 	}
 
 }
 
-func BenchmarkSipHeaderViaParse(b *testing.B) {
+func BenchmarkSipHeaderCseqParse(b *testing.B) {
 	b.StopTimer()
-	v := []byte("Via: SIP/2.0/UDP 10.4.1.1:5070;branch=123")
+	v := []byte("CSeq: 1234 INVITE")
 	context := NewParseContext()
-	header := NewSipHeaderVia()
+	header := NewSipHeaderCseq()
 
 	b.ReportAllocs()
 	b.SetBytes(2)
@@ -63,16 +67,17 @@ func BenchmarkSipHeaderViaParse(b *testing.B) {
 	fmt.Printf("")
 }
 
-func BenchmarkSipHeaderViaEncode(b *testing.B) {
+func BenchmarkSipHeaderCseqEncode(b *testing.B) {
 	b.StopTimer()
-	v := []byte("Via: SIP/2.0/UDP 10.4.1.1:5070;branch=123")
+	v := []byte("CSeq: 1234 INVITE")
 	context := NewParseContext()
-	header := NewSipHeaderVia()
+	header := NewSipHeaderCseq()
 	header.Parse(context, v, 0)
 	b.SetBytes(2)
 	b.ReportAllocs()
 
 	buf := bytes.NewBuffer(make([]byte, 1024*1024))
+	//buf := &bytes.Buffer{}
 
 	b.StartTimer()
 

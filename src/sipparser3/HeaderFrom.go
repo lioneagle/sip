@@ -64,9 +64,9 @@ func (this *SipHeaderFrom) String() string {
 }
 
 func ParseSipFrom(context *ParseContext, src []byte, pos int) (newPos int, parsed SipHeaderParsed, err error) {
-	from := SipHeaderFrom{}
-	from.Init()
+	header := SipHeaderFrom{}
+	header.Init()
 
-	newPos, err = from.ParseValue(context, src, pos)
-	return newPos, &from, err
+	newPos, err = header.ParseValue(context, src, pos)
+	return newPos, &header, err
 }

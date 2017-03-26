@@ -40,7 +40,7 @@ func TestSipHeaderFromParse(t *testing.T) {
 			t.Errorf("TestSipHeaderFromParse[%d] failed, newPos = %d, wanted = %d\n", i, newPos, v.newPos)
 		}
 
-		if v.encode != header.String() {
+		if v.ok && v.encode != header.String() {
 			t.Errorf("TestSipHeaderFromParse[%d] failed, encode = %s, wanted = %s\n", i, header.String(), v.encode)
 			continue
 		}

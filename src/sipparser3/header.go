@@ -57,16 +57,17 @@ func (this *SipHeaderInfo) ShortName() AbnfToken { return this.shortName }
 
 var g_SipHeaderInfoMaps = map[string]SipHeaderInfo{
 	"From":    {name: Str2bytes("From"), shortName: AbnfToken{true, Str2bytes("f")}, allowMulti: false, needParse: true, parseFunc: ParseSipFrom},
-	"To":      {name: Str2bytes("To"), shortName: AbnfToken{true, Str2bytes("t")}, allowMulti: false, needParse: false, parseFunc: ParseSipTo},
+	"To":      {name: Str2bytes("To"), shortName: AbnfToken{true, Str2bytes("t")}, allowMulti: false, needParse: true, parseFunc: ParseSipTo},
 	"Via":     {name: Str2bytes("Via"), shortName: AbnfToken{true, Str2bytes("v")}, allowMulti: true, needParse: true, parseFunc: ParseSipVia},
-	"Call-ID": {name: Str2bytes("Call-ID"), shortName: AbnfToken{true, Str2bytes("i")}, allowMulti: false},
-	"CSeq":    {name: Str2bytes("CSeq"), allowMulti: false},
+	"Call-ID": {name: Str2bytes("Call-ID"), shortName: AbnfToken{true, Str2bytes("i")}, allowMulti: false, needParse: true, parseFunc: ParseSipCallId},
+	"CSeq":    {name: Str2bytes("CSeq"), allowMulti: false, needParse: true, parseFunc: ParseSipCseq},
 
 	"Allow":            {name: Str2bytes("Allow"), allowMulti: true},
 	"Contact":          {name: Str2bytes("Contact"), shortName: AbnfToken{true, Str2bytes("m")}, allowMulti: true},
 	"Content-Encoding": {name: Str2bytes("Content-Encoding"), shortName: AbnfToken{true, Str2bytes("e")}, allowMulti: true},
 	"Content-Length":   {name: Str2bytes("Content-Length"), shortName: AbnfToken{true, Str2bytes("l")}, allowMulti: false},
 	"Content-Type":     {name: Str2bytes("Content-Type"), shortName: AbnfToken{true, Str2bytes("l")}, allowMulti: false},
+	"Date":             {name: Str2bytes("Date"), allowMulti: false},
 
 	"Subject":   {name: Str2bytes("Subject"), shortName: AbnfToken{true, Str2bytes("s")}, allowMulti: false},
 	"Supported": {name: Str2bytes("Supported"), shortName: AbnfToken{true, Str2bytes("k")}, allowMulti: true},

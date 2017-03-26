@@ -71,6 +71,9 @@ func TestParseSipHeaders(t *testing.T) {
 		{"Via: SIP/2.0/UDP 10.1.1.1:5060;branch=123\r\n", true, len("Via: SIP/2.0/UDP 10.1.1.1:5060;branch=123\r\n"), "Via: SIP/2.0/UDP 10.1.1.1:5060;branch=123\r\n"},
 		{"Via: SIP/2.0/UDP 10.1.1.1:5060;branch=123\r\nVia: SIP/2.0/TCP 10.1.1.1:5060;branch=456\r\n", true, len("Via: SIP/2.0/UDP 10.1.1.1:5060;branch=123\r\nVia: SIP/2.0/TCP 10.1.1.1:5060;branch=456\r\n"), "Via: SIP/2.0/UDP 10.1.1.1:5060;branch=123, SIP/2.0/TCP 10.1.1.1:5060;branch=456\r\n"},
 		{"Allow: abc, b34\r\nAllow: hhh\r\n", true, len("Allow: abc, b34\r\nAllow: hhh\r\n"), "Allow: abc, b34, hhh\r\n"},
+		{"Call-ID: abc123@a.com\r\n", true, len("Call-ID: abc123@a.com\r\n"), "Call-ID: abc123@a.com\r\n"},
+		{"Date: Sat, 13 Nov 2010 23:29:00 GMT\r\n", true, len("Date: Sat, 13 Nov 2010 23:29:00 GMT\r\n"), "Date: Sat, 13 Nov 2010 23:29:00 GMT\r\n"},
+		{"CSeq: 1234 INVITE\r\n", true, len("CSeq: 1234 INVITE\r\n"), "CSeq: 1234 INVITE\r\n"},
 		//*/
 	}
 
