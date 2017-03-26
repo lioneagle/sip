@@ -184,10 +184,8 @@ func TestParseToken(t *testing.T) {
 		{"IsDigit", IsDigit, "ad6789abc", true, 0, 0, 0},
 	}
 
-	context := NewParseContext()
-
 	for i, v := range wanted {
-		begin, end, newPos, err := parseToken(context, []byte(v.src), 0, v.isInCharset)
+		begin, end, newPos, err := parseToken([]byte(v.src), 0, v.isInCharset)
 		if err != nil {
 			if !v.err {
 				t.Errorf("TestParseToken[%d], %s: parse failed, want success\n", i, v.name)
@@ -227,10 +225,8 @@ func TestParseTokenEscapable(t *testing.T) {
 		{"IsDigit", IsDigit, "%3x%31123%F", true, 0, 0, 0},
 	}
 
-	context := NewParseContext()
-
 	for i, v := range wanted {
-		begin, end, newPos, err := parseTokenEscapable(context, []byte(v.src), 0, v.isInCharset)
+		begin, end, newPos, err := parseTokenEscapable([]byte(v.src), 0, v.isInCharset)
 		if err != nil {
 			if !v.err {
 				t.Errorf("TestParseTokenEscapable[%d], %s: parse failed, want success\n", i, v.name)

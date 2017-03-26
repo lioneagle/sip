@@ -93,7 +93,7 @@ func (this *AbnfToken) EqualStringNoCase(str string) bool {
 }
 
 func (this *AbnfToken) Parse(context *ParseContext, src []byte, pos int, isInCharset func(ch byte) bool) (newPos int, err error) {
-	begin, end, newPos, err := parseToken(context, src, pos, isInCharset)
+	begin, end, newPos, err := parseToken(src, pos, isInCharset)
 	if err != nil {
 		return newPos, err
 	}
@@ -103,7 +103,7 @@ func (this *AbnfToken) Parse(context *ParseContext, src []byte, pos int, isInCha
 }
 
 func (this *AbnfToken) ParseEscapable(context *ParseContext, src []byte, pos int, isInCharset func(ch byte) bool) (newPos int, err error) {
-	begin, end, newPos, err := parseTokenEscapable(context, src, pos, isInCharset)
+	begin, end, newPos, err := parseTokenEscapable(src, pos, isInCharset)
 	if err != nil {
 		return newPos, err
 	}
@@ -214,7 +214,7 @@ func Escape(src []byte, isInCharset func(ch byte) bool) (dst []byte) {
 	return dst
 }
 
-func parseToken(context *ParseContext, src []byte, pos int, isInCharset func(ch byte) bool) (tokenBegin, tokenEnd, newPos int, err error) {
+func parseToken(src []byte, pos int, isInCharset func(ch byte) bool) (tokenBegin, tokenEnd, newPos int, err error) {
 	tokenBegin = pos
 	for newPos = pos; newPos < len(src); newPos++ {
 		if !isInCharset(src[newPos]) {
@@ -224,7 +224,7 @@ func parseToken(context *ParseContext, src []byte, pos int, isInCharset func(ch 
 	return tokenBegin, newPos, newPos, nil
 }
 
-func parseTokenEscapable(context *ParseContext, src []byte, pos int, isInCharset func(ch byte) bool) (tokenBegin, tokenEnd, newPos int, err error) {
+func parseTokenEscapable(src []byte, pos int, isInCharset func(ch byte) bool) (tokenBegin, tokenEnd, newPos int, err error) {
 	tokenBegin = pos
 	for newPos = pos; newPos < len(src); newPos++ {
 		if src[newPos] == '%' {
@@ -295,6 +295,26 @@ func ParseUriScheme(context *ParseContext, src []byte, pos int) (newPos int, sch
 	scheme.SetExist()
 
 	return newPos, scheme, nil
+}
+
+func ParseHcolon(src []byte, pos int) (newPos int, err error) {
+	/* RFC3261 Section 25.1, page 220
+	 *
+	 * HCOLON  =  *( SP / HTAB ) ":" SWS
+	 */
+	newPos = pos
+
+	_, _, newPos, err = parseToken(src, pos, IsWspChar)
+
+	if newPos >= len(src) {
+		return newPos, &AbnfError{"HCOLON parse: reach end before ':'", src, newPos}
+	}
+
+	if src[newPos] != ':' {
+		return newPos, &AbnfError{"HCOLON parse: no ':' after *( SP / HTAB )", src, newPos}
+	}
+
+	return ParseSWS(src, newPos+1)
 }
 
 func ParseSWSMark(src []byte, pos int, mark byte) (newPos int, err error) {

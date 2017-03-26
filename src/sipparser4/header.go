@@ -11,12 +11,9 @@ type SipHeaderParsed interface {
 	Encode(buf *bytes.Buffer)
 }
 
-type SipHeader interface {
-	GetName() []byte
-	GetValue() *AbnfToken
-	GetParsed() SipHeaderParsed
+type SipHeader struct {
 }
 
 type SipHeaderList struct {
-	headers []*SipHeader
+	headers []SipHeader
 }

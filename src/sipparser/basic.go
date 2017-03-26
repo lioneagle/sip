@@ -78,7 +78,7 @@ func (this *AbnfToken) EqualStringNoCase(str string) bool {
 }
 
 func (this *AbnfToken) Parse(context *ParseContext, src []byte, pos int, isInCharset func(ch byte) bool) (newPos int, err error) {
-	begin, end, newPos, err := parseToken(context, src, pos, isInCharset)
+	begin, end, newPos, err := parseToken(src, pos, isInCharset)
 	if err != nil {
 		return newPos, err
 	}
@@ -88,7 +88,7 @@ func (this *AbnfToken) Parse(context *ParseContext, src []byte, pos int, isInCha
 }
 
 func (this *AbnfToken) ParseEscapable(context *ParseContext, src []byte, pos int, isInCharset func(ch byte) bool) (newPos int, err error) {
-	begin, end, newPos, err := parseTokenEscapable(context, src, pos, isInCharset)
+	begin, end, newPos, err := parseTokenEscapable(src, pos, isInCharset)
 	if err != nil {
 		return newPos, err
 	}
@@ -198,7 +198,7 @@ func Escape(src []byte, isInCharset func(ch byte) bool) (dst []byte) {
 	return dst
 }
 
-func parseToken(context *ParseContext, src []byte, pos int, isInCharset func(ch byte) bool) (tokenBegin, tokenEnd, newPos int, err error) {
+func parseToken(src []byte, pos int, isInCharset func(ch byte) bool) (tokenBegin, tokenEnd, newPos int, err error) {
 	tokenBegin = pos
 	for newPos = pos; newPos < len(src); newPos++ {
 		if !isInCharset(src[newPos]) {
@@ -208,7 +208,7 @@ func parseToken(context *ParseContext, src []byte, pos int, isInCharset func(ch 
 	return tokenBegin, newPos, newPos, nil
 }
 
-func parseTokenEscapable(context *ParseContext, src []byte, pos int, isInCharset func(ch byte) bool) (tokenBegin, tokenEnd, newPos int, err error) {
+func parseTokenEscapable(src []byte, pos int, isInCharset func(ch byte) bool) (tokenBegin, tokenEnd, newPos int, err error) {
 	tokenBegin = pos
 	for newPos = pos; newPos < len(src); newPos++ {
 		if src[newPos] == '%' {
