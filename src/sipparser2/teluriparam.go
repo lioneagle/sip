@@ -3,7 +3,7 @@ package sipparser2
 import (
 	//"fmt"
 	"bytes"
-	"strings"
+	//"strings"
 )
 
 type TelUriContext struct {
@@ -12,14 +12,18 @@ type TelUriContext struct {
 	desc         AbnfToken
 }
 
+func (this *TelUriContext) Exist() bool  { return this.exist }
+func (this *TelUriContext) SetExist()    { this.exist = true }
+func (this *TelUriContext) SetNonExist() { this.exist = false }
+
 func (this *TelUriContext) Encode(buf *bytes.Buffer) {
 	buf.WriteString(";phone-context=")
-	this.desc.Encode(buf)
+	buf.Write(Escape(this.desc.value, IsTelPvalue))
 }
 
 func (this *TelUriContext) String() string {
 	str := ";phone-context="
-	str += this.desc.String()
+        str += Bytes2str(Escape(this.desc.value, IsTelPvalue))
 	return str
 }
 
@@ -76,41 +80,21 @@ func (this *TelUriParam) String() string {
 }
 
 type TelUriParams struct {
-	orders []string
-	maps   map[string]*TelUriParam
+	AbnfList
 }
 
-func (this *TelUriParams) Init() {
-	this.orders = make([]string, 0)
-	this.maps = make(map[string]*TelUriParam)
-}
-
-func (this *TelUriParams) Size() int   { return len(this.maps) }
-func (this *TelUriParams) Empty() bool { return len(this.maps) == 0 }
+func (this *TelUriParams) Size() int   { return this.Len() }
+func (this *TelUriParams) Empty() bool { return this.Len() == 0 }
 
 func (this *TelUriParams) GetParam(name string) (val *TelUriParam, ok bool) {
-	val, ok = this.maps[strings.ToLower(name)]
-	return val, ok
-}
+	for e := this.Front(); e != nil; e = e.Next() {
+		param := e.Value.(*TelUriParam)
 
-func (this *TelUriParams) Encode(buf *bytes.Buffer) {
-	for _, v := range this.orders {
-		buf.WriteByte(';')
-		this.maps[v].Encode(buf)
+		if param.name.EqualStringNoCase(name) {
+			return param, true
+		}
 	}
-}
-
-func (this *TelUriParams) String() string {
-	if len(this.maps) == 0 {
-		return ""
-	}
-
-	str := ""
-	for _, v := range this.orders {
-		str += ";"
-		str += this.maps[v].String()
-	}
-	return str
+	return nil, false
 }
 
 func (this *TelUriParams) Equal(rhs *TelUriParams) bool {
@@ -118,15 +102,37 @@ func (this *TelUriParams) Equal(rhs *TelUriParams) bool {
 		return false
 	}
 
-	for _, v := range this.maps {
-		param, ok := rhs.GetParam(v.name.String())
+	for e := this.Front(); e != nil; e = e.Next() {
+		param1 := e.Value.(*TelUriParam)
+		param2, ok := rhs.GetParam(param1.name.String())
 		if ok {
-			if !param.value.EqualNoCase(&v.value) {
+			if !param2.value.EqualNoCase(&param1.value) {
 				return false
 			}
 		} else {
 			return false
 		}
+
 	}
 	return true
+}
+
+func (this *TelUriParams) Encode(buf *bytes.Buffer) {
+	for e := this.Front(); e != nil; e = e.Next() {
+		buf.WriteByte(';')
+		param := e.Value.(*TelUriParam)
+		param.Encode(buf)
+	}
+
+}
+
+func (this *TelUriParams) String() string {
+	str := ""
+	for e := this.Front(); e != nil; e = e.Next() {
+		str += ";"
+		param := e.Value.(*TelUriParam)
+		str += param.String()
+	}
+
+	return str
 }

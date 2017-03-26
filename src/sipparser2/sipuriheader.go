@@ -58,7 +58,7 @@ func (this *SipUriHeader) String() string {
 }
 
 type SipUriHeaders struct {
-	SipList
+	AbnfList
 }
 
 func NewSipUriHeaders() *SipUriHeaders {

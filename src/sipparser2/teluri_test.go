@@ -224,7 +224,7 @@ func TestTelUriEqual(t *testing.T) {
 		}
 
 		if !v.equal && uri1.Equal(uri2) {
-			t.Errorf("TestTelUriEqual[%d] failed, should be not equal, uri1 = %s, uri2 = %s\n", i, v.uri1, v.uri2)
+			t.Errorf("TestTelUriEqual[%d] failed, should not be equal, uri1 = %s, uri2 = %s\n", i, v.uri1, v.uri2)
 			continue
 		}
 	}
@@ -233,15 +233,17 @@ func TestTelUriEqual(t *testing.T) {
 func BenchmarkTelUriParse(b *testing.B) {
 	b.StopTimer()
 	//v := []byte("tel:861234;x1=5;y;phone-context=abc.com;zz")
-	v := []byte("tel:861234;x1=5;phone-context=abc.com;zz")
+	//v := []byte("tel:861234;x1=5;phone-context=abc.com;zz")
+	v := []byte("tel:861234;x1=5;phone-context=abc.com")
 	context := NewParseContext()
+	uri := NewTelUri()
 
 	b.ReportAllocs()
 	b.SetBytes(2)
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
-		uri := NewTelUri()
+		uri.Init()
 		uri.Parse(context, v, 0)
 	}
 }
@@ -264,10 +266,11 @@ func BenchmarkTelUriString(b *testing.B) {
 
 func BenchmarkTelUriEncode(b *testing.B) {
 	b.StopTimer()
-	v := "tel:861234;x1=5;y;phone-context=abc.com;zz"
+	//v := []byte("tel:861234;x1=5;y;phone-context=abc.com;zz")
+	v := []byte("tel:861234;x1=5;y;phone-context=abc.com")
 	context := NewParseContext()
 	uri := NewTelUri()
-	uri.Parse(context, []byte(v), 0)
+	uri.Parse(context, v, 0)
 	b.ReportAllocs()
 	b.SetBytes(2)
 

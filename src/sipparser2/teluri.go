@@ -9,7 +9,6 @@ import (
 type TelUri struct {
 	isGlobalNumber bool
 	number         AbnfToken
-	user           AbnfToken
 	context        TelUriContext
 	params         TelUriParams
 }
@@ -23,6 +22,12 @@ func NewTelUri() *TelUri {
 	uri := &TelUri{}
 	uri.params.Init()
 	return uri
+}
+
+func (this *TelUri) Init() {
+	this.number.SetNonExist()
+	this.context.SetNonExist()
+	this.params.Init()
 }
 
 func (this *TelUri) Scheme() string {
@@ -92,7 +97,6 @@ func (this *TelUri) Equal(uri URI) bool {
 
 	return true
 }
-
 
 func (this *TelUri) ParseScheme(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos, scheme, err := ParseUriScheme(context, src, pos)
@@ -168,7 +172,19 @@ func (this *TelUri) ParseLocalNumber(context *ParseContext, src []byte, pos int)
 	return newPos, nil
 }
 
+func HasVisualSeperator(number []byte) bool {
+	for _, v := range number {
+		if IsTelVisualSperator(v) {
+			return true
+		}
+	}
+	return false
+}
+
 func (this *TelUri) RemoveVisualSeperator(context *ParseContext, number []byte) []byte {
+	if !HasVisualSeperator(number) {
+		return number
+	}
 	newNumber := make([]byte, 0)
 	for _, v := range number {
 		if !IsTelVisualSperator(v) {
@@ -196,8 +212,7 @@ func (this *TelUri) ParseParams(context *ParseContext, src []byte, pos int) (new
 			return newPos, err
 		}
 
-		name := param.name.ToLower()
-		if name == "phone-context" {
+		if param.name.EqualStringNoCase("phone-context") {
 			this.context.exist = true
 			this.context.isDomainName = (param.value.value[0] != '+')
 			this.context.desc = param.value
@@ -205,8 +220,7 @@ func (this *TelUri) ParseParams(context *ParseContext, src []byte, pos int) (new
 				this.context.desc.value = this.RemoveVisualSeperator(context, this.context.desc.value)
 			}
 		} else {
-			this.params.orders = append(this.params.orders, name)
-			this.params.maps[name] = param
+			this.params.PushBack(param)
 		}
 	}
 

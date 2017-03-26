@@ -21,6 +21,7 @@ func TestSipUriParseOK(t *testing.T) {
 		{"sip:123@abc.com;ttl=10;user=phone;a;b;c;d;e?xx=yy&x1=aa", "123", "", "abc.com", false},
 		{"Sip:123:tsdd@[1080::8:800:200c:417a]:5061", "123", "tsdd", "[1080::8:800:200c:417a]:5061", false},
 		{"sip:123:@10.43.12.14", "123", "", "10.43.12.14", false},
+		{"sip:123:@10.43.12.14;x1", "123", "", "10.43.12.14", false},
 		{"sip:%23123%31:@10.43.12.14", "#1231", "", "10.43.12.14", false},
 
 		{"sips:123@abc.com;ttl=10;user=phone;a;b;c;d;e?xx=yy&x1=aa", "123", "", "abc.com", true},

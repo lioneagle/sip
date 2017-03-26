@@ -12,14 +12,18 @@ type TelUriContext struct {
 	desc         AbnfToken
 }
 
+func (this *TelUriContext) Exist() bool  { return this.exist }
+func (this *TelUriContext) SetExist()    { this.exist = true }
+func (this *TelUriContext) SetNonExist() { this.exist = false }
+
 func (this *TelUriContext) Encode(buf *bytes.Buffer) {
 	buf.WriteString(";phone-context=")
-	this.desc.Encode(buf)
+	buf.Write(Escape(this.desc.value, IsTelPvalue))
 }
 
 func (this *TelUriContext) String() string {
 	str := ";phone-context="
-	str += this.desc.String()
+        str += string(Escape(this.desc.value, IsTelPvalue))
 	return str
 }
 

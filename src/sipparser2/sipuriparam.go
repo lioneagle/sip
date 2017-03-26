@@ -23,6 +23,10 @@ func (this *SipUriParam) Parse(context *ParseContext, src []byte, pos int) (newP
 
 	this.name.SetExist()
 
+	if newPos >= len(src) {
+		return newPos, nil
+	}
+
 	if src[newPos] == '=' {
 		newPos, err = this.value.ParseEscapable(context, src, newPos+1, IsSipPvalue)
 		if err != nil {
@@ -55,7 +59,7 @@ func (this *SipUriParam) String() string {
 }
 
 type SipUriParams struct {
-	SipList
+	AbnfList
 }
 
 func NewSipUriParams() *SipUriParams {

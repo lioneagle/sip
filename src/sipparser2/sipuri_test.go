@@ -21,6 +21,7 @@ func TestSipUriParseOK(t *testing.T) {
 		{"sip:123@abc.com;ttl=10;user=phone;a;b;c;d;e?xx=yy&x1=aa", "123", "", "abc.com", false},
 		{"Sip:123:tsdd@[1080::8:800:200c:417a]:5061", "123", "tsdd", "[1080::8:800:200c:417a]:5061", false},
 		{"sip:123:@10.43.12.14", "123", "", "10.43.12.14", false},
+		{"sip:123:@10.43.12.14;x1", "123", "", "10.43.12.14", false},
 		{"sip:%23123%31:@10.43.12.14", "#1231", "", "10.43.12.14", false},
 
 		{"sips:123@abc.com;ttl=10;user=phone;a;b;c;d;e?xx=yy&x1=aa", "123", "", "abc.com", true},
@@ -296,6 +297,7 @@ func TestSipUriEqual(t *testing.T) {
 		}
 	}
 }
+
 //*/
 
 /*
@@ -325,7 +327,7 @@ func BenchmarkSipUriParse(b *testing.B) {
 	//v := []byte("sip:biloxi.com")
 	//v := []byte("sip:abc@biloxi.com;transport=tcp")
 	v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
-        context := NewParseContext()
+	context := NewParseContext()
 	uri := NewSipUri()
 
 	b.ReportAllocs()
@@ -334,7 +336,7 @@ func BenchmarkSipUriParse(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		uri.Init()
-		uri.Parse(context,v, 0)
+		uri.Parse(context, v, 0)
 	}
 	//fmt.Printf("uri = %s\n", uri.String())
 	fmt.Printf("")

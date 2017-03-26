@@ -93,7 +93,6 @@ func (this *TelUri) Equal(uri URI) bool {
 	return true
 }
 
-
 func (this *TelUri) ParseScheme(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos, scheme, err := ParseUriScheme(context, src, pos)
 	if err != nil {
@@ -168,7 +167,19 @@ func (this *TelUri) ParseLocalNumber(context *ParseContext, src []byte, pos int)
 	return newPos, nil
 }
 
+func HasVisualSeperator(number []byte) bool {
+	for _, v := range number {
+		if IsTelVisualSperator(v) {
+			return true
+		}
+	}
+	return false
+}
+
 func (this *TelUri) RemoveVisualSeperator(context *ParseContext, number []byte) []byte {
+	if !HasVisualSeperator(number) {
+		return number
+	}
 	newNumber := make([]byte, 0)
 	for _, v := range number {
 		if !IsTelVisualSperator(v) {

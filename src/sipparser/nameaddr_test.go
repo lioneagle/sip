@@ -26,3 +26,19 @@ func TestSipNameAddrParseOK(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkSipNameAddrSpecParse(b *testing.B) {
+	b.StopTimer()
+	//v := []byte("sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com")
+	//v := []byte("sip:abc@biloxi.com;transport=tcp")
+	v := []byte("<sip:abc@biloxi.com;transport=tcp;method=REGISTER>")
+	context := NewParseContext()
+	b.ReportAllocs()
+	b.SetBytes(2)
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		addr := NewSipNameAddr()
+		addr.Parse(context, v, 0)
+	}
+}
