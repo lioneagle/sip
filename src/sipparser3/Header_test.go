@@ -74,6 +74,7 @@ func TestParseSipHeaders(t *testing.T) {
 		{"Call-ID: abc123@a.com\r\n", true, len("Call-ID: abc123@a.com\r\n"), "Call-ID: abc123@a.com\r\n"},
 		{"Date: Sat, 13 Nov 2010 23:29:00 GMT\r\n", true, len("Date: Sat, 13 Nov 2010 23:29:00 GMT\r\n"), "Date: Sat, 13 Nov 2010 23:29:00 GMT\r\n"},
 		{"CSeq: 1234 INVITE\r\n", true, len("CSeq: 1234 INVITE\r\n"), "CSeq: 1234 INVITE\r\n"},
+		{"Content-Length: 1234\r\n", true, len("Content-Length: 1234\r\n"), "Content-Length: 1234\r\n"},
 		//*/
 	}
 

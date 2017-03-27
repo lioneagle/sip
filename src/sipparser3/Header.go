@@ -56,32 +56,32 @@ func (this *SipHeaderInfo) AllowMulti() bool     { return this.allowMulti }
 func (this *SipHeaderInfo) ShortName() AbnfToken { return this.shortName }
 
 var g_SipHeaderInfoMaps = map[string]SipHeaderInfo{
-	"From":    {name: Str2bytes("From"), shortName: AbnfToken{true, Str2bytes("f")}, allowMulti: false, needParse: true, parseFunc: ParseSipFrom},
-	"To":      {name: Str2bytes("To"), shortName: AbnfToken{true, Str2bytes("t")}, allowMulti: false, needParse: true, parseFunc: ParseSipTo},
+	"From":    {name: Str2bytes("From"), shortName: AbnfToken{true, Str2bytes("f")}, needParse: true, parseFunc: ParseSipFrom},
+	"To":      {name: Str2bytes("To"), shortName: AbnfToken{true, Str2bytes("t")}, needParse: true, parseFunc: ParseSipTo},
 	"Via":     {name: Str2bytes("Via"), shortName: AbnfToken{true, Str2bytes("v")}, allowMulti: true, needParse: true, parseFunc: ParseSipVia},
-	"Call-ID": {name: Str2bytes("Call-ID"), shortName: AbnfToken{true, Str2bytes("i")}, allowMulti: false, needParse: true, parseFunc: ParseSipCallId},
-	"CSeq":    {name: Str2bytes("CSeq"), allowMulti: false, needParse: true, parseFunc: ParseSipCseq},
+	"Call-ID": {name: Str2bytes("Call-ID"), shortName: AbnfToken{true, Str2bytes("i")}, needParse: true, parseFunc: ParseSipCallId},
+	"CSeq":    {name: Str2bytes("CSeq"), needParse: true, parseFunc: ParseSipCseq},
 
 	"Allow":            {name: Str2bytes("Allow"), allowMulti: true},
 	"Contact":          {name: Str2bytes("Contact"), shortName: AbnfToken{true, Str2bytes("m")}, allowMulti: true},
 	"Content-Encoding": {name: Str2bytes("Content-Encoding"), shortName: AbnfToken{true, Str2bytes("e")}, allowMulti: true},
-	"Content-Length":   {name: Str2bytes("Content-Length"), shortName: AbnfToken{true, Str2bytes("l")}, allowMulti: false},
-	"Content-Type":     {name: Str2bytes("Content-Type"), shortName: AbnfToken{true, Str2bytes("l")}, allowMulti: false},
-	"Date":             {name: Str2bytes("Date"), allowMulti: false},
+	"Content-Length":   {name: Str2bytes("Content-Length"), shortName: AbnfToken{true, Str2bytes("l")}, needParse: true, parseFunc: ParseSipContentLength},
+	"Content-Type":     {name: Str2bytes("Content-Type"), shortName: AbnfToken{true, Str2bytes("l")}},
+	"Date":             {name: Str2bytes("Date")},
 
-	"Subject":   {name: Str2bytes("Subject"), shortName: AbnfToken{true, Str2bytes("s")}, allowMulti: false},
+	"Subject":   {name: Str2bytes("Subject"), shortName: AbnfToken{true, Str2bytes("s")}},
 	"Supported": {name: Str2bytes("Supported"), shortName: AbnfToken{true, Str2bytes("k")}, allowMulti: true},
 
-	"Allow-Events": {name: Str2bytes("Allow-Events"), shortName: AbnfToken{true, Str2bytes("u")}, allowMulti: true},
-	"Event":        {name: Str2bytes("Event"), shortName: AbnfToken{true, Str2bytes("o")}, allowMulti: false},
+	"Allow-Events": {name: Str2bytes("Allow-Events"), shortName: AbnfToken{true, Str2bytes("u")}},
+	"Event":        {name: Str2bytes("Event"), shortName: AbnfToken{true, Str2bytes("o")}},
 
-	"Refer-To":            {name: Str2bytes("Refer-To"), shortName: AbnfToken{true, Str2bytes("r")}, allowMulti: false},
+	"Refer-To":            {name: Str2bytes("Refer-To"), shortName: AbnfToken{true, Str2bytes("r")}},
 	"Accept-Contact":      {name: Str2bytes("Accept-Contact"), shortName: AbnfToken{true, Str2bytes("a")}, allowMulti: true},
 	"Reject-Contact":      {name: Str2bytes("Reject-Contact"), shortName: AbnfToken{true, Str2bytes("j")}, allowMulti: true},
 	"Request-Disposition": {name: Str2bytes("Request-Disposition"), shortName: AbnfToken{true, Str2bytes("d")}, allowMulti: true},
 
-	"Referred-By":     {name: Str2bytes("Referred-By"), shortName: AbnfToken{true, Str2bytes("b")}, allowMulti: false},
-	"Session-Expires": {name: Str2bytes("Session-Expires"), shortName: AbnfToken{true, Str2bytes("xvchaogaosuc")}, allowMulti: false},
+	"Referred-By":     {name: Str2bytes("Referred-By"), shortName: AbnfToken{true, Str2bytes("b")}},
+	"Session-Expires": {name: Str2bytes("Session-Expires"), shortName: AbnfToken{true, Str2bytes("xvchaogaosuc")}},
 }
 
 func GetSipHeaderInfo(name string) (info *SipHeaderInfo, ok bool) {
