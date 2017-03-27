@@ -213,11 +213,7 @@ func (this *SipHeaders) ParseSingleKnownHeader(context *ParseContext, src []byte
 			newHeader.value.SetValue(src[begin:newPos])
 		}
 		this.singleHeaders.AddHeader(&newHeader)
-
-		if ((newPos + 1) >= len(src)) || !(src[newPos] == '\r' && src[newPos+1] == '\n') {
-			return newPos, &AbnfError{"multi-header parse: no last CRLF", src, newPos}
-		}
-		return newPos + 2, nil
+		return ParseCRLF(src, newPos)
 	} else {
 		newHeader := SipSingleHeader{name: AbnfToken{true, info.name}, info: info}
 		newHeader.Init()
@@ -263,10 +259,7 @@ func (this *SipHeaders) ParseMultiKnownHeader(context *ParseContext, src []byte,
 			newPos1, err = ParseSWSMark(src, newPos, ',')
 			if err != nil {
 				/* should be CRLF */
-				if ((newPos + 1) >= len(src)) || !(src[newPos] == '\r' && src[newPos+1] == '\n') {
-					return newPos, &AbnfError{"multi-header parse: no last CRLF", src, newPos}
-				}
-				return newPos + 2, nil
+				return ParseCRLF(src, newPos)
 			}
 			newPos = newPos1
 

@@ -2,7 +2,6 @@ package sipparser3
 
 import (
 	"bytes"
-	"strconv"
 	//"fmt"
 	//"strings"
 )
@@ -61,7 +60,7 @@ func (this *SipHeaderCseq) ParseValue(context *ParseContext, src []byte, pos int
 
 func (this *SipHeaderCseq) Encode(buf *bytes.Buffer) {
 	buf.WriteString("CSeq: ")
-	buf.WriteString(strconv.FormatUint(uint64(this.id), 10))
+	EncodeUInt(buf, uint64(this.id))
 	buf.WriteByte(' ')
 	this.method.Encode(buf)
 }

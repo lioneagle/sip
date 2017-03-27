@@ -58,12 +58,12 @@ func BenchmarkSipAddrSpecParse(b *testing.B) {
 	//v := []byte("sip:abc@biloxi.com;transport=tcp")
 	v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
 	context := NewParseContext()
+	addr := NewSipAddrSpec()
 	b.ReportAllocs()
 	b.SetBytes(2)
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
-		addr := NewSipAddrSpec()
 		addr.Parse(context, v, 0)
 	}
 }

@@ -5,6 +5,7 @@ import (
 	//"container/list"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"unsafe"
 )
@@ -493,4 +494,15 @@ func ParseRightAngleQuote(src []byte, pos int) (newPos int, err error) {
 	}
 
 	return ParseSWS(src, newPos+1)
+}
+
+func ParseCRLF(src []byte, pos int) (newPos int, err error) {
+	if ((pos + 1) >= len(src)) || (src[pos] != '\r') || (src[pos+1] != '\n') {
+		return pos, &AbnfError{"CRLF parse: wrong CRLF", src, pos}
+	}
+	return pos + 2, nil
+}
+
+func EncodeUInt(buf *bytes.Buffer, digit uint64) {
+	buf.WriteString(strconv.FormatUint(uint64(digit), 10))
 }
