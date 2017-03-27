@@ -24,8 +24,7 @@ func (this *SipHeaderContentLength) HasValue() bool   { return true }
 
 /* RFC3261
  *
- * CSeq  =  "CSeq" HCOLON 1*DIGIT LWS Method
- *
+ * Content-Length  =  ( "Content-Length" / "l" ) HCOLON 1*DIGIT
  */
 func (this *SipHeaderContentLength) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	name, newPos, err := ParseHeaderName(context, src, pos)
