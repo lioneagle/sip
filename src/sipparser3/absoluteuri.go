@@ -1,3 +1,0 @@
-package sipparser3
-
-/* */
