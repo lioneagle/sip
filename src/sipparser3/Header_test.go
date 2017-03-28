@@ -77,6 +77,7 @@ func TestParseSipHeaders(t *testing.T) {
 		{"Content-Length: 1234\r\n", true, len("Content-Length: 1234\r\n"), "Content-Length: 1234\r\n"},
 		{"Content-Type: application/isup\r\n", true, len("Content-Type: application/isup\r\n"), "Content-Type: application/isup\r\n"},
 		{"Max-Forwards: 1234\r\n", true, len("Max-Forwards: 1234\r\n"), "Max-Forwards: 1234\r\n"},
+		{"Route: <tel:12345>\r\nRoute: <sip:456@a.com>\r\n", true, len("Route: <tel:12345>\r\nRoute: <sip:456@a.com>\r\n"), "Route: <tel:12345>, <sip:456@a.com>\r\n"},
 		//*/
 	}
 

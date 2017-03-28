@@ -5,24 +5,47 @@ import (
 )
 
 //*
-func TestSipNameAddrParseOK(t *testing.T) {
+func TestSipNameAddrParse(t *testing.T) {
 
 	testdata := []struct {
-		src string
+		src    string
+		ok     bool
+		newPos int
+		encode string
 	}{
-		{"<sip:123@abc.com;ttl=10;user=phone;a;b;c;d;e?xx=yy&x1=aa>"},
-		{"\"abc\"<sips:123:tsdd@[1080::8:800:200c:417a]:5061>"},
-		{"abc def ee<tel:861234;phone-context=+123>"},
+		{"<sip:123@abc.com;ttl=10;user=phone;a;b;c;d;e?xx=yy&x1=aa>", true, len("<sip:123@abc.com;ttl=10;user=phone;a;b;c;d;e?xx=yy&x1=aa>"), "<sip:123@abc.com;ttl=10;user=phone;a;b;c;d;e?xx=yy&x1=aa>"},
+		{"\"abc\"<sips:123:tsdd@[1080::8:800:200c:417a]:5061>", true, len("\"abc\"<sips:123:tsdd@[1080::8:800:200c:417a]:5061>"), "\"abc\"<sips:123:tsdd@[1080::8:800:200c:417a]:5061>"},
+		{"abc def ee<tel:861234;phone-context=+123>", true, len("abc def ee<tel:861234;phone-context=+123>"), "abc def ee<tel:861234;phone-context=+123>"},
+
+		{"\"", false, len("\""), ""},
+		{"\r\n<tel:123>", false, len(""), ""},
+		{"a b@ c<tel:123>", false, len("a b"), ""},
+		{"<tel:", false, len("<tel:"), ""},
+		{"<tel:123", false, len("<tel:123"), ""},
 	}
 
 	context := NewParseContext()
 
 	for i, v := range testdata {
 		nameaddr := NewSipNameAddr()
+		newPos, err := nameaddr.Parse(context, []byte(v.src), 0)
 
-		_, err := nameaddr.Parse(context, []byte(v.src), 0)
-		if err != nil {
-			t.Errorf("TestSipNameAddrParseOK[%d] failed, %s\n", i, err.Error())
+		if v.ok && err != nil {
+			t.Errorf("TestSipNameAddrParse[%d] failed, err = %s\n", i, err)
+			continue
+		}
+
+		if !v.ok && err == nil {
+			t.Errorf("TestSipNameAddrParse[%d] failed, should parse failed", i)
+			continue
+		}
+
+		if v.newPos != newPos {
+			t.Errorf("TestSipNameAddrParse[%d] failed, newPos = %d, wanted = %d\n", i, newPos, v.newPos)
+		}
+
+		if v.ok && v.encode != nameaddr.String() {
+			t.Errorf("TestSipNameAddrParse[%d] failed, encode = %s, wanted = %s\n", i, nameaddr.String(), v.encode)
 			continue
 		}
 	}

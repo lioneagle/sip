@@ -5,46 +5,85 @@ import (
 )
 
 //*
-func TestSipAddrSpecParseOK(t *testing.T) {
+func TestSipAddrSpecParse(t *testing.T) {
 
 	testdata := []struct {
-		src      string
-		parseOk  bool
-		isSipUri bool
-		isTelUri bool
+		src    string
+		ok     bool
+		newPos int
+		encode string
 	}{
-		{"sip:123@abc.com;ttl=10;user=phone;a;b;c;d;e?xx=yy&x1=aa", true, true, false},
-		{"sips:123:tsdd@[1080::8:800:200c:417a]:5061", true, true, false},
-		{"tel:861234;phone-context=+123", true, false, true},
-		{"http://861234/phone-context=+123", false, false, false},
+		{"sip:123@abc.com;ttl=10;user=phone;a;b;c;d;e?xx=yy&x1=aa", true, len("sip:123@abc.com;ttl=10;user=phone;a;b;c;d;e?xx=yy&x1=aa"), "sip:123@abc.com;ttl=10;user=phone;a;b;c;d;e?xx=yy&x1=aa"},
+		{"sips:123:tsdd@[1080::8:800:200c:417a]:5061", true, len("sips:123:tsdd@[1080::8:800:200c:417a]:5061"), "sips:123:tsdd@[1080::8:800:200c:417a]:5061"},
+		{"tel:861234;phone-context=+123", true, len("tel:861234;phone-context=+123"), "tel:861234;phone-context=+123"},
+
+		{"httpx://861234/phone-context=+123", false, len("httpx:"), ""},
 	}
 
 	context := NewParseContext()
 
 	for i, v := range testdata {
 		addrsepc := NewSipAddrSpec()
+		newPos, err := addrsepc.Parse(context, []byte(v.src), 0)
 
-		_, err := addrsepc.Parse(context, []byte(v.src), 0)
-		if err != nil && v.parseOk {
-			t.Errorf("TestSipAddrSpecParseOK[%d] failed, %s\n", i, err.Error())
+		if v.ok && err != nil {
+			t.Errorf("TestSipAddrSpecParse[%d] failed, err = %s\n", i, err)
 			continue
 		}
 
-		if err == nil && !v.parseOk {
-			t.Errorf("TestSipAddrSpecParseOK[%d] failed, parse failed wanted\n", i)
+		if !v.ok && err == nil {
+			t.Errorf("TestSipAddrSpecParse[%d] failed, should parse failed", i)
 			continue
 		}
 
-		_, isSipUri := addrsepc.IsSipUri()
-		_, isTelUri := addrsepc.IsTelUri()
+		if v.newPos != newPos {
+			t.Errorf("TestSipNameAddrParse[%d] failed, newPos = %d, wanted = %d\n", i, newPos, v.newPos)
+		}
 
-		if v.isSipUri && !isSipUri {
-			t.Errorf("TestSipAddrSpecParseOK[%d] failed, sip-uri wanted\n", i)
+		if v.ok && v.encode != addrsepc.String() {
+			t.Errorf("TestSipAddrSpecParse[%d] failed, encode = %s, wanted = %s\n", i, addrsepc.String(), v.encode)
+			continue
+		}
+	}
+}
+
+func TestSipAddrSpecParseWithouParam(t *testing.T) {
+
+	testdata := []struct {
+		src    string
+		ok     bool
+		newPos int
+		encode string
+	}{
+		{"sip:123@abc.com;ttl=10;user=phone;a;b;c;d;e?xx=yy&x1=aa", true, len("sip:123@abc.com"), "sip:123@abc.com"},
+		{"sips:123:tsdd@[1080::8:800:200c:417a]:5061", true, len("sips:123:tsdd@[1080::8:800:200c:417a]:5061"), "sips:123:tsdd@[1080::8:800:200c:417a]:5061"},
+		{"tel:861234;phone-context=+123", true, len("tel:861234"), "tel:861234"},
+
+		{"httpx://861234/phone-context=+123", false, len("httpx:"), ""},
+	}
+
+	context := NewParseContext()
+
+	for i, v := range testdata {
+		addrsepc := NewSipAddrSpec()
+		newPos, err := addrsepc.ParseWithoutParam(context, []byte(v.src), 0)
+
+		if v.ok && err != nil {
+			t.Errorf("TestSipAddrSpecParseWithouParam[%d] failed, err = %s\n", i, err)
 			continue
 		}
 
-		if v.isTelUri && !isTelUri {
-			t.Errorf("TestSipAddrSpecParseOK[%d] failed, tel-uri wanted\n", i)
+		if !v.ok && err == nil {
+			t.Errorf("TestSipAddrSpecParseWithouParam[%d] failed, should parse failed", i)
+			continue
+		}
+
+		if v.newPos != newPos {
+			t.Errorf("TestSipAddrSpecParseWithouParam[%d] failed, newPos = %d, wanted = %d\n", i, newPos, v.newPos)
+		}
+
+		if v.ok && v.encode != addrsepc.String() {
+			t.Errorf("TestSipAddrSpecParseWithouParam[%d] failed, encode = %s, wanted = %s\n", i, addrsepc.String(), v.encode)
 			continue
 		}
 	}

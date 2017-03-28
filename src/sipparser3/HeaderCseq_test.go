@@ -16,6 +16,8 @@ func TestSipHeaderCseqParse(t *testing.T) {
 	}{
 		{"CSeq: 1234 INVITE", true, len("CSeq: 1234 INVITE"), "CSeq: 1234 INVITE"},
 
+		{" CSeq: ", false, 0, ""},
+		{"CSeq2: ", false, len("CSeq2: "), ""},
 		{"CSeq: ", false, len("CSeq: "), ""},
 		{"CSeq: 1234", false, len("CSeq: 1234"), ""},
 		{"CSeq: 1234 \r\nINVITE", false, len("CSeq: 1234 \r\n"), ""},

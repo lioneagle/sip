@@ -171,7 +171,7 @@ func TestSipUriHeadersParseOK(t *testing.T) {
 	}
 }
 
-func TestSipUriUserinfoParseNOK(t *testing.T) {
+func TestSipUriParseNOK(t *testing.T) {
 
 	testdata := []struct {
 		src    string
@@ -184,9 +184,13 @@ func TestSipUriUserinfoParseNOK(t *testing.T) {
 		{"sip:#123@abc.com", len("sip:")},
 		{"sip:123:2#@abc.com", len("sip:123:2")},
 		{"sip:123:2@abc.com;;", len("sip:123:2@abc.com;")},
+		{"sip:123:2@abc.com;", len("sip:123:2@abc.com;")},
 		{"sip:123:2@abc.com;a=;", len("sip:123:2@abc.com;a=")},
 		{"sip:123:2@abc.com;ttl=10?q", len("sip:123:2@abc.com;ttl=10?q")},
 		{"sip:123:2@abc.com;a=b?", len("sip:123:2@abc.com;a=b?")},
+
+		{"sip:123:2@abc.com;a=b?@", len("sip:123:2@abc.com;a=b?")},
+		{"sip:123:2@abc.com;a=b?c", len("sip:123:2@abc.com;a=b?c")},
 	}
 
 	context := NewParseContext()

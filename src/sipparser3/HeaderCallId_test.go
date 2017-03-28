@@ -16,8 +16,12 @@ func TestSipHeaderCallIdParse(t *testing.T) {
 	}{
 		{"Call-ID: abc123@a.com", true, len("Call-ID: abc123@a.com"), "Call-ID: abc123@a.com"},
 		{"Call-ID: abc123", true, len("Call-ID: abc123"), "Call-ID: abc123"},
+		{"Call-ID: abc123\r\n", true, len("Call-ID: abc123"), "Call-ID: abc123"},
 
+		{" Call-ID: abc123@", false, 0, ""},
+		{"Call-ID1: abc123@", false, len("Call-ID1: "), ""},
 		{"Call-ID: abc123@", false, len("Call-ID: abc123@"), ""},
+		{"Call-ID: @abc", false, len("Call-ID: "), ""},
 	}
 
 	context := NewParseContext()

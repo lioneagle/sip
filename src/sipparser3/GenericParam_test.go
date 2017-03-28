@@ -58,9 +58,16 @@ func TestGenericParamsParse(t *testing.T) {
 		encode string
 	}{
 		{";a=b", true, len(";a=b"), ";a=b"},
+		{";a=b;c", true, len(";a=b;c"), ";a=b;c"},
 		{";a=b;c=d", true, len(";a=b;c=d"), ";a=b;c=d"},
 		{";a=b\r\n\t;c=d", true, len(";a=b\r\n\t;c=d"), ";a=b;c=d"},
 		{";a=b\r\n\t; c\r\n = d", true, len(";a=b\r\n\t; c\r\n = d"), ";a=b;c=d"},
+
+		{";a=", false, len(";a="), ""},
+		{";@=", false, len(";"), ""},
+		{";a\r\n=", false, len(";a"), ""},
+		{";a=\"ac", false, len(";a=\"ac"), ""},
+		{";a=@", false, len(";a="), ""},
 	}
 
 	context := NewParseContext()
@@ -83,7 +90,7 @@ func TestGenericParamsParse(t *testing.T) {
 			t.Errorf("TestGenericParamsParse[%d] failed, newPos = %d, wanted = %d\n", i, newPos, v.newPos)
 		}
 
-		if v.encode != params.String(';') {
+		if v.ok && v.encode != params.String(';') {
 			t.Errorf("TestGenericParamsParse[%d] failed, encode = %s, wanted = %s\n", i, params.String(';'), v.encode)
 			continue
 		}

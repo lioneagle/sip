@@ -18,6 +18,10 @@ func TestSipHeaderFromParse(t *testing.T) {
 		{"From: <sip:abc@a.com;user=ip>;tag=1", true, len("From: <sip:abc@a.com;user=ip>;tag=1"), "From: <sip:abc@a.com;user=ip>;tag=1"},
 		{"From: abc<sip:abc@a.com;user=ip>;tag=1", true, len("From: abc<sip:abc@a.com;user=ip>;tag=1"), "From: abc<sip:abc@a.com;user=ip>;tag=1"},
 		{"From: tel:+12358;tag=123", true, len("From: tel:+12358;tag=123"), "From: <tel:+12358>;tag=123"},
+
+		{" From: <sip:abc@a.com>;tag=1", false, 0, "0"},
+		{"From1: <sip:abc@a.com>;tag=1", false, len("From1: "), ""},
+		{"From: ", false, len("From: "), ""},
 	}
 
 	context := NewParseContext()

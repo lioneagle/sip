@@ -34,21 +34,29 @@ func (this *SipDisplayName) Parse(context *ParseContext, src []byte, pos int) (n
 	 * display-name   =  *(token LWS)/ quoted-string
 	 */
 	newPos = pos
+	if newPos >= len(src) {
+		return newPos, nil
+	}
 
 	newPos, err = ParseSWS(src, newPos)
 	if err != nil {
 		return newPos, err
 	}
 
-	if src[newPos] == '"' {
+	if newPos < len(src) && src[newPos] == '"' {
+		this.isQuotedString = true
 		newPos, err = this.quotedstring.Parse(context, src, newPos)
 		if err != nil {
 			return newPos, err
 		}
-		this.isQuotedString = true
-	} else if IsSipToken(src[newPos]) {
-		nameBegin := newPos
+	} else {
+		this.isQuotedString = false
+		newPos = pos
+		if !IsSipToken(src[newPos]) {
+			return newPos, &AbnfError{"DisplayName parse: no token or quoted-string", src, newPos}
+		}
 
+		nameBegin := newPos
 		for newPos < len(src) {
 			if !IsSipToken(src[newPos]) {
 				break
@@ -100,9 +108,21 @@ func (this *SipNameAddr) Parse(context *ParseContext, src []byte, pos int) (newP
 	 * LAQUOT  =  SWS "<"; left angle quote
 	 */
 	newPos = pos
-	newPos, err = this.displayname.Parse(context, src, newPos)
+
+	newPos, err = ParseSWS(src, newPos)
 	if err != nil {
 		return newPos, err
+	}
+
+	if newPos >= len(src) {
+		return newPos, &AbnfError{"SipNameAddr parse: no value", src, newPos}
+	}
+
+	if src[newPos] != '<' {
+		newPos, err = this.displayname.Parse(context, src, newPos)
+		if err != nil {
+			return newPos, err
+		}
 	}
 
 	newPos, err = ParseLeftAngleQuote(src, newPos)

@@ -100,7 +100,7 @@ func (this *TelUri) ParseScheme(context *ParseContext, src []byte, pos int) (new
 	}
 
 	if !EqualNoCase(scheme.value, []byte("tel")) {
-		return newPos, &AbnfError{"tel-uri parse: parse scheme failed: not sip-uri nor sips-uri", src, newPos}
+		return newPos, &AbnfError{"tel-uri parse: parse scheme failed", src, newPos}
 	}
 
 	return newPos, nil
@@ -122,7 +122,11 @@ func (this *TelUri) ParseAfterScheme(context *ParseContext, src []byte, pos int)
 }
 
 func (this *TelUri) ParseNumber(context *ParseContext, src []byte, pos int) (newPos int, err error) {
-	if src[pos] == '+' {
+	newPos = pos
+	if newPos >= len(src) {
+		return newPos, &AbnfError{"tel-uri parse: no number after scheme", src, newPos}
+	}
+	if src[newPos] == '+' {
 		this.SetGlobalNumber()
 		return this.ParseGlobalNumber(context, src, pos)
 	}

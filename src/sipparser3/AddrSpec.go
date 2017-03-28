@@ -32,8 +32,16 @@ func (this *SipAddrSpec) Parse(context *ParseContext, src []byte, pos int) (newP
 		return newPos, err
 	}
 
-	if scheme.EqualStringNoCase("sip") || scheme.EqualStringNoCase("sips") {
+	if scheme.EqualStringNoCase("sip") {
 		sipuri := NewSipUri()
+		sipuri.SetSipUri()
+		this.uri = sipuri
+		return sipuri.ParseAfterScheme(context, src, newPos)
+	}
+
+	if scheme.EqualStringNoCase("sips") {
+		sipuri := NewSipUri()
+		sipuri.SetSipsUri()
 		this.uri = sipuri
 		return sipuri.ParseAfterScheme(context, src, newPos)
 	}
@@ -53,8 +61,16 @@ func (this *SipAddrSpec) ParseWithoutParam(context *ParseContext, src []byte, po
 		return newPos, err
 	}
 
-	if scheme.EqualStringNoCase("sip") || scheme.EqualStringNoCase("sips") {
+	if scheme.EqualStringNoCase("sip") {
 		sipuri := NewSipUri()
+		sipuri.SetSipUri()
+		this.uri = sipuri
+		return sipuri.ParseAfterSchemeWithoutParam(context, src, newPos)
+	}
+
+	if scheme.EqualStringNoCase("sips") {
+		sipuri := NewSipUri()
+		sipuri.SetSipsUri()
 		this.uri = sipuri
 		return sipuri.ParseAfterSchemeWithoutParam(context, src, newPos)
 	}

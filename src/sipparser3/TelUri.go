@@ -1,8 +1,8 @@
 package sipparser3
 
 import (
-	//"fmt"
 	"bytes"
+	//"fmt"
 	//"strings"
 )
 
@@ -92,7 +92,7 @@ func (this *TelUri) ParseScheme(context *ParseContext, src []byte, pos int) (new
 		return pos + 4, nil
 	}
 
-	return 0, &AbnfError{"tel-uri parse: parse scheme failed: not tel-uri", src, newPos}
+	return 0, &AbnfError{"tel-uri parse: parse scheme failed", src, newPos}
 }
 
 func (this *TelUri) ParseAfterScheme(context *ParseContext, src []byte, pos int) (newPos int, err error) {
@@ -115,13 +115,18 @@ func (this *TelUri) ParseAfterSchemeWithoutParam(context *ParseContext, src []by
 }
 
 func (this *TelUri) ParseNumber(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	newPos = pos
+	if newPos >= len(src) {
+		return newPos, &AbnfError{"tel-uri parse: no number after scheme", src, newPos}
+	}
+
 	if src[pos] == '+' {
 		this.SetGlobalNumber()
-		return this.ParseGlobalNumber(context, src, pos)
+		return this.ParseGlobalNumber(context, src, newPos)
 	}
 
 	this.SetLocalNumber()
-	return this.ParseLocalNumber(context, src, pos)
+	return this.ParseLocalNumber(context, src, newPos)
 }
 
 func (this *TelUri) ParseGlobalNumber(context *ParseContext, src []byte, pos int) (newPos int, err error) {
@@ -135,7 +140,7 @@ func (this *TelUri) ParseGlobalNumber(context *ParseContext, src []byte, pos int
 	this.number.value = this.RemoveVisualSeperator(context, this.number.value)
 
 	if this.number.Size() <= 1 {
-		return newPos, &AbnfError{"tel-uri parse: parse global-number failed: empty number", src, newPos}
+		return newPos, &AbnfError{"tel-uri parse: global-number is empty", src, newPos}
 	}
 
 	this.number.SetExist()
@@ -152,7 +157,7 @@ func (this *TelUri) ParseLocalNumber(context *ParseContext, src []byte, pos int)
 	this.number.value = this.RemoveVisualSeperator(context, this.number.value)
 
 	if this.number.Empty() {
-		return newPos, &AbnfError{"tel-uri parse: parse global-number failed: empty number", src, newPos}
+		return newPos, &AbnfError{"tel-uri parse: local-number is empty", src, newPos}
 	}
 
 	this.number.SetExist()
@@ -185,7 +190,7 @@ func (this *TelUri) RemoveVisualSeperator(context *ParseContext, number []byte) 
 func (this *TelUri) ParseParams(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
 	if newPos >= len(src) {
-		return newPos, &AbnfError{"tel-uri parse: parse tel-uri param failed: reach end after ';'", src, newPos}
+		return newPos, &AbnfError{"tel-uri parse: reach end after ';'", src, newPos}
 	}
 
 	for newPos < len(src) {

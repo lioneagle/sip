@@ -20,6 +20,7 @@ func TestTelUriParseOK(t *testing.T) {
 		{"tel:861234;phone-context=+123", false, "861234", "+123", false},
 		{"tel:861234;phone-context=+123", false, "861234", "+123", false},
 		{"tel:861234;phone-context=a.com", false, "861234", "a.com", true},
+		{"tel:86-1.2(34);phone-context=a.com", false, "861234", "a.com", true},
 	}
 
 	context := NewParseContext()
@@ -129,6 +130,10 @@ func TestTelUriParseNOK(t *testing.T) {
 	}{
 		{"tel1:+86123", 0},
 		{"tel:+", len("tel:+")},
+		{"tel:", len("tel:")},
+		{"tel:.-()", len("tel:.-()")},
+		{"tel:zz", len("tel:")},
+		{"tel:123;", len("tel:123;")},
 	}
 
 	context := NewParseContext()

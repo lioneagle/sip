@@ -72,6 +72,8 @@ var g_SipHeaderInfoMaps = map[string]SipHeaderInfo{
 
 	"Max-Forwards": {name: Str2bytes("Max-Forwards"), needParse: true, parseFunc: ParseSipMaxForwards},
 
+	"Route": {name: Str2bytes("Route"), allowMulti: true, needParse: true, parseFunc: ParseSipRoute},
+
 	"Subject":   {name: Str2bytes("Subject"), shortName: AbnfToken{true, Str2bytes("s")}},
 	"Supported": {name: Str2bytes("Supported"), shortName: AbnfToken{true, Str2bytes("k")}, allowMulti: true},
 

@@ -29,6 +29,9 @@ func (this *SipAddr) Init() {
  */
 func (this *SipAddr) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
+	if newPos >= len(src) {
+		return newPos, &AbnfError{"SipAddr parse: empty", src, newPos}
+	}
 	newPos, err = ParseSWS(src, newPos)
 	if err != nil {
 		return newPos, err
