@@ -75,6 +75,8 @@ func TestParseSipHeaders(t *testing.T) {
 		{"Date: Sat, 13 Nov 2010 23:29:00 GMT\r\n", true, len("Date: Sat, 13 Nov 2010 23:29:00 GMT\r\n"), "Date: Sat, 13 Nov 2010 23:29:00 GMT\r\n"},
 		{"CSeq: 1234 INVITE\r\n", true, len("CSeq: 1234 INVITE\r\n"), "CSeq: 1234 INVITE\r\n"},
 		{"Content-Length: 1234\r\n", true, len("Content-Length: 1234\r\n"), "Content-Length: 1234\r\n"},
+		{"Content-Type: application/isup\r\n", true, len("Content-Type: application/isup\r\n"), "Content-Type: application/isup\r\n"},
+		{"Max-Forwards: 1234\r\n", true, len("Max-Forwards: 1234\r\n"), "Max-Forwards: 1234\r\n"},
 		//*/
 	}
 

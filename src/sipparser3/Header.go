@@ -66,8 +66,11 @@ var g_SipHeaderInfoMaps = map[string]SipHeaderInfo{
 	"Contact":          {name: Str2bytes("Contact"), shortName: AbnfToken{true, Str2bytes("m")}, allowMulti: true},
 	"Content-Encoding": {name: Str2bytes("Content-Encoding"), shortName: AbnfToken{true, Str2bytes("e")}, allowMulti: true},
 	"Content-Length":   {name: Str2bytes("Content-Length"), shortName: AbnfToken{true, Str2bytes("l")}, needParse: true, parseFunc: ParseSipContentLength},
-	"Content-Type":     {name: Str2bytes("Content-Type"), shortName: AbnfToken{true, Str2bytes("l")}},
-	"Date":             {name: Str2bytes("Date")},
+	"Content-Type":     {name: Str2bytes("Content-Type"), shortName: AbnfToken{true, Str2bytes("c")}, needParse: true, parseFunc: ParseSipContentType},
+
+	"Date": {name: Str2bytes("Date")},
+
+	"Max-Forwards": {name: Str2bytes("Max-Forwards"), needParse: true, parseFunc: ParseSipMaxForwards},
 
 	"Subject":   {name: Str2bytes("Subject"), shortName: AbnfToken{true, Str2bytes("s")}},
 	"Supported": {name: Str2bytes("Supported"), shortName: AbnfToken{true, Str2bytes("k")}, allowMulti: true},

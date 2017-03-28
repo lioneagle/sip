@@ -129,7 +129,7 @@ func (this *SipGenericParams) GetParam(name string) (val *SipGenericParam, ok bo
 func (this *SipGenericParams) Parse(context *ParseContext, src []byte, pos int, seperator byte) (newPos int, err error) {
 	newPos = pos
 	if newPos >= len(src) {
-		return newPos, &AbnfError{"sip-uri parse: parse sip-uri param failed: reach end after ';'", src, newPos}
+		return newPos, nil
 	}
 
 	for newPos < len(src) {
