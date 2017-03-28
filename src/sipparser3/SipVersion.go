@@ -11,6 +11,11 @@ type SipVersion struct {
 	minor AbnfToken
 }
 
+func (this *SipVersion) Init() {
+	this.major.SetNonExist()
+	this.minor.SetNonExist()
+}
+
 /*
  * SIP-Version    =  "SIP" "/" 1*DIGIT "." 1*DIGIT
  */

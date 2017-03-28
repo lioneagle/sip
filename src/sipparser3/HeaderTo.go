@@ -18,6 +18,7 @@ func NewSipHeaderTo() *SipHeaderTo {
 }
 
 func (this *SipHeaderTo) Init() {
+	this.addr.Init()
 	this.params.Init()
 }
 
@@ -44,6 +45,7 @@ func (this *SipHeaderTo) Parse(context *ParseContext, src []byte, pos int) (newP
 }
 
 func (this *SipHeaderTo) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
 	newPos = pos
 	newPos, err = this.addr.Parse(context, src, newPos)
 	if err != nil {
@@ -65,8 +67,6 @@ func (this *SipHeaderTo) String() string {
 
 func ParseSipTo(context *ParseContext, src []byte, pos int) (newPos int, parsed SipHeaderParsed, err error) {
 	header := SipHeaderTo{}
-	header.Init()
-
 	newPos, err = header.ParseValue(context, src, pos)
 	return newPos, &header, err
 }

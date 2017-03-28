@@ -18,6 +18,7 @@ func NewSipHeaderContentDisposition() *SipHeaderContentDisposition {
 }
 
 func (this *SipHeaderContentDisposition) Init() {
+	this.dispType.SetNonExist()
 	this.params.Init()
 }
 
@@ -52,6 +53,7 @@ func (this *SipHeaderContentDisposition) Parse(context *ParseContext, src []byte
 }
 
 func (this *SipHeaderContentDisposition) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
 	newPos, err = this.dispType.Parse(context, src, pos, IsSipToken)
 	if err != nil {
 		return newPos, err
@@ -72,8 +74,6 @@ func (this *SipHeaderContentDisposition) String() string {
 
 func ParseSipContentDisposition(context *ParseContext, src []byte, pos int) (newPos int, parsed SipHeaderParsed, err error) {
 	header := SipHeaderContentDisposition{}
-	header.Init()
-
 	newPos, err = header.ParseValue(context, src, pos)
 	return newPos, &header, err
 }

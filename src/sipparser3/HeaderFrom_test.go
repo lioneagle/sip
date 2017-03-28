@@ -66,7 +66,6 @@ func BenchmarkSipHeaderFromParse(b *testing.B) {
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
-		header.Init()
 		header.Parse(context, v, 0)
 	}
 	//fmt.Printf("uri = %s\n", uri.String())

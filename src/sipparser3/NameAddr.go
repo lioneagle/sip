@@ -12,6 +12,11 @@ type SipDisplayName struct {
 	quotedstring   SipQuotedString
 }
 
+func (this *SipDisplayName) Init() {
+	this.isQuotedString = false
+	this.name.SetNonExist()
+}
+
 func NewSipDisplayName() *SipDisplayName {
 	return &SipDisplayName{}
 }
@@ -87,6 +92,11 @@ type SipNameAddr struct {
 
 func NewSipNameAddr() *SipNameAddr {
 	return &SipNameAddr{}
+}
+
+func (this *SipNameAddr) Init() {
+	this.displayname.Init()
+	this.addrsepc.Init()
 }
 
 func (this *SipNameAddr) Encode(buf *bytes.Buffer) {

@@ -18,6 +18,7 @@ func NewSipHeaderRoute() *SipHeaderRoute {
 }
 
 func (this *SipHeaderRoute) Init() {
+	this.addr.Init()
 	this.params.Init()
 }
 
@@ -44,6 +45,7 @@ func (this *SipHeaderRoute) Parse(context *ParseContext, src []byte, pos int) (n
 }
 
 func (this *SipHeaderRoute) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
 	newPos = pos
 	newPos, err = this.addr.Parse(context, src, newPos)
 	if err != nil {
@@ -65,8 +67,6 @@ func (this *SipHeaderRoute) String() string {
 
 func ParseSipRoute(context *ParseContext, src []byte, pos int) (newPos int, parsed SipHeaderParsed, err error) {
 	header := SipHeaderRoute{}
-	header.Init()
-
 	newPos, err = header.ParseValue(context, src, pos)
 	return newPos, &header, err
 }

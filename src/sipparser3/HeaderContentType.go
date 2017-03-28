@@ -19,6 +19,8 @@ func NewSipHeaderContentType() *SipHeaderContentType {
 }
 
 func (this *SipHeaderContentType) Init() {
+	this.mainType.SetNonExist()
+	this.subType.SetNonExist()
 	this.params.Init()
 }
 
@@ -56,6 +58,7 @@ func (this *SipHeaderContentType) Parse(context *ParseContext, src []byte, pos i
 }
 
 func (this *SipHeaderContentType) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
 	newPos, err = this.mainType.Parse(context, src, pos, IsSipToken)
 	if err != nil {
 		return newPos, err
@@ -88,8 +91,6 @@ func (this *SipHeaderContentType) String() string {
 
 func ParseSipContentType(context *ParseContext, src []byte, pos int) (newPos int, parsed SipHeaderParsed, err error) {
 	header := SipHeaderContentType{}
-	header.Init()
-
 	newPos, err = header.ParseValue(context, src, pos)
 	return newPos, &header, err
 }

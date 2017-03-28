@@ -18,6 +18,8 @@ func NewSipHeaderCseq() *SipHeaderCseq {
 }
 
 func (this *SipHeaderCseq) Init() {
+	this.id = 0
+	this.method.SetNonExist()
 }
 
 func (this *SipHeaderCseq) AllowMulti() bool { return false }
@@ -42,6 +44,7 @@ func (this *SipHeaderCseq) Parse(context *ParseContext, src []byte, pos int) (ne
 }
 
 func (this *SipHeaderCseq) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
 	newPos = pos
 	digit, _, newPos, ok := ParseUInt(src, newPos)
 	if !ok {
@@ -71,8 +74,6 @@ func (this *SipHeaderCseq) String() string {
 
 func ParseSipCseq(context *ParseContext, src []byte, pos int) (newPos int, parsed SipHeaderParsed, err error) {
 	header := SipHeaderCseq{}
-	header.Init()
-
 	newPos, err = header.ParseValue(context, src, pos)
 	return newPos, &header, err
 }

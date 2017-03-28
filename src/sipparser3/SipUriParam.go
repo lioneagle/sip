@@ -53,7 +53,10 @@ func NewSipUriParams() *SipUriParams {
 }
 
 func (this *SipUriParams) Init() {
-	this.params = make([]SipUriParam, 0, 2)
+	//this.params = make([]SipUriParam, 0, 2)
+	if len(this.params) != 0 {
+		this.params = make([]SipUriParam, 0, 2)
+	}
 }
 
 func (this *SipUriParams) Size() int   { return len(this.params) }

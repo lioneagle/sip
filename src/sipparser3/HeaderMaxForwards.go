@@ -17,6 +17,7 @@ func NewSipHeaderMaxForwards() *SipHeaderMaxForwards {
 }
 
 func (this *SipHeaderMaxForwards) Init() {
+	this.size = 0
 }
 
 func (this *SipHeaderMaxForwards) AllowMulti() bool { return false }
@@ -40,6 +41,7 @@ func (this *SipHeaderMaxForwards) Parse(context *ParseContext, src []byte, pos i
 }
 
 func (this *SipHeaderMaxForwards) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
 	newPos = pos
 	digit, _, newPos, ok := ParseUInt(src, newPos)
 	if !ok {
@@ -61,8 +63,6 @@ func (this *SipHeaderMaxForwards) String() string {
 
 func ParseSipMaxForwards(context *ParseContext, src []byte, pos int) (newPos int, parsed SipHeaderParsed, err error) {
 	header := SipHeaderMaxForwards{}
-	header.Init()
-
 	newPos, err = header.ParseValue(context, src, pos)
 	return newPos, &header, err
 }

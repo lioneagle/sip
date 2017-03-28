@@ -16,6 +16,10 @@ func (this *TelUriContext) Exist() bool  { return this.exist }
 func (this *TelUriContext) SetExist()    { this.exist = true }
 func (this *TelUriContext) SetNonExist() { this.exist = false }
 
+func (this *TelUriContext) Init() {
+	this.exist = false
+}
+
 func (this *TelUriContext) Encode(buf *bytes.Buffer) {
 	if this.exist {
 		buf.WriteString(";phone-context=")
@@ -68,7 +72,9 @@ type TelUriParams struct {
 }
 
 func (this *TelUriParams) Init() {
-	this.params = make([]TelUriParam, 0, 2)
+	if len(this.params) != 0 {
+		this.params = make([]TelUriParam, 0, 2)
+	}
 }
 
 func (this *TelUriParams) Size() int   { return len(this.params) }

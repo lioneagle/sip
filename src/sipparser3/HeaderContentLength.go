@@ -17,6 +17,7 @@ func NewSipHeaderContentLength() *SipHeaderContentLength {
 }
 
 func (this *SipHeaderContentLength) Init() {
+	this.size = 0
 }
 
 func (this *SipHeaderContentLength) AllowMulti() bool { return false }
@@ -40,6 +41,7 @@ func (this *SipHeaderContentLength) Parse(context *ParseContext, src []byte, pos
 }
 
 func (this *SipHeaderContentLength) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
 	newPos = pos
 	digit, _, newPos, ok := ParseUInt(src, newPos)
 	if !ok {
@@ -61,8 +63,6 @@ func (this *SipHeaderContentLength) String() string {
 
 func ParseSipContentLength(context *ParseContext, src []byte, pos int) (newPos int, parsed SipHeaderParsed, err error) {
 	header := SipHeaderContentLength{}
-	header.Init()
-
 	newPos, err = header.ParseValue(context, src, pos)
 	return newPos, &header, err
 }

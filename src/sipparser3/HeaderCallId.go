@@ -18,6 +18,8 @@ func NewSipHeaderCallId() *SipHeaderCallId {
 }
 
 func (this *SipHeaderCallId) Init() {
+	this.id1.SetNonExist()
+	this.id2.SetNonExist()
 }
 
 func (this *SipHeaderCallId) AllowMulti() bool { return false }
@@ -42,6 +44,7 @@ func (this *SipHeaderCallId) Parse(context *ParseContext, src []byte, pos int) (
 }
 
 func (this *SipHeaderCallId) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
 	newPos = pos
 	newPos, err = this.id1.Parse(context, src, newPos, IsSipWord)
 	if err != nil {
@@ -75,8 +78,6 @@ func (this *SipHeaderCallId) String() string {
 
 func ParseSipCallId(context *ParseContext, src []byte, pos int) (newPos int, parsed SipHeaderParsed, err error) {
 	header := SipHeaderCallId{}
-	header.Init()
-
 	newPos, err = header.ParseValue(context, src, pos)
 	return newPos, &header, err
 }

@@ -17,6 +17,7 @@ func NewSipAddr() *SipAddr {
 }
 
 func (this *SipAddr) Init() {
+	this.addr.Init()
 }
 
 /* RFC3261
@@ -32,6 +33,8 @@ func (this *SipAddr) Parse(context *ParseContext, src []byte, pos int) (newPos i
 	if newPos >= len(src) {
 		return newPos, &AbnfError{"SipAddr parse: empty", src, newPos}
 	}
+	this.Init()
+
 	newPos, err = ParseSWS(src, newPos)
 	if err != nil {
 		return newPos, err

@@ -22,8 +22,7 @@ func (this *SipUri) IsSipsUri() bool { return this.isSecure }
 
 func NewSipUri() *SipUri {
 	uri := &SipUri{}
-	uri.params.Init()
-	uri.headers.Init()
+	uri.Init()
 	return uri
 }
 
@@ -54,6 +53,7 @@ func (this *SipUri) Parse(context *ParseContext, src []byte, pos int) (newPos in
 
 func (this *SipUri) ParseAfterScheme(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
+	this.Init()
 
 	newPos, err = this.ParseUserinfo(context, src, newPos)
 	if err != nil {
@@ -93,6 +93,7 @@ func (this *SipUri) ParseAfterScheme(context *ParseContext, src []byte, pos int)
 
 func (this *SipUri) ParseAfterSchemeWithoutParam(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
+	this.Init()
 
 	newPos, err = this.ParseUserinfo(context, src, newPos)
 	if err != nil {

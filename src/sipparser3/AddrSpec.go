@@ -14,6 +14,12 @@ func NewSipAddrSpec() *SipAddrSpec {
 	return &SipAddrSpec{}
 }
 
+func (this *SipAddrSpec) Init() {
+	if this.uri != nil {
+		this.uri.Init()
+	}
+}
+
 func (this *SipAddrSpec) Encode(buf *bytes.Buffer) {
 	this.uri.Encode(buf)
 }

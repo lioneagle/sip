@@ -20,6 +20,9 @@ func NewSipHeaderVia() *SipHeaderVia {
 }
 
 func (this *SipHeaderVia) Init() {
+	this.version.Init()
+	this.transport.SetNonExist()
+	this.sentBy.Init()
 	this.params.Init()
 }
 
@@ -69,6 +72,7 @@ func (this *SipHeaderVia) Parse(context *ParseContext, src []byte, pos int) (new
 }
 
 func (this *SipHeaderVia) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
 	newPos = pos
 	newPos, err = this.version.Parse(context, src, newPos)
 	if err != nil {
@@ -124,8 +128,6 @@ func (this *SipHeaderVia) StringValue() string {
 
 func ParseSipVia(context *ParseContext, src []byte, pos int) (newPos int, parsed SipHeaderParsed, err error) {
 	header := SipHeaderVia{}
-	header.Init()
-
 	newPos, err = header.ParseValue(context, src, pos)
 	return newPos, &header, err
 }

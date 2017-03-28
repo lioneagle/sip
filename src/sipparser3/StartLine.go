@@ -22,6 +22,11 @@ func NewSipStartLine() *SipStartLine {
 }
 
 func (this *SipStartLine) Init() {
+	this.isRequest = false
+	this.method.SetNonExist()
+	this.version.Init()
+	this.addrspec.Init()
+	this.reasonPhrase.SetNonExist()
 }
 
 func (this *SipStartLine) IsRequest() bool  { return this.isRequest }
@@ -38,6 +43,7 @@ func (this *SipStartLine) HasValue() bool   { return true }
  * Request-URI    =  SIP-URI / SIPS-URI / absoluteURI
  */
 func (this *SipStartLine) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
 	newPos, err = this.version.Parse(context, src, pos)
 	if err == nil {
 		this.isRequest = false

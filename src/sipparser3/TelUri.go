@@ -20,13 +20,13 @@ func (this *TelUri) IsLocalNumber() bool  { return !this.isGlobalNumber }
 
 func NewTelUri() *TelUri {
 	uri := &TelUri{}
-	uri.params.Init()
+	uri.Init()
 	return uri
 }
 
 func (this *TelUri) Init() {
 	this.number.SetNonExist()
-	this.context.SetNonExist()
+	this.context.Init()
 	this.params.Init()
 }
 
@@ -97,6 +97,7 @@ func (this *TelUri) ParseScheme(context *ParseContext, src []byte, pos int) (new
 
 func (this *TelUri) ParseAfterScheme(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
+	this.Init()
 
 	newPos, err = this.ParseNumber(context, src, newPos)
 	if err != nil {

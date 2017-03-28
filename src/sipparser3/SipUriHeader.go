@@ -63,7 +63,10 @@ func NewSipUriHeaders() *SipUriHeaders {
 }
 
 func (this *SipUriHeaders) Init() {
-	this.headers = make([]SipUriHeader, 0, 2)
+	//this.headers = make([]SipUriHeader, 0, 2)
+	if len(this.headers) != 0 {
+		this.headers = make([]SipUriHeader, 0, 2)
+	}
 }
 
 func (this *SipUriHeaders) Size() int   { return len(this.headers) }

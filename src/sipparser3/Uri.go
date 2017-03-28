@@ -5,6 +5,7 @@ import (
 )
 
 type URI interface {
+	Init()
 	Scheme() string
 	Parse(context *ParseContext, src []byte, pos int) (newPos int, err error)
 	String() string
