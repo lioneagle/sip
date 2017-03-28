@@ -339,7 +339,6 @@ func BenchmarkSipUriParse(b *testing.B) {
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
-		uri.Init()
 		uri.Parse(context, v, 0)
 	}
 	//fmt.Printf("uri = %s\n", uri.String())
