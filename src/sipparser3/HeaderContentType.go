@@ -19,6 +19,7 @@ func NewSipHeaderContentType() *SipHeaderContentType {
 }
 
 func (this *SipHeaderContentType) Init() {
+	this.params.Init()
 }
 
 func (this *SipHeaderContentType) AllowMulti() bool { return false }
