@@ -15,6 +15,9 @@ bin
 *.exe
 *_coverage.html
 *_cpu.out
+*.png
+log_file
+*.svg
 test_temp
 
 # C extensions
