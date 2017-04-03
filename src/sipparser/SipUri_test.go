@@ -2,10 +2,11 @@ package sipparser
 
 import (
 	"bytes"
-	//"fmt"
+	"fmt"
 	"testing"
 )
 
+//*
 func TestSipUriParseOK(t *testing.T) {
 
 	testdata := []struct {
@@ -30,9 +31,10 @@ func TestSipUriParseOK(t *testing.T) {
 	}
 
 	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
 
 	for i, v := range testdata {
-		uri := NewSipUri()
+		uri, _ := NewSipUri(context)
 
 		newPos, err := uri.Parse(context, []byte(v.src), 0)
 		if err != nil {
@@ -55,17 +57,17 @@ func TestSipUriParseOK(t *testing.T) {
 			continue
 		}
 
-		if uri.user.String() != v.user {
-			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, user wrong, user = %s, wanted = %s", i, string(uri.user.value), v.user)
+		if uri.user.String(context) != v.user {
+			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, user wrong, user = %s, wanted = %s", i, uri.user.value.String(context), v.user)
 			continue
 		}
 
-		if uri.password.String() != v.password {
-			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, password wrong, password = %s, wanted = %s", i, string(uri.password.value), v.password)
+		if uri.password.String(context) != v.password {
+			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, password wrong, password = %s, wanted = %s", i, uri.password.value.String(context), v.password)
 			continue
 		}
 
-		if uri.hostport.String() != v.hostport {
+		if uri.hostport.String(context) != v.hostport {
 			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, host wrong, host = %s, wanted = %s", i, uri.hostport, v.hostport)
 			continue
 		}
@@ -73,11 +75,11 @@ func TestSipUriParseOK(t *testing.T) {
 }
 
 func TestSipUriParamsParseOK(t *testing.T) {
-
-	uri := NewSipUri()
-	src := "sip:123@abc.com;ttl=10;user%32=phone%31;a;b;c;d;e?xx=yy&x1=aa"
-
 	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+
+	uri, _ := NewSipUri(context)
+	src := "sip:123@abc.com;ttl=10;user%32=phone%31;a;b;c;d;e?xx=yy&x1=aa"
 
 	_, err := uri.Parse(context, []byte(src), 0)
 	if err != nil {
@@ -100,7 +102,7 @@ func TestSipUriParamsParseOK(t *testing.T) {
 	}
 
 	for i, v := range testdata {
-		param, ok := uri.params.GetParam(v.name)
+		param, ok := uri.params.GetParam(context, v.name)
 		if !ok {
 			t.Errorf("TestSipUriParamsParseOK[%d] failed, cannot get %s param\n", i, v.name)
 			continue
@@ -116,8 +118,8 @@ func TestSipUriParamsParseOK(t *testing.T) {
 			continue
 		}
 
-		if param.value.Exist() && param.value.String() != v.value {
-			t.Errorf("TestSipUriParamsParseOK[%d] failed, pvalue = %s, wanted = %s\n", i, param.value.String(), v.value)
+		if param.value.Exist() && param.value.String(context) != v.value {
+			t.Errorf("TestSipUriParamsParseOK[%d] failed, pvalue = %s, wanted = %s\n", i, param.value.String(context), v.value)
 			continue
 		}
 
@@ -125,11 +127,11 @@ func TestSipUriParamsParseOK(t *testing.T) {
 }
 
 func TestSipUriHeadersParseOK(t *testing.T) {
-
-	uri := NewSipUri()
-	src := "sip:123@abc.com;ttl=10;user=phone;a;b;c;d;e?xx=yy&x1=aa"
-
 	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+
+	uri, _ := NewSipUri(context)
+	src := "sip:123@abc.com;ttl=10;user=phone;a;b;c;d;e?xx=yy&x1=aa"
 
 	_, err := uri.Parse(context, []byte(src), 0)
 	if err != nil {
@@ -147,7 +149,7 @@ func TestSipUriHeadersParseOK(t *testing.T) {
 	}
 
 	for i, v := range testdata {
-		header, ok := uri.headers.GetHeader(v.name)
+		header, ok := uri.headers.GetHeader(context, v.name)
 		if !ok {
 			t.Errorf("TestSipUriHeadersParseOK[%d] failed, cannot get ttl param\n", i)
 			continue
@@ -163,34 +165,40 @@ func TestSipUriHeadersParseOK(t *testing.T) {
 			continue
 		}
 
-		if header.value.Exist() && header.value.String() != v.value {
-			t.Errorf("TestSipUriHeadersParseOK[%d] failed, pvalue = %s, wanted = %s\n", i, header.value.String(), v.value)
+		if header.value.Exist() && header.value.String(context) != v.value {
+			t.Errorf("TestSipUriHeadersParseOK[%d] failed, pvalue = %s, wanted = %s\n", i, header.value.String(context), v.value)
 			continue
 		}
 	}
 }
 
-func TestSipUriUserinfoParseNOK(t *testing.T) {
+func TestSipUriParseNOK(t *testing.T) {
 
 	testdata := []struct {
 		src    string
 		newPos int
 	}{
-		{"sipx:@abc.com", len("sipx:")},
+		//{"sipx:@abc.com", len("sipx:")},
+		{"sipx:@abc.com", 0},
 		{"sip:@abc.com", len("sip:")},
 		{"sip::asas@abc.com", len("sip:")},
 		{"sip:#123@abc.com", len("sip:")},
 		{"sip:123:2#@abc.com", len("sip:123:2")},
 		{"sip:123:2@abc.com;;", len("sip:123:2@abc.com;")},
+		{"sip:123:2@abc.com;", len("sip:123:2@abc.com;")},
 		{"sip:123:2@abc.com;a=;", len("sip:123:2@abc.com;a=")},
 		{"sip:123:2@abc.com;ttl=10?q", len("sip:123:2@abc.com;ttl=10?q")},
 		{"sip:123:2@abc.com;a=b?", len("sip:123:2@abc.com;a=b?")},
+
+		{"sip:123:2@abc.com;a=b?@", len("sip:123:2@abc.com;a=b?")},
+		{"sip:123:2@abc.com;a=b?c", len("sip:123:2@abc.com;a=b?c")},
 	}
 
 	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
 
 	for i, v := range testdata {
-		uri := NewSipUri()
+		uri, _ := NewSipUri(context)
 
 		newPos, err := uri.Parse(context, []byte(v.src), 0)
 		if err == nil {
@@ -219,9 +227,10 @@ func TestSipUriEncode(t *testing.T) {
 	}
 
 	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
 
 	for i, v := range testdata {
-		uri := NewSipUri()
+		uri, _ := NewSipUri(context)
 
 		_, err := uri.Parse(context, []byte(v.src), 0)
 		if err != nil {
@@ -229,7 +238,7 @@ func TestSipUriEncode(t *testing.T) {
 			continue
 		}
 
-		str := uri.String()
+		str := uri.String(context)
 
 		if str != v.dst {
 			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, uri = %s, wanted = %s\n", i, str, v.dst)
@@ -267,10 +276,11 @@ func TestSipUriEqual(t *testing.T) {
 	}
 
 	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
 
 	for i, v := range testdata {
-		uri1 := NewSipUri()
-		uri2 := NewSipUri()
+		uri1, _ := NewSipUri(context)
+		uri2, _ := NewSipUri(context)
 
 		_, err := uri1.Parse(context, []byte(v.uri1), 0)
 		if err != nil {
@@ -284,49 +294,65 @@ func TestSipUriEqual(t *testing.T) {
 			continue
 		}
 
-		if v.equal && !uri1.Equal(uri2) {
+		if v.equal && !uri1.Equal(context, uri2) {
 			t.Errorf("TestSipUriEqual[%d] failed, should be equal, uri1 = %s, uri2 = %s\n", i, v.uri1, v.uri2)
 			continue
 		}
 
-		if !v.equal && uri1.Equal(uri2) {
+		if !v.equal && uri1.Equal(context, uri2) {
 			t.Errorf("TestSipUriEqual[%d] failed, should not be equal, uri1 = %s, uri2 = %s\n", i, v.uri1, v.uri2)
 			continue
 		}
 	}
 }
 
+//*/
+
 func BenchmarkSipUriParse(b *testing.B) {
 	b.StopTimer()
 	//v := []byte("sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com")
+	//v := []byte("sip:biloxi.com")
 	//v := []byte("sip:abc@biloxi.com;transport=tcp")
 	v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
 	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+	uri, _ := NewSipUri(context)
+	remain := context.allocator.Used()
 	b.ReportAllocs()
 	b.SetBytes(2)
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
-		uri := NewSipUri()
+		context.allocator.ClearAllocNum()
+		context.allocator.FreePart(remain)
 		uri.Parse(context, v, 0)
+
 	}
+	//fmt.Printf("uri = %s\n", uri.String())
+	fmt.Printf("")
 }
 
-/*
+//*
 func BenchmarkSipUriString(b *testing.B) {
 	b.StopTimer()
-	v := "sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com"
-	uri := NewSipUri()
+	//v := "sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com"
+	v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
 	context := NewParseContext()
-	uri.Parse(context,[]byte(v), 0)
+	context.allocator = NewMemAllocator(1024 * 30)
+	uri, _ := NewSipUri(context)
+	uri.Parse(context, v, 0)
+	remain := context.allocator.Used()
 	b.ReportAllocs()
 	b.SetBytes(2)
 	b.StartTimer()
 
 	for i := 0; i < b.N; i++ {
-		uri.String()
+		context.allocator.ClearAllocNum()
+		context.allocator.FreePart(remain)
+		uri.String(context)
 	}
 }
+
 //*/
 
 //*
@@ -335,8 +361,10 @@ func BenchmarkSipUriEncode(b *testing.B) {
 	//v := []byte("sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com")
 	v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
 	context := NewParseContext()
-	uri := NewSipUri()
+	context.allocator = NewMemAllocator(1024 * 30)
+	uri, _ := NewSipUri(context)
 	uri.Parse(context, v, 0)
+	remain := context.allocator.Used()
 	b.SetBytes(2)
 	b.ReportAllocs()
 
@@ -347,7 +375,9 @@ func BenchmarkSipUriEncode(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		buf.Reset()
-		uri.Encode(buf)
+		context.allocator.ClearAllocNum()
+		context.allocator.FreePart(remain)
+		uri.Encode(context, buf)
 	}
 }
 

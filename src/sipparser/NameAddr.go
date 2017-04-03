@@ -1,34 +1,33 @@
 package sipparser
 
 import (
-	//"fmt"
-	//"strings"
 	"bytes"
+	//"fmt"
+	"unsafe"
 )
 
 type SipDisplayName struct {
 	isQuotedString bool
-	name           AbnfToken
-	quotedstring   SipQuotedString
+	value          AbnfPtr
 }
 
-func NewSipDisplayName() *SipDisplayName {
-	return &SipDisplayName{}
-}
-
-func (this *SipDisplayName) Encode(buf *bytes.Buffer) {
-	if this.isQuotedString {
-		this.quotedstring.Encode(buf)
-	} else {
-		this.name.Encode(buf)
+func NewSipDisplayName(context *ParseContext) (*SipDisplayName, AbnfPtr) {
+	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipDisplayName{})))
+	if mem == nil {
+		return nil, ABNF_PTR_NIL
 	}
+
+	(*SipDisplayName)(unsafe.Pointer(mem)).Init()
+	return (*SipDisplayName)(unsafe.Pointer(mem)), addr
 }
 
-func (this *SipDisplayName) String() string {
-	if this.isQuotedString {
-		return this.quotedstring.String()
-	}
-	return this.name.String()
+func (this *SipDisplayName) Init() {
+	this.isQuotedString = false
+	this.value = ABNF_PTR_NIL
+}
+
+func (this *SipDisplayName) Exist() bool {
+	return this.value != ABNF_PTR_NIL
 }
 
 func (this *SipDisplayName) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
@@ -37,28 +36,42 @@ func (this *SipDisplayName) Parse(context *ParseContext, src []byte, pos int) (n
 	 * display-name   =  *(token LWS)/ quoted-string
 	 */
 	newPos = pos
+	if newPos >= len(src) {
+		return newPos, nil
+	}
 
 	newPos, err = ParseSWS(src, newPos)
 	if err != nil {
 		return newPos, err
 	}
 
-	if src[newPos] == '"' {
-		newPos, err = this.quotedstring.Parse(context, src, newPos)
+	if newPos < len(src) && src[newPos] == '"' {
+		this.isQuotedString = true
+		quotedString, addr := NewSipQuotedString(context)
+		if quotedString == nil {
+			return newPos, &AbnfError{"DisplayName parse: out of memory after first\"", src, newPos}
+		}
+		newPos, err = quotedString.Parse(context, src, newPos)
 		if err != nil {
 			return newPos, err
 		}
-		this.isQuotedString = true
-	} else if IsSipToken(src[newPos]) {
-		nameBegin := newPos
+		this.value = addr
 
+	} else {
+		this.isQuotedString = false
+		newPos = pos
+		if !IsSipToken(src[newPos]) {
+			return newPos, &AbnfError{"DisplayName parse: no token or quoted-string", src, newPos}
+		}
+
+		nameBegin := newPos
 		for newPos < len(src) {
 			if !IsSipToken(src[newPos]) {
 				break
 			}
 
-			token := AbnfToken{}
-			newPos, err = token.Parse(context, src, newPos, IsSipToken)
+			ref := AbnfRef{}
+			newPos, err = ref.Parse(context, src, newPos, IsSipToken)
 			if err != nil {
 				break
 			}
@@ -68,11 +81,30 @@ func (this *SipDisplayName) Parse(context *ParseContext, src []byte, pos int) (n
 				return newPos, err
 			}
 		}
-		this.name.SetExist()
-		this.name.SetValue(src[nameBegin:newPos])
+		name, addr := NewAbnfToken(context)
+		if name == nil {
+			return newPos, &AbnfError{"DisplayName parse: out of memory after tokens", src, newPos}
+		}
+		name.SetExist()
+		name.SetValue(context, src[nameBegin:newPos])
+		this.value = addr
 	}
 
 	return newPos, nil
+}
+
+func (this *SipDisplayName) Encode(context *ParseContext, buf *bytes.Buffer) {
+	if this.value != ABNF_PTR_NIL {
+		if this.isQuotedString {
+			this.value.GetSipQuotedString(context).Encode(context, buf)
+		} else {
+			this.value.GetAbnfToken(context).Encode(context, buf)
+		}
+	}
+}
+
+func (this *SipDisplayName) String(context *ParseContext) string {
+	return AbnfEncoderToString(context, this)
 }
 
 type SipNameAddr struct {
@@ -80,19 +112,19 @@ type SipNameAddr struct {
 	addrsepc    SipAddrSpec
 }
 
-func NewSipNameAddr() *SipNameAddr {
-	return &SipNameAddr{}
+func NewSipNameAddr(context *ParseContext) (*SipNameAddr, AbnfPtr) {
+	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipNameAddr{})))
+	if mem == nil {
+		return nil, ABNF_PTR_NIL
+	}
+
+	(*SipNameAddr)(unsafe.Pointer(mem)).Init()
+	return (*SipNameAddr)(unsafe.Pointer(mem)), addr
 }
 
-func (this *SipNameAddr) Encode(buf *bytes.Buffer) {
-	this.displayname.Encode(buf)
-	this.addrsepc.Encode(buf)
-}
-
-func (this *SipNameAddr) String() string {
-	str := this.displayname.String()
-	str += this.addrsepc.String()
-	return str
+func (this *SipNameAddr) Init() {
+	this.displayname.Init()
+	this.addrsepc.Init()
 }
 
 func (this *SipNameAddr) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
@@ -103,9 +135,22 @@ func (this *SipNameAddr) Parse(context *ParseContext, src []byte, pos int) (newP
 	 * LAQUOT  =  SWS "<"; left angle quote
 	 */
 	newPos = pos
-	newPos, err = this.displayname.Parse(context, src, newPos)
+	this.Init()
+
+	newPos, err = ParseSWS(src, newPos)
 	if err != nil {
 		return newPos, err
+	}
+
+	if newPos >= len(src) {
+		return newPos, &AbnfError{"SipNameAddr parse: no value", src, newPos}
+	}
+
+	if src[newPos] != '<' {
+		newPos, err = this.displayname.Parse(context, src, newPos)
+		if err != nil {
+			return newPos, err
+		}
 	}
 
 	newPos, err = ParseLeftAngleQuote(src, newPos)
@@ -124,4 +169,15 @@ func (this *SipNameAddr) Parse(context *ParseContext, src []byte, pos int) (newP
 	}
 
 	return newPos, nil
+}
+
+func (this *SipNameAddr) Encode(context *ParseContext, buf *bytes.Buffer) {
+	this.displayname.Encode(context, buf)
+	buf.WriteByte('<')
+	this.addrsepc.Encode(context, buf)
+	buf.WriteByte('>')
+}
+
+func (this *SipNameAddr) String(context *ParseContext) string {
+	return AbnfEncoderToString(context, this)
 }

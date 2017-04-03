@@ -2,25 +2,40 @@ package sipparser
 
 import (
 	"bytes"
-	"fmt"
+	//"fmt"
+	"unsafe"
 )
 
 type SipQuotedString struct {
-	value []byte
+	value AbnfBuf
 }
 
-func NewSipQuotedString() *SipQuotedString {
-	return &SipQuotedString{}
+func NewSipQuotedString(context *ParseContext) (*SipQuotedString, AbnfPtr) {
+	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipQuotedString{})))
+	if mem == nil {
+		return nil, ABNF_PTR_NIL
+	}
+
+	(*SipQuotedString)(unsafe.Pointer(mem)).Init()
+	return (*SipQuotedString)(unsafe.Pointer(mem)), addr
 }
 
-func (this *SipQuotedString) Encode(buf *bytes.Buffer) {
+func (this *SipQuotedString) Init() {
+	this.value.Init()
+}
+
+func (this *SipQuotedString) Encode(context *ParseContext, buf *bytes.Buffer) {
 	buf.WriteByte('"')
-	buf.Write(this.value)
+	this.value.Encode(context, buf)
 	buf.WriteByte('"')
 }
 
-func (this *SipQuotedString) String() string        { return fmt.Sprintf("\"%s\"", string(this.value)) }
-func (this *SipQuotedString) SetValue(value []byte) { this.value = value }
+func (this *SipQuotedString) String(context *ParseContext) string {
+	return AbnfEncoderToString(context, this)
+}
+func (this *SipQuotedString) SetValue(context *ParseContext, value []byte) {
+	this.value.SetByteSlice(context, value)
+}
 
 func (this *SipQuotedString) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	/* RFC3261 Section 25.1, page 222
@@ -61,7 +76,7 @@ func (this *SipQuotedString) Parse(context *ParseContext, src []byte, pos int) (
 		}
 	}
 
-	this.value = src[tokenBegin:newPos]
+	this.value.SetByteSlice(context, src[tokenBegin:newPos])
 
 	if newPos >= len(src) {
 		return newPos, &AbnfError{"quoted-string parse: reach end before DQUOTE", src, newPos}

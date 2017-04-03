@@ -3,7 +3,8 @@ package sipparser
 import (
 	"bytes"
 	//"fmt"
-	"strings"
+	//"strings"
+	"unsafe"
 )
 
 type SipUriParam struct {
@@ -11,17 +12,27 @@ type SipUriParam struct {
 	value AbnfToken
 }
 
+func NewSipUriParam(context *ParseContext) (*SipUriParam, AbnfPtr) {
+	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipUriParam{})))
+	if mem == nil {
+		return nil, ABNF_PTR_NIL
+	}
+
+	(*SipUriParam)(unsafe.Pointer(mem)).Init()
+	return (*SipUriParam)(unsafe.Pointer(mem)), addr
+}
+
+func (this *SipUriParam) Init() {
+	this.name.Init()
+	this.value.Init()
+}
+
 func (this *SipUriParam) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
 	newPos, err = this.name.ParseEscapable(context, src, pos, IsSipPname)
 	if err != nil {
 		return newPos, err
 	}
-
-	if this.name.Empty() {
-		return newPos, &AbnfError{"sip-uri parse: parse sip-uri param failed: empty pname", src, newPos}
-	}
-
-	this.name.SetExist()
 
 	if newPos >= len(src) {
 		return newPos, nil
@@ -32,71 +43,50 @@ func (this *SipUriParam) Parse(context *ParseContext, src []byte, pos int) (newP
 		if err != nil {
 			return newPos, err
 		}
-
-		if this.value.Empty() {
-			return newPos, &AbnfError{"sip-uri parse: parse sip-uri param failed: empty pvalue", src, newPos}
-		}
-		this.value.SetExist()
 	}
 	return newPos, nil
 }
 
-func (this *SipUriParam) Encode(buf *bytes.Buffer) {
-	buf.Write(Escape(this.name.value, IsSipPname))
+func (this *SipUriParam) Encode(context *ParseContext, buf *bytes.Buffer) {
+	buf.Write(Escape(this.name.GetAsByteSlice(context), IsSipPname))
 	if this.value.Exist() {
 		buf.WriteByte('=')
-		buf.Write(Escape(this.value.value, IsSipPvalue))
+		buf.Write(Escape(this.value.GetAsByteSlice(context), IsSipPvalue))
 	}
 }
 
-func (this *SipUriParam) String() string {
-	str := string(Escape([]byte(this.name.String()), IsSipPname))
-	if this.value.Exist() {
-		str += "="
-		str += string(Escape([]byte(this.value.String()), IsSipPvalue))
-	}
-	return str
+func (this *SipUriParam) String(context *ParseContext) string {
+	return AbnfEncoderToString(context, this)
 }
 
 type SipUriParams struct {
-	orders []string
-	maps   map[string]*SipUriParam
+	AbnfList
 }
 
-func NewSipUriParams() *SipUriParams {
-	return &SipUriParams{orders: make([]string, 0), maps: make(map[string]*SipUriParam)}
+func NewSipUriParams(context *ParseContext) (*SipUriParams, AbnfPtr) {
+	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipUriParams{})))
+	if mem == nil {
+		return nil, ABNF_PTR_NIL
+	}
+
+	(*SipUriParams)(unsafe.Pointer(mem)).Init()
+	return (*SipUriParams)(unsafe.Pointer(mem)), addr
 }
 
 func (this *SipUriParams) Init() {
-	this.orders = make([]string, 0)
-	this.maps = make(map[string]*SipUriParam)
+	this.AbnfList.Init()
 }
 
-func (this *SipUriParams) Encode(buf *bytes.Buffer) {
-	for i, v := range this.orders {
-		if i > 0 {
-			buf.WriteByte(';')
+func (this *SipUriParams) Size() int32 { return this.Len() }
+func (this *SipUriParams) Empty() bool { return this.Len() == 0 }
+func (this *SipUriParams) GetParam(context *ParseContext, name string) (val *SipUriParam, ok bool) {
+	for e := this.Front(context); e != nil; e = e.Next(context) {
+		v := e.Value.GetSipUriParam(context)
+		if v.name.EqualStringNoCase(context, name) {
+			return v, true
 		}
-		this.maps[v].Encode(buf)
 	}
-}
-
-func (this *SipUriParams) String() string {
-	str := ""
-	for i, v := range this.orders {
-		if i > 0 {
-			str += ";"
-		}
-		str += this.maps[v].String()
-	}
-	return str
-}
-
-func (this *SipUriParams) Size() int   { return len(this.maps) }
-func (this *SipUriParams) Empty() bool { return len(this.maps) == 0 }
-func (this *SipUriParams) GetParam(name string) (val *SipUriParam, ok bool) {
-	val, ok = this.maps[strings.ToLower(name)]
-	return val, ok
+	return nil, false
 }
 
 func (this *SipUriParams) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
@@ -106,14 +96,15 @@ func (this *SipUriParams) Parse(context *ParseContext, src []byte, pos int) (new
 	}
 
 	for newPos < len(src) {
-		param := &SipUriParam{}
+		param, addr := NewSipUriParam(context)
+		if param == nil {
+			return newPos, &AbnfError{"sip-uri  parse: out of memory for sip uri params", src, newPos}
+		}
 		newPos, err = param.Parse(context, src, newPos)
 		if err != nil {
 			return newPos, err
 		}
-		name := param.name.ToLower()
-		this.orders = append(this.orders, name)
-		this.maps[name] = param
+		this.PushBack(context, addr)
 
 		if newPos >= len(src) {
 			return newPos, nil
@@ -128,7 +119,7 @@ func (this *SipUriParams) Parse(context *ParseContext, src []byte, pos int) (new
 	return newPos, nil
 }
 
-func (this *SipUriParams) EqualRFC3261(rhs *SipUriParams) bool {
+func (this *SipUriParams) EqualRFC3261(context *ParseContext, rhs *SipUriParams) bool {
 	params1 := this
 	params2 := rhs
 
@@ -136,36 +127,53 @@ func (this *SipUriParams) EqualRFC3261(rhs *SipUriParams) bool {
 		params1, params2 = params2, params1
 	}
 
-	if !params1.equalSpecParamsRFC3261(params2) {
+	if !params1.equalSpecParamsRFC3261(context, params2) {
 		return false
 	}
 
-	for _, v := range params1.maps {
-		param, ok := params2.GetParam(v.name.String())
+	for e := params1.Front(context); e != nil; e = e.Next(context) {
+		v := e.Value.GetSipUriParam(context)
+		param, ok := params2.GetParam(context, v.name.String(context))
 		if ok {
-			if !param.value.EqualNoCase(&v.value) {
+			if !param.value.EqualNoCase(context, &v.value) {
 				return false
 			}
 		}
 	}
+
 	return true
 }
 
-func (this *SipUriParams) equalSpecParamsRFC3261(rhs *SipUriParams) bool {
+func (this *SipUriParams) equalSpecParamsRFC3261(context *ParseContext, rhs *SipUriParams) bool {
 	specParams := []string{"user", "ttl", "method"}
 
 	for _, v := range specParams {
-		param1, ok := this.GetParam(v)
+		param1, ok := this.GetParam(context, v)
 		if ok {
-			param2, ok := rhs.GetParam(v)
+			param2, ok := rhs.GetParam(context, v)
 			if !ok {
 				return false
 			}
-			ret := param1.value.EqualNoCase(&param2.value)
-			return ret
-
+			return param1.value.EqualNoCase(context, &param2.value)
 		}
 	}
 
 	return true
+}
+
+func (this *SipUriParams) Encode(context *ParseContext, buf *bytes.Buffer) {
+	e := this.Front(context)
+	if e != nil {
+		e.Value.GetSipUriParam(context).Encode(context, buf)
+	}
+	e = e.Next(context)
+
+	for ; e != nil; e = e.Next(context) {
+		buf.WriteByte(';')
+		e.Value.GetSipUriParam(context).Encode(context, buf)
+	}
+}
+
+func (this *SipUriParams) String(context *ParseContext) string {
+	return AbnfEncoderToString(context, this)
 }

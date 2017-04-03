@@ -96,6 +96,7 @@ func TestUnescape(t *testing.T) {
 	}
 
 	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
 
 	for i, v := range wanted {
 		u := Unescape(context, []byte(v.escaped))
@@ -151,6 +152,7 @@ func TestEscape(t *testing.T) {
 
 	chars := makeFullCharset()
 	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
 
 	for i, v := range wanted {
 		u := Escape(chars, v.isInCharset)

@@ -1,17 +1,33 @@
 package sipparser
 
 import (
-	//"fmt"
 	"bytes"
-	//"strings"
+	//"fmt"
+	"unsafe"
 )
 
 type TelUri struct {
 	isGlobalNumber bool
 	number         AbnfToken
-	user           AbnfToken
 	context        TelUriContext
 	params         TelUriParams
+}
+
+func NewTelUri(context *ParseContext) (*TelUri, AbnfPtr) {
+	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(TelUri{})))
+	if mem == nil {
+		return nil, ABNF_PTR_NIL
+	}
+
+	(*TelUri)(unsafe.Pointer(mem)).Init()
+	return (*TelUri)(unsafe.Pointer(mem)), addr
+}
+
+func (this *TelUri) Init() {
+	this.isGlobalNumber = false
+	this.number.Init()
+	this.context.Init()
+	this.params.Init()
 }
 
 func (this *TelUri) SetGlobalNumber()     { this.isGlobalNumber = true }
@@ -19,18 +35,11 @@ func (this *TelUri) SetLocalNumber()      { this.isGlobalNumber = false }
 func (this *TelUri) IsGlobalNumber() bool { return this.isGlobalNumber }
 func (this *TelUri) IsLocalNumber() bool  { return !this.isGlobalNumber }
 
-func NewTelUri() *TelUri {
-	uri := &TelUri{}
-	uri.params.Init()
-	return uri
-}
-
 func (this *TelUri) Scheme() string {
 	return "tel"
 }
 
 func (this *TelUri) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
-
 	newPos, err = this.ParseScheme(context, src, pos)
 	if err != nil {
 		return newPos, err
@@ -39,36 +48,24 @@ func (this *TelUri) Parse(context *ParseContext, src []byte, pos int) (newPos in
 	return this.ParseAfterScheme(context, src, newPos)
 }
 
-func (this *TelUri) String() string {
-	str := "tel:"
-
-	str += this.number.String()
-
-	if !this.isGlobalNumber {
-		str += this.context.String()
-	}
-
-	if !this.params.Empty() {
-		str += this.params.String()
-	}
-
-	return str
+func (this *TelUri) String(context *ParseContext) string {
+	return AbnfEncoderToString(context, this)
 }
 
-func (this *TelUri) Encode(buf *bytes.Buffer) {
+func (this *TelUri) Encode(context *ParseContext, buf *bytes.Buffer) {
 	buf.WriteString("tel:")
-	this.number.Encode(buf)
+	this.number.Encode(context, buf)
 
 	if !this.isGlobalNumber {
-		this.context.Encode(buf)
+		this.context.Encode(context, buf)
 	}
 
 	if !this.params.Empty() {
-		this.params.Encode(buf)
+		this.params.Encode(context, buf)
 	}
 }
 
-func (this *TelUri) Equal(uri URI) bool {
+func (this *TelUri) Equal(context *ParseContext, uri URI) bool {
 	rhs, ok := uri.(*TelUri)
 	if !ok {
 		return false
@@ -78,15 +75,15 @@ func (this *TelUri) Equal(uri URI) bool {
 		return false
 	}
 
-	if !this.number.Equal(&rhs.number) {
+	if !this.number.Equal(context, &rhs.number) {
 		return false
 	}
 
-	if !this.context.desc.EqualNoCase(&rhs.context.desc) {
+	if !this.context.Equal(context, &rhs.context) {
 		return false
 	}
 
-	if !this.params.Equal(&rhs.params) {
+	if !this.params.Equal(context, &rhs.params) {
 		return false
 	}
 
@@ -94,20 +91,17 @@ func (this *TelUri) Equal(uri URI) bool {
 }
 
 func (this *TelUri) ParseScheme(context *ParseContext, src []byte, pos int) (newPos int, err error) {
-	newPos, scheme, err := ParseUriScheme(context, src, pos)
-	if err != nil {
-		return newPos, err
+	src1 := src[pos:]
+	if len(src) >= 4 && ((src1[0] | 0x20) == 't') && ((src1[1] | 0x20) == 'e') && ((src1[2] | 0x20) == 'l') && (src1[3] == ':') {
+		return pos + 4, nil
 	}
 
-	if !EqualNoCase(scheme.value, []byte("tel")) {
-		return newPos, &AbnfError{"tel-uri parse: parse scheme failed", src, newPos}
-	}
-
-	return newPos, nil
+	return 0, &AbnfError{"tel-uri parse: parse scheme failed", src, newPos}
 }
 
 func (this *TelUri) ParseAfterScheme(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
+	this.Init()
 
 	newPos, err = this.ParseNumber(context, src, newPos)
 	if err != nil {
@@ -121,18 +115,23 @@ func (this *TelUri) ParseAfterScheme(context *ParseContext, src []byte, pos int)
 	return this.ParseParams(context, src, newPos)
 }
 
+func (this *TelUri) ParseAfterSchemeWithoutParam(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	return this.ParseNumber(context, src, pos)
+}
+
 func (this *TelUri) ParseNumber(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
 	if newPos >= len(src) {
 		return newPos, &AbnfError{"tel-uri parse: no number after scheme", src, newPos}
 	}
-	if src[newPos] == '+' {
+
+	if src[pos] == '+' {
 		this.SetGlobalNumber()
-		return this.ParseGlobalNumber(context, src, pos)
+		return this.ParseGlobalNumber(context, src, newPos)
 	}
 
 	this.SetLocalNumber()
-	return this.ParseLocalNumber(context, src, pos)
+	return this.ParseLocalNumber(context, src, newPos)
 }
 
 func (this *TelUri) ParseGlobalNumber(context *ParseContext, src []byte, pos int) (newPos int, err error) {
@@ -141,12 +140,12 @@ func (this *TelUri) ParseGlobalNumber(context *ParseContext, src []byte, pos int
 		return newPos, err
 	}
 
-	this.number.value = src[pos:newPos]
+	this.number.value.SetByteSlice(context, src[pos:newPos])
 
-	this.number.value = this.RemoveVisualSeperator(context, this.number.value)
+	this.number.value.SetByteSlice(context, this.RemoveVisualSeperator(context, src[pos:newPos]))
 
 	if this.number.Size() <= 1 {
-		return newPos, &AbnfError{"tel-uri parse: parse global-number failed: empty number", src, newPos}
+		return newPos, &AbnfError{"tel-uri parse: global-number is empty", src, newPos}
 	}
 
 	this.number.SetExist()
@@ -160,10 +159,10 @@ func (this *TelUri) ParseLocalNumber(context *ParseContext, src []byte, pos int)
 		return newPos, err
 	}
 
-	this.number.value = this.RemoveVisualSeperator(context, this.number.value)
+	this.number.value.SetByteSlice(context, this.RemoveVisualSeperator(context, this.number.GetAsByteSlice(context)))
 
 	if this.number.Empty() {
-		return newPos, &AbnfError{"tel-uri parse: parse global-number failed: empty number", src, newPos}
+		return newPos, &AbnfError{"tel-uri parse: local-number is empty", src, newPos}
 	}
 
 	this.number.SetExist()
@@ -184,19 +183,21 @@ func (this *TelUri) RemoveVisualSeperator(context *ParseContext, number []byte) 
 	if !HasVisualSeperator(number) {
 		return number
 	}
+
 	newNumber := make([]byte, 0)
 	for _, v := range number {
 		if !IsTelVisualSperator(v) {
 			newNumber = append(newNumber, v)
 		}
 	}
+
 	return newNumber
 }
 
 func (this *TelUri) ParseParams(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
 	if newPos >= len(src) {
-		return newPos, &AbnfError{"tel-uri parse: parse tel-uri param failed: reach end after ';'", src, newPos}
+		return newPos, &AbnfError{"tel-uri parse: reach end after ';'", src, newPos}
 	}
 
 	for newPos < len(src) {
@@ -204,24 +205,24 @@ func (this *TelUri) ParseParams(context *ParseContext, src []byte, pos int) (new
 			return newPos, nil
 		}
 
-		param := &TelUriParam{}
-
+		param, addr := NewTelUriParam(context)
+		if param == nil {
+			return newPos, &AbnfError{"tel-uri parse: out of memory for tel-uri param", src, newPos}
+		}
 		newPos, err = param.Parse(context, src, newPos+1)
 		if err != nil {
 			return newPos, err
 		}
 
-		name := param.name.ToLower()
-		if name == "phone-context" {
-			this.context.exist = true
-			this.context.isDomainName = (param.value.value[0] != '+')
+		if param.name.EqualStringNoCase(context, "phone-context") {
+			this.context.SetExist()
+			this.context.isDomainName = (param.value.GetAsByteSlice(context)[0] != '+')
 			this.context.desc = param.value
 			if !this.context.isDomainName {
-				this.context.desc.value = this.RemoveVisualSeperator(context, this.context.desc.value)
+				this.context.desc.value.SetByteSlice(context, this.RemoveVisualSeperator(context, this.context.desc.GetAsByteSlice(context)))
 			}
 		} else {
-			this.params.orders = append(this.params.orders, name)
-			this.params.maps[name] = param
+			this.params.PushBack(context, addr)
 		}
 	}
 

@@ -1,10 +1,11 @@
 package sipparser
 
 import (
-	//"fmt"
 	"bytes"
+	//"fmt"
 	"net"
 	"strconv"
+	"unsafe"
 )
 
 const (
@@ -15,65 +16,70 @@ const (
 )
 
 type SipHost struct {
-	id   byte
-	data []byte
+	id byte
+	//data []byte
+	data AbnfBuf
+}
+
+func NewSipHost(context *ParseContext) (*SipHost, AbnfPtr) {
+	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipHost{})))
+	if mem == nil {
+		return nil, ABNF_PTR_NIL
+	}
+
+	(*SipHost)(unsafe.Pointer(mem)).Init()
+	return (*SipHost)(unsafe.Pointer(mem)), addr
 }
 
 func (this *SipHost) Init() {
 	this.id = HOST_TYPE_UNKNOWN
+	this.data.Init()
 }
 
-func (this *SipHost) Encode(buf *bytes.Buffer) {
+func (this *SipHost) Encode(context *ParseContext, buf *bytes.Buffer) {
 	if this.id == HOST_TYPE_UNKNOWN {
 		buf.WriteString("unknown host")
 	} else if this.IsIpv4() {
-		buf.WriteString(this.GetIpString())
+		buf.WriteString(this.GetIpString(context))
 	} else if this.IsIpv6() {
 		buf.WriteByte('[')
-		buf.WriteString(this.GetIpString())
+		buf.WriteString(this.GetIpString(context))
 		buf.WriteByte(']')
 	} else {
-		buf.Write(this.data)
+		this.data.Encode(context, buf)
 	}
 }
 
-func (this *SipHost) String() string {
-	if this.id == HOST_TYPE_UNKNOWN {
-		return "unknown host"
-	}
-	if this.IsIpv4() {
-		return this.GetIpString()
-	}
-
-	if this.IsIpv6() {
-		return "[" + this.GetIpString() + "]"
-	}
-	return string(this.data)
+func (this *SipHost) String(context *ParseContext) string {
+	return AbnfEncoderToString(context, this)
 }
 
 func (this *SipHost) IsIpv4() bool     { return this.id == HOST_TYPE_IPV4 }
 func (this *SipHost) IsIpv6() bool     { return this.id == HOST_TYPE_IPV6 }
 func (this *SipHost) IsHostname() bool { return this.id == HOST_TYPE_NAME }
 
-func (this *SipHost) SetIpv4(ip net.IP) {
+func (this *SipHost) SetIpv4(context *ParseContext, ip net.IP) {
 	this.id = HOST_TYPE_IPV4
-	this.data = ip
+	this.data.SetByteSlice(context, ip)
 }
 
-func (this *SipHost) SetIpv6(ip net.IP) {
+func (this *SipHost) SetIpv6(context *ParseContext, ip net.IP) {
 	this.id = HOST_TYPE_IPV6
-	this.data = ip
+	this.data.SetByteSlice(context, ip)
 }
 
-func (this *SipHost) SetHostname(hostname []byte) {
+func (this *SipHost) SetHostname(context *ParseContext, hostname []byte) {
 	this.id = HOST_TYPE_NAME
-	this.data = hostname
+	this.data.SetByteSlice(context, hostname)
 }
 
-func (this *SipHost) GetIp() net.IP       { return this.data }
-func (this *SipHost) GetIpString() string { return net.IP(this.data).String() }
+func (this *SipHost) GetIp(context *ParseContext) net.IP { return this.data.GetAsByteSlice(context) }
+func (this *SipHost) GetIpString(context *ParseContext) string {
+	return net.IP(this.data.GetAsByteSlice(context)).String()
+}
 
-func (this *SipHost) Parse(src []byte, pos int) (newPos int, err error) {
+func (this *SipHost) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
 	if pos >= len(src) {
 		return pos, &AbnfError{"host parse: parse failed", src, newPos}
 	}
@@ -81,35 +87,35 @@ func (this *SipHost) Parse(src []byte, pos int) (newPos int, err error) {
 	newPos = pos
 
 	if src[pos] == '[' {
-		return this.parseIpv6(src, pos+1)
+		return this.parseIpv6(context, src, pos+1)
 	}
 
 	if IsAlpha(src[pos]) {
-		return this.parseHostname(src, pos)
+		return this.parseHostname(context, src, pos)
 	}
 
 	var ok bool
 
-	newPos, ok = this.parseIpv4(src, pos)
+	newPos, ok = this.parseIpv4(context, src, pos)
 
 	if !ok {
-		return this.parseHostname(src, pos)
+		return this.parseHostname(context, src, pos)
 	}
 	return newPos, nil
 }
 
-func (this *SipHost) Equal(rhs *SipHost) bool {
+func (this *SipHost) Equal(context *ParseContext, rhs *SipHost) bool {
 	if this.id != rhs.id {
 		return false
 	}
 	if this.IsHostname() {
-		return EqualNoCase(this.data, rhs.data)
+		return this.data.EqualNoCase(context, &rhs.data)
 	}
-	return bytes.Equal(this.data, rhs.data)
+	return this.data.Equal(context, &rhs.data)
 
 }
 
-func (this *SipHost) parseIpv6(src []byte, pos int) (newPos int, err error) {
+func (this *SipHost) parseIpv6(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
 	for ; newPos < len(src); newPos++ {
 		if src[newPos] == ']' {
@@ -121,15 +127,15 @@ func (this *SipHost) parseIpv6(src []byte, pos int) (newPos int, err error) {
 		return newPos, &AbnfError{"host parse: no \"]\" for ipv6-reference", src, newPos}
 	}
 
-	ipv6 := net.ParseIP(string(src[pos:newPos]))
+	ipv6 := net.ParseIP(ByteSliceToString(src[pos:newPos]))
 	if ipv6 == nil {
 		return newPos, &AbnfError{"host parse: parse ipv6 failed", src, newPos}
 	}
-	this.SetIpv6(ipv6)
+	this.SetIpv6(context, ipv6)
 	return newPos + 1, nil
 }
 
-func (this *SipHost) parseIpv4(src []byte, pos int) (newPos int, ok bool) {
+func (this *SipHost) parseIpv4(context *ParseContext, src []byte, pos int) (newPos int, ok bool) {
 
 	var ipv4 [net.IPv4len]byte
 
@@ -150,7 +156,7 @@ func (this *SipHost) parseIpv4(src []byte, pos int) (newPos int, ok bool) {
 		var digit int
 		var ok bool
 
-		digit, newPos, ok = ParseUInt(src, newPos)
+		digit, _, newPos, ok = ParseUInt(src, newPos)
 
 		if !ok || digit > 0xff {
 			return newPos, false
@@ -163,19 +169,19 @@ func (this *SipHost) parseIpv4(src []byte, pos int) (newPos int, ok bool) {
 		return newPos, false
 	}
 
-	this.SetIpv4(net.IPv4(ipv4[0], ipv4[1], ipv4[2], ipv4[3]))
+	this.SetIpv4(context, net.IPv4(ipv4[0], ipv4[1], ipv4[2], ipv4[3]))
 
 	return newPos, true
 }
 
-func (this *SipHost) parseHostname(src []byte, pos int) (newPos int, err error) {
+func (this *SipHost) parseHostname(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	for newPos = pos; newPos < len(src) && IsHostname(src[newPos]); newPos++ {
 	}
 
 	if newPos <= pos {
 		return newPos, &AbnfError{"host parse: null hostname", src, newPos}
 	}
-	this.SetHostname(src[pos:newPos])
+	this.SetHostname(context, src[pos:newPos])
 	return newPos, nil
 
 }
@@ -187,9 +193,20 @@ type SipHostPort struct {
 	port    uint16
 }
 
+func NewSipHostPort(context *ParseContext) (*SipHostPort, AbnfPtr) {
+	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipHostPort{})))
+	if mem == nil {
+		return nil, ABNF_PTR_NIL
+	}
+
+	(*SipHostPort)(unsafe.Pointer(mem)).Init()
+	return (*SipHostPort)(unsafe.Pointer(mem)), addr
+}
+
 func (this *SipHostPort) Init() {
 	this.SipHost.Init()
 	this.hasPort = false
+	this.port = 0
 }
 
 func (this *SipHostPort) HasPort() bool   { return this.hasPort }
@@ -200,26 +217,22 @@ func (this *SipHostPort) SetPort(port uint16) {
 	this.port = port
 }
 
-func (this *SipHostPort) Encode(buf *bytes.Buffer) {
-	this.SipHost.Encode(buf)
+func (this *SipHostPort) Encode(context *ParseContext, buf *bytes.Buffer) {
+	this.SipHost.Encode(context, buf)
 	if this.hasPort {
 		buf.WriteByte(':')
 		buf.WriteString(strconv.FormatUint(uint64(this.port), 10))
+		//buf.WriteString(fmt.Sprintf(":%d", this.port))
 	}
 }
 
-func (this *SipHostPort) String() string {
-	str := this.SipHost.String()
-	if this.hasPort {
-		str += ":"
-		str += strconv.FormatUint(uint64(this.port), 10)
-	}
-
-	return str
+func (this *SipHostPort) String(context *ParseContext) string {
+	return AbnfEncoderToString(context, this)
 }
 
-func (this *SipHostPort) Parse(src []byte, pos int) (newPos int, err error) {
-	newPos, err = this.SipHost.Parse(src, pos)
+func (this *SipHostPort) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
+	newPos, err = this.SipHost.Parse(context, src, pos)
 	if err != nil {
 		return newPos, err
 	}
@@ -237,7 +250,7 @@ func (this *SipHostPort) Parse(src []byte, pos int) (newPos int, err error) {
 	var digit int
 	var ok bool
 
-	digit, newPos, ok = ParseUInt(src, newPos)
+	digit, _, newPos, ok = ParseUInt(src, newPos)
 	if !ok {
 		return newPos, &AbnfError{"hostport parse: parse port failed after \":\"", src, newPos}
 	}
@@ -251,10 +264,10 @@ func (this *SipHostPort) Parse(src []byte, pos int) (newPos int, err error) {
 	return newPos, nil
 }
 
-func (this *SipHostPort) Equal(rhs *SipHostPort) bool {
+func (this *SipHostPort) Equal(context *ParseContext, rhs *SipHostPort) bool {
 	if (this.hasPort && !rhs.hasPort) || (!this.hasPort && rhs.hasPort) {
 		return false
 	}
 
-	return this.SipHost.Equal(&rhs.SipHost)
+	return this.SipHost.Equal(context, &rhs.SipHost)
 }

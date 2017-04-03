@@ -8,11 +8,12 @@ import (
 )
 
 func TestSipHostUnknownString(t *testing.T) {
-	var host SipHost
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
 
-	host.Init()
+	host, _ := NewSipHost(context)
 
-	str := host.String()
+	str := host.String(context)
 
 	if str != "unknown host" {
 		t.Errorf("TestSipHostUnknownString failed, str = %s, wanted = %s\n", str, "unknown host")
@@ -20,12 +21,16 @@ func TestSipHostUnknownString(t *testing.T) {
 }
 
 func TestSipHostIpv4String(t *testing.T) {
-	var host SipHost
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+
+	host, _ := NewSipHost(context)
+
 	ipv4 := net.IPv4(10, 1, 1, 1)
 
-	host.SetIpv4(ipv4)
+	host.SetIpv4(context, ipv4)
 
-	str := host.String()
+	str := host.String(context)
 
 	if str != "10.1.1.1" {
 		t.Errorf("TestSipHostIpv4String failed, str = %s, wanted = %s\n", str, "10.1.1.1")
@@ -33,12 +38,16 @@ func TestSipHostIpv4String(t *testing.T) {
 }
 
 func TestSipHostIpv6String(t *testing.T) {
-	var host SipHost
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+
+	host, _ := NewSipHost(context)
+
 	ipv4 := net.IPv4(10, 1, 1, 1)
 
-	host.SetIpv6(ipv4.To16())
+	host.SetIpv6(context, ipv4.To16())
 
-	str := host.String()
+	str := host.String(context)
 
 	if str != "[10.1.1.1]" {
 		t.Errorf("TestSipHostIpv6String failed, str = %s, wanted = %s\n", str, "[10.1.1.1]")
@@ -46,15 +55,18 @@ func TestSipHostIpv6String(t *testing.T) {
 }
 
 func TestSipHostHostnameString(t *testing.T) {
-	var host SipHost
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
 
-	host.SetHostname([]byte("abc.com"))
+	host, _ := NewSipHost(context)
+
+	host.SetHostname(context, []byte("abc.com"))
 
 	if !host.IsHostname() {
 		t.Errorf("TestSipHostHostnameString failed, host is not hostname\n")
 	}
 
-	str := host.String()
+	str := host.String(context)
 
 	if str != "abc.com" {
 		t.Errorf("TestSipHostHostnameString failed, str = %s, wanted = %s\n", str, "abc.com")
@@ -62,7 +74,10 @@ func TestSipHostHostnameString(t *testing.T) {
 }
 
 func TestSipHostParseOk(t *testing.T) {
-	var host SipHost
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+
+	host, _ := NewSipHost(context)
 
 	testdata := []struct {
 		test     string
@@ -85,7 +100,7 @@ func TestSipHostParseOk(t *testing.T) {
 
 	for i, v := range testdata {
 		host.Init()
-		newPos, err := host.Parse([]byte(v.test), 0)
+		newPos, err := host.Parse(context, []byte(v.test), 0)
 
 		if err != nil {
 			t.Errorf("TestSipHostParseOk[%d] failed, %s\n", i, err.Error())
@@ -102,7 +117,7 @@ func TestSipHostParseOk(t *testing.T) {
 			continue
 		}
 
-		str := host.String()
+		str := host.String(context)
 
 		if str != v.wanted {
 			t.Errorf("TestSipHostParseOk[%d] failed, str = %s, wanted = %s\n", i, str, v.wanted)
@@ -122,11 +137,12 @@ func TestSipHostParseNOk(t *testing.T) {
 		{"[12!]"},
 	}
 
-	var host SipHost
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
 
 	for i, v := range testdata {
-		host.Init()
-		_, err := host.Parse([]byte(v.test), 0)
+		host, _ := NewSipHost(context)
+		_, err := host.Parse(context, []byte(v.test), 0)
 
 		if err == nil {
 			t.Errorf("TestSipHostParseNOk[%d] failed, should return err\n", i)
@@ -136,7 +152,10 @@ func TestSipHostParseNOk(t *testing.T) {
 }
 
 func TestSipHostPortParseOk(t *testing.T) {
-	var host SipHostPort
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+
+	host, _ := NewSipHostPort(context)
 
 	testdata := []struct {
 		test     string
@@ -157,7 +176,7 @@ func TestSipHostPortParseOk(t *testing.T) {
 
 	for i, v := range testdata {
 		host.Init()
-		newPos, err := host.Parse([]byte(v.test), 0)
+		newPos, err := host.Parse(context, []byte(v.test), 0)
 
 		if err != nil {
 			t.Errorf("TestSipHostPortParseOk[%d] failed, %s\n", i, err.Error())
@@ -186,7 +205,7 @@ func TestSipHostPortParseOk(t *testing.T) {
 			}
 		}
 
-		str := host.String()
+		str := host.String(context)
 
 		if str != v.wanted {
 			t.Errorf("TestSipHostPortParseOk[%d] failed, str = %s, wanted = %s\n", i, str, v.wanted)
@@ -208,11 +227,14 @@ func TestSipHostPortParseNOk(t *testing.T) {
 		{"abc:123456"},
 	}
 
-	var host SipHostPort
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+
+	host, _ := NewSipHostPort(context)
 
 	for i, v := range testdata {
 		host.Init()
-		_, err := host.Parse([]byte(v.test), 0)
+		_, err := host.Parse(context, []byte(v.test), 0)
 
 		if err == nil {
 			t.Errorf("TestSipHostPortParseNOk[%d] failed, should return err\n", i)

@@ -1,100 +1,23 @@
 package sipparser
 
 import (
-	//"container/list"
 	"bytes"
-	"fmt"
-	"strings"
+	"reflect"
+	"strconv"
+	"unsafe"
 )
 
-type AbnfError struct {
-	description string
-	src         []byte
-	pos         int
+func Str2bytes(s string) []byte {
+	//h := reflect.SliceHeader{Data: uintptr(unsafe.Pointer(&s)), Len: len(s), Cap: len(s)}
+	//x := (*[2]uintptr)(unsafe.Pointer(&s))
+	//h := [3]uintptr{x[0], x[1], x[1]}
+	x := (*reflect.StringHeader)(unsafe.Pointer(&s))
+	h := reflect.SliceHeader{Data: x.Data, Len: x.Len, Cap: x.Len}
+	return *(*[]byte)(unsafe.Pointer(&h))
 }
 
-func (err *AbnfError) Error() string {
-	if err.pos < len(err.src) {
-		return fmt.Sprintf("%s at src[%d]: %s", err.description, err.pos, string(err.src[err.pos:]))
-	}
-	return fmt.Sprintf("%s at end")
-}
-
-type AbnfToken struct {
-	exist bool
-	value []byte
-}
-
-func (this *AbnfToken) String() string {
-	if this.exist {
-		return string(this.value)
-	}
-	return ""
-}
-
-func (this *AbnfToken) Encode(buf *bytes.Buffer) {
-	if this.exist {
-		buf.Write(this.value)
-	}
-}
-
-func (this *AbnfToken) Exist() bool  { return this.exist }
-func (this *AbnfToken) Size() int    { return len(this.value) }
-func (this *AbnfToken) Empty() bool  { return len(this.value) == 0 }
-func (this *AbnfToken) SetExist()    { this.exist = true }
-func (this *AbnfToken) SetNonExist() { this.exist = false }
-
-func (this *AbnfToken) SetValue(value []byte) { this.value = value }
-func (this *AbnfToken) ToLower() string       { return strings.ToLower(string(this.value)) }
-func (this *AbnfToken) ToUpper() string       { return strings.ToUpper(string(this.value)) }
-
-func (this *AbnfToken) Equal(rhs *AbnfToken) bool {
-	if (this.exist && !rhs.exist) || (!this.exist && rhs.exist) {
-		return false
-	}
-	return bytes.Equal(this.value, rhs.value)
-}
-
-func (this *AbnfToken) EqualNoCase(rhs *AbnfToken) bool {
-	if (this.exist && !rhs.exist) || (!this.exist && rhs.exist) {
-		return false
-	}
-	return EqualNoCase(this.value, rhs.value)
-}
-
-func (this *AbnfToken) EqualString(str string) bool {
-	if !this.exist {
-		return false
-	}
-	return bytes.Equal(this.value, []byte(str))
-}
-
-func (this *AbnfToken) EqualStringNoCase(str string) bool {
-	if !this.exist {
-		return false
-	}
-
-	return EqualNoCase(this.value, []byte(str))
-}
-
-func (this *AbnfToken) Parse(context *ParseContext, src []byte, pos int, isInCharset func(ch byte) bool) (newPos int, err error) {
-	begin, end, newPos, err := parseToken(src, pos, isInCharset)
-	if err != nil {
-		return newPos, err
-	}
-
-	this.value = src[begin:end]
-	return newPos, nil
-}
-
-func (this *AbnfToken) ParseEscapable(context *ParseContext, src []byte, pos int, isInCharset func(ch byte) bool) (newPos int, err error) {
-	begin, end, newPos, err := parseTokenEscapable(src, pos, isInCharset)
-	if err != nil {
-		return newPos, err
-	}
-
-	this.value = Unescape(context, src[begin:end])
-	return newPos, nil
+func Bytes2str(b []byte) string {
+	return *(*string)(unsafe.Pointer(&b))
 }
 
 func ToUpperHex(ch byte) byte {
@@ -173,22 +96,22 @@ func unescapeToByte(src []byte) byte {
 	return HexToByte(src[1])<<4 | HexToByte(src[2])
 }
 
-func NeedEscape(src []byte, isInCharset func(ch byte) bool) bool {
+func NeedEscape(src []byte, inCharset AbnfIsInCharset) bool {
 	for _, v := range src {
-		if !isInCharset(v) {
+		if !inCharset(v) {
 			return true
 		}
 	}
 	return false
 }
 
-func Escape(src []byte, isInCharset func(ch byte) bool) (dst []byte) {
-	if !NeedEscape(src, isInCharset) {
+func Escape(src []byte, inCharset AbnfIsInCharset) (dst []byte) {
+	if !NeedEscape(src, inCharset) {
 		return src
 	}
 
 	for _, v := range src {
-		if isInCharset(v) {
+		if inCharset(v) {
 			dst = append(dst, v)
 		} else {
 			dst = append(dst, '%', ToUpperHex(v>>4), ToUpperHex(v))
@@ -198,17 +121,17 @@ func Escape(src []byte, isInCharset func(ch byte) bool) (dst []byte) {
 	return dst
 }
 
-func parseToken(src []byte, pos int, isInCharset func(ch byte) bool) (tokenBegin, tokenEnd, newPos int, err error) {
+func parseToken(src []byte, pos int, inCharset AbnfIsInCharset) (tokenBegin, tokenEnd, newPos int, err error) {
 	tokenBegin = pos
 	for newPos = pos; newPos < len(src); newPos++ {
-		if !isInCharset(src[newPos]) {
+		if !inCharset(src[newPos]) {
 			break
 		}
 	}
 	return tokenBegin, newPos, newPos, nil
 }
 
-func parseTokenEscapable(src []byte, pos int, isInCharset func(ch byte) bool) (tokenBegin, tokenEnd, newPos int, err error) {
+func parseTokenEscapable(src []byte, pos int, inCharset AbnfIsInCharset) (tokenBegin, tokenEnd, newPos int, err error) {
 	tokenBegin = pos
 	for newPos = pos; newPos < len(src); newPos++ {
 		if src[newPos] == '%' {
@@ -219,19 +142,19 @@ func parseTokenEscapable(src []byte, pos int, isInCharset func(ch byte) bool) (t
 				return tokenBegin, newPos, newPos, &AbnfError{"token parse: parse escape token failed: no hex after %", src, newPos}
 			}
 			newPos += 2
-		} else if !isInCharset(src[newPos]) {
+		} else if !inCharset(src[newPos]) {
 			break
 		}
 	}
 	return tokenBegin, newPos, newPos, nil
 }
 
-func ParseUInt(src []byte, pos int) (digit, newPos int, ok bool) {
+func ParseUInt(src []byte, pos int) (digit, num, newPos int, ok bool) {
 	if pos >= len(src) || !IsDigit(src[pos]) {
-		return 0, pos, false
+		return 0, 0, pos, false
 	}
 
-	num := 0
+	num = 0
 	digit = 0
 	newPos = pos
 
@@ -241,7 +164,7 @@ func ParseUInt(src []byte, pos int) (digit, newPos int, ok bool) {
 		num++
 	}
 
-	return digit, newPos, true
+	return digit, num, newPos, true
 
 }
 
@@ -276,9 +199,28 @@ func ParseUriScheme(context *ParseContext, src []byte, pos int) (newPos int, sch
 	}
 
 	newPos++
-	scheme.SetExist()
 
 	return newPos, scheme, nil
+}
+
+func ParseHcolon(src []byte, pos int) (newPos int, err error) {
+	/* RFC3261 Section 25.1, page 220
+	 *
+	 * HCOLON  =  *( SP / HTAB ) ":" SWS
+	 */
+	newPos = pos
+
+	_, _, newPos, err = parseToken(src, pos, IsWspChar)
+
+	if newPos >= len(src) {
+		return newPos, &AbnfError{"HCOLON parse: reach end before ':'", src, newPos}
+	}
+
+	if src[newPos] != ':' {
+		return newPos, &AbnfError{"HCOLON parse: no ':' after *( SP / HTAB )", src, newPos}
+	}
+
+	return ParseSWS(src, newPos+1)
 }
 
 func ParseSWSMark(src []byte, pos int, mark byte) (newPos int, err error) {
@@ -324,7 +266,11 @@ func ParseSWS(src []byte, pos int) (newPos int, err error) {
 		return newPos, nil
 	}
 
-	return ParseLWS(src, newPos)
+	newPos1, err := ParseLWS(src, newPos)
+	if err == nil {
+		newPos = newPos1
+	}
+	return newPos, nil
 }
 
 func ParseLWS(src []byte, pos int) (newPos int, err error) {
@@ -418,4 +364,15 @@ func ParseRightAngleQuote(src []byte, pos int) (newPos int, err error) {
 	}
 
 	return ParseSWS(src, newPos+1)
+}
+
+func ParseCRLF(src []byte, pos int) (newPos int, err error) {
+	if ((pos + 1) >= len(src)) || (src[pos] != '\r') || (src[pos+1] != '\n') {
+		return pos, &AbnfError{"CRLF parse: wrong CRLF", src, pos}
+	}
+	return pos + 2, nil
+}
+
+func EncodeUInt(buf *bytes.Buffer, digit uint64) {
+	buf.WriteString(strconv.FormatUint(uint64(digit), 10))
 }

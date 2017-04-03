@@ -1,9 +1,9 @@
 package sipparser
 
 import (
-	//"fmt"
 	"bytes"
-	//"strings"
+	//"fmt"
+	"unsafe"
 )
 
 type SipUri struct {
@@ -15,18 +15,28 @@ type SipUri struct {
 	headers  SipUriHeaders
 }
 
+func NewSipUri(context *ParseContext) (*SipUri, AbnfPtr) {
+	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipUri{})))
+	if mem == nil {
+		return nil, ABNF_PTR_NIL
+	}
+	(*SipUri)(unsafe.Pointer(mem)).isSecure = false
+	(*SipUri)(unsafe.Pointer(mem)).Init()
+	return (*SipUri)(unsafe.Pointer(mem)), addr
+}
+
+func (this *SipUri) Init() {
+	this.user.Init()
+	this.password.Init()
+	this.hostport.Init()
+	this.params.Init()
+	this.headers.Init()
+}
+
 func (this *SipUri) SetSipUri()      { this.isSecure = false }
 func (this *SipUri) SetSipsUri()     { this.isSecure = true }
 func (this *SipUri) IsSipUri() bool  { return !this.isSecure }
 func (this *SipUri) IsSipsUri() bool { return this.isSecure }
-
-func NewSipUri() *SipUri {
-	uri := &SipUri{}
-	uri.params.Init()
-	uri.headers.Init()
-	return uri
-
-}
 
 func (this *SipUri) Scheme() string {
 	if this.isSecure {
@@ -47,13 +57,15 @@ func (this *SipUri) Parse(context *ParseContext, src []byte, pos int) (newPos in
 
 func (this *SipUri) ParseAfterScheme(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
+	this.Init()
 
 	newPos, err = this.ParseUserinfo(context, src, newPos)
 	if err != nil {
 		return newPos, err
 	}
+	//return newPos, nil
 
-	newPos, err = this.hostport.Parse(src, newPos)
+	newPos, err = this.hostport.Parse(context, src, newPos)
 	if err != nil {
 		return newPos, err
 	}
@@ -81,72 +93,61 @@ func (this *SipUri) ParseAfterScheme(context *ParseContext, src []byte, pos int)
 	}
 
 	return newPos, err
-
 }
 
-func (this *SipUri) Encode(buf *bytes.Buffer) {
+func (this *SipUri) ParseAfterSchemeWithoutParam(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	newPos = pos
+	this.Init()
+
+	newPos, err = this.ParseUserinfo(context, src, newPos)
+	if err != nil {
+		return newPos, err
+	}
+	//return newPos, nil
+
+	newPos, err = this.hostport.Parse(context, src, newPos)
+	if err != nil {
+		return newPos, err
+	}
+
+	return newPos, nil
+}
+
+func (this *SipUri) Encode(context *ParseContext, buf *bytes.Buffer) {
 	buf.WriteString(this.Scheme())
 	buf.WriteByte(':')
 
 	if this.user.Exist() {
-		buf.Write(Escape(this.user.value, IsSipUser))
+		buf.Write(Escape(this.user.GetAsByteSlice(context), IsSipUser))
 		if this.password.Exist() {
 			buf.WriteByte(':')
-			buf.Write(Escape(this.password.value, IsSipPassword))
+			buf.Write(Escape(this.password.GetAsByteSlice(context), IsSipPassword))
 		}
 		buf.WriteByte('@')
 	}
 
-	this.hostport.Encode(buf)
+	this.hostport.Encode(context, buf)
 
 	if !this.params.Empty() {
 		buf.WriteByte(';')
-		this.params.Encode(buf)
+		this.params.Encode(context, buf)
 	}
 
 	if !this.headers.Empty() {
 		buf.WriteByte('?')
-		this.headers.Encode(buf)
+		this.headers.Encode(context, buf)
 	}
 }
 
-func (this *SipUri) String() string {
-	/*var buf bytes.Buffer
-	this.Encode(&buf)
-	return buf.String()*/
-	//*
-	str := this.Scheme()
-	str += ":"
-
-	if this.user.Exist() {
-		str += string(Escape([]byte(this.user.String()), IsSipUser))
-		if this.password.Exist() {
-			str += ":"
-			str += string(Escape([]byte(this.password.String()), IsSipPassword))
-		}
-		str += "@"
-	}
-
-	str += this.hostport.String()
-
-	if !this.params.Empty() {
-		str += ";"
-		str += this.params.String()
-	}
-
-	if !this.headers.Empty() {
-		str += "?"
-		str += this.headers.String()
-	}
-
-	return str //*/
+func (this *SipUri) String(context *ParseContext) string {
+	return AbnfEncoderToString(context, this)
 }
 
-func (this *SipUri) Equal(uri URI) bool {
-	return this.EqualRFC3261(uri)
+func (this *SipUri) Equal(context *ParseContext, uri URI) bool {
+	return this.EqualRFC3261(context, uri)
 }
 
-func (this *SipUri) EqualRFC3261(uri URI) bool {
+func (this *SipUri) EqualRFC3261(context *ParseContext, uri URI) bool {
 	rhs, ok := uri.(*SipUri)
 	if !ok {
 		return false
@@ -156,48 +157,76 @@ func (this *SipUri) EqualRFC3261(uri URI) bool {
 		return false
 	}
 
-	if !this.EqualUserinfo(rhs) {
+	if !this.EqualUserinfo(context, rhs) {
 		return false
 	}
 
-	if !this.hostport.Equal(&rhs.hostport) {
+	if !this.hostport.Equal(context, &rhs.hostport) {
 		return false
 	}
 
-	if !this.params.EqualRFC3261(&rhs.params) {
+	if !this.params.EqualRFC3261(context, &rhs.params) {
 		return false
 	}
 
-	if !this.headers.EqualRFC3261(&rhs.headers) {
+	if !this.headers.EqualRFC3261(context, &rhs.headers) {
 		return false
 	}
 
 	return true
 }
 
-func (this *SipUri) EqualUserinfo(rhs *SipUri) bool {
+func (this *SipUri) EqualUserinfo(context *ParseContext, rhs *SipUri) bool {
 	if (this.user.Exist() && !rhs.user.Exist()) || (!this.user.Exist() && rhs.user.Exist()) {
 		return false
 	}
-	ret := this.user.Equal(&rhs.user) && this.password.Equal(&rhs.password)
-	return ret
+
+	if (this.password.Exist() && !rhs.password.Exist()) || (!this.password.Exist() && rhs.password.Exist()) {
+		return false
+	}
+
+	if this.user.Exist() && !this.user.Equal(context, &rhs.user) {
+		return false
+	}
+
+	if this.password.Exist() && !this.password.Equal(context, &rhs.user) {
+		return false
+	}
+
+	return true
 }
 
 func (this *SipUri) ParseScheme(context *ParseContext, src []byte, pos int) (newPos int, err error) {
-	newPos, scheme, err := ParseUriScheme(context, src, pos)
-	if err != nil {
-		return newPos, err
-	}
-
-	if EqualNoCase(scheme.value, []byte("sips")) {
-		this.SetSipsUri()
-	} else if !EqualNoCase(scheme.value, []byte("sip")) {
-		return newPos, &AbnfError{"sip-uri parse: parse scheme failed: not sip-uri nor sips-uri", src, newPos}
-	} else {
+	src1 := src[pos:]
+	if len(src) >= 4 && ((src1[0] | 0x20) == 's') && ((src1[1] | 0x20) == 'i') && ((src1[2] | 0x20) == 'p') && ((src1[3] | 0x20) == ':') {
 		this.SetSipUri()
+		return pos + 4, nil
 	}
 
-	return newPos, nil
+	if len(src) >= 5 && ((src1[0] | 0x20) == 's') && ((src1[1] | 0x20) == 'i') && ((src1[2] | 0x20) == 'p') &&
+		((src1[3] | 0x20) == 's') && ((src1[4] | 0x20) == ':') {
+		this.SetSipsUri()
+		return pos + 5, nil
+	}
+
+	return 0, &AbnfError{"sip-uri parse: parse scheme failed: not sip-uri nor sips-uri", src, newPos}
+
+	/*
+		newPos, scheme, err := ParseUriScheme(src, pos)
+		if err != nil {
+			return newPos, err
+		}
+
+		if EqualNoCase(scheme.value, Str2bytes("sips")) {
+			this.SetSipsUri()
+		} else if !EqualNoCase(scheme.value, Str2bytes("sip")) {
+			return newPos, &AbnfError{"sip-uri parse: parse scheme failed: not sip-uri nor sips-uri", src, newPos}
+		} else {
+			this.SetSipUri()
+		}
+
+		return newPos, nil
+	*/
 }
 
 func (this *SipUri) ParseUserinfo(context *ParseContext, src []byte, pos int) (newPos int, err error) {
@@ -213,16 +242,17 @@ func (this *SipUri) ParseUserinfo(context *ParseContext, src []byte, pos int) (n
 			return newPos, &AbnfError{"sip-uri parse: parse user-info failed: reach end after user", src, newPos}
 		}
 
-		if this.user.Empty() {
-			return newPos, &AbnfError{"sip-uri parse: parse user-info failed: empty user", src, newPos}
-		}
-
-		this.user.SetExist()
-
 		if src[newPos] == ':' {
-			newPos, err = this.password.ParseEscapable(context, src, newPos+1, IsSipPassword)
-			if err != nil {
-				return newPos, err
+			newPos++
+			if newPos >= len(src) {
+				return newPos, &AbnfError{"sip-uri parse: parse user-info failed: reach end after password :", src, newPos}
+			}
+
+			if IsSipPassword(src[newPos]) {
+				newPos, err = this.password.ParseEscapable(context, src, newPos, IsSipPassword)
+				if err != nil {
+					return newPos, err
+				}
 			}
 			this.password.SetExist()
 		}
@@ -242,11 +272,11 @@ func (this *SipUri) ParseUserinfo(context *ParseContext, src []byte, pos int) (n
 }
 
 func findUserinfo(src []byte, pos int) bool {
-	for newPos := pos; newPos < len(src); newPos++ {
-		if src[newPos] == '@' {
+	for _, v := range src[pos:] {
+		if v == '@' {
 			return true
-		} else if src[newPos] == '>' || IsLwsChar(src[newPos]) {
-			return false
+		} else if v == '>' || IsLwsChar(v) {
+			break
 		}
 	}
 	return false

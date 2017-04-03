@@ -5,9 +5,10 @@ import (
 )
 
 type URI interface {
+	Init()
 	Scheme() string
 	Parse(context *ParseContext, src []byte, pos int) (newPos int, err error)
-	String() string
-	Encode(buf *bytes.Buffer)
-	Equal(rhs URI) bool
+	String(context *ParseContext) string
+	Encode(context *ParseContext, buf *bytes.Buffer)
+	Equal(context *ParseContext, rhs URI) bool
 }
