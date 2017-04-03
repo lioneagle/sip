@@ -5,7 +5,7 @@ echo benchmark.bat must be run from its folder
 goto end
 : ok
 call env.bat
-
+gofmt -w src
 if not exist test_temp mkdir test_temp
 if exist .\test_temp\%1.test.exe  del .\test_temp\%1.test.exe
 
