@@ -45,7 +45,7 @@ func (this *SipSingleHeader) EqualNameBytes(context *ParseContext, name []byte) 
 }
 
 func (this *SipSingleHeader) EqualNameString(context *ParseContext, name string) bool {
-	return this.EqualNameBytes(context, Str2bytes(name))
+	return this.EqualNameBytes(context, StringToByteSlice(name))
 }
 
 func (this *SipSingleHeader) Encode(context *ParseContext, buf *bytes.Buffer) {
@@ -100,7 +100,7 @@ func (this *SipSingleHeaders) GetHeaderByBytes(context *ParseContext, name []byt
 }
 
 func (this *SipSingleHeaders) GetHeaderByString(context *ParseContext, name string) (val *SipSingleHeader, ok bool) {
-	return this.GetHeaderByBytes(context, Str2bytes(name))
+	return this.GetHeaderByBytes(context, StringToByteSlice(name))
 }
 
 func (this *SipSingleHeaders) AddHeader(context *ParseContext, header AbnfPtr) {

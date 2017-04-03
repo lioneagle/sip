@@ -2,23 +2,8 @@ package sipparser
 
 import (
 	"bytes"
-	"reflect"
 	"strconv"
-	"unsafe"
 )
-
-func Str2bytes(s string) []byte {
-	//h := reflect.SliceHeader{Data: uintptr(unsafe.Pointer(&s)), Len: len(s), Cap: len(s)}
-	//x := (*[2]uintptr)(unsafe.Pointer(&s))
-	//h := [3]uintptr{x[0], x[1], x[1]}
-	x := (*reflect.StringHeader)(unsafe.Pointer(&s))
-	h := reflect.SliceHeader{Data: x.Data, Len: x.Len, Cap: x.Len}
-	return *(*[]byte)(unsafe.Pointer(&h))
-}
-
-func Bytes2str(b []byte) string {
-	return *(*string)(unsafe.Pointer(&b))
-}
 
 func ToUpperHex(ch byte) byte {
 	return "0123456789ABCDEF"[ch&0x0F]

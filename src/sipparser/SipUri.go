@@ -217,9 +217,9 @@ func (this *SipUri) ParseScheme(context *ParseContext, src []byte, pos int) (new
 			return newPos, err
 		}
 
-		if EqualNoCase(scheme.value, Str2bytes("sips")) {
+		if EqualNoCase(scheme.value, StringToByteSlice("sips")) {
 			this.SetSipsUri()
-		} else if !EqualNoCase(scheme.value, Str2bytes("sip")) {
+		} else if !EqualNoCase(scheme.value, StringToByteSlice("sip")) {
 			return newPos, &AbnfError{"sip-uri parse: parse scheme failed: not sip-uri nor sips-uri", src, newPos}
 		} else {
 			this.SetSipUri()

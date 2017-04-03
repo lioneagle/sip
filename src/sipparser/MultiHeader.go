@@ -45,7 +45,7 @@ func (this *SipMultiHeader) EqualNameBytes(context *ParseContext, name []byte) b
 }
 
 func (this *SipMultiHeader) EqualNameString(context *ParseContext, name string) bool {
-	return this.EqualNameBytes(context, Str2bytes(name))
+	return this.EqualNameBytes(context, StringToByteSlice(name))
 }
 
 func (this *SipMultiHeader) AddHeader(context *ParseContext, header AbnfPtr) {
@@ -97,7 +97,7 @@ func (this *SipMultiHeaders) GetHeaderByBytes(context *ParseContext, name []byte
 }
 
 func (this *SipMultiHeaders) GetHeaderByString(context *ParseContext, name string) (val *SipMultiHeader, ok bool) {
-	return this.GetHeaderByBytes(context, Str2bytes(name))
+	return this.GetHeaderByBytes(context, StringToByteSlice(name))
 }
 
 func (this *SipMultiHeaders) AddHeader(context *ParseContext, header AbnfPtr) {

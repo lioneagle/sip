@@ -18,6 +18,7 @@ bin
 *.png
 log_file
 *.svg
+*.csv
 test_temp
 
 # C extensions
