@@ -71,11 +71,7 @@ func (this *SipDisplayName) Parse(context *ParseContext, src []byte, pos int) (n
 			}
 
 			ref := AbnfRef{}
-			newPos, err = ref.Parse(context, src, newPos, IsSipToken)
-			if err != nil {
-				break
-			}
-
+			newPos = ref.Parse(src, newPos, IsSipToken)
 			newPos, err = ParseLWS(src, newPos)
 			if err != nil {
 				return newPos, err

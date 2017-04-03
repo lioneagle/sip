@@ -53,7 +53,7 @@ func (this *SipAddrSpec) Parse(context *ParseContext, src []byte, pos int) (newP
 		return newPos, err
 	}
 
-	if scheme.EqualStringNoCase(context, "sip") {
+	if scheme.EqualStringNoCase(context, ABNF_NAME_URI_SCHEME_SIP) {
 		sipuri, addr := NewSipUri(context)
 		if sipuri == nil {
 			return newPos, &AbnfError{"addr-spec parse: out of memory before parse sip uri", src, newPos}
@@ -64,7 +64,7 @@ func (this *SipAddrSpec) Parse(context *ParseContext, src []byte, pos int) (newP
 		return sipuri.ParseAfterScheme(context, src, newPos)
 	}
 
-	if scheme.EqualStringNoCase(context, "sips") {
+	if scheme.EqualStringNoCase(context, ABNF_NAME_URI_SCHEME_SIPS) {
 		sipuri, addr := NewSipUri(context)
 		if sipuri == nil {
 			return newPos, &AbnfError{"addr-spec parse: out of memory before parse sips uri", src, newPos}
@@ -75,7 +75,7 @@ func (this *SipAddrSpec) Parse(context *ParseContext, src []byte, pos int) (newP
 		return sipuri.ParseAfterScheme(context, src, newPos)
 	}
 
-	if scheme.EqualStringNoCase(context, "tel") {
+	if scheme.EqualStringNoCase(context, ABNF_NAME_URI_SCHEME_TEL) {
 		teluri, addr := NewTelUri(context)
 		if teluri == nil {
 			return newPos, &AbnfError{"addr-spec parse: out of memory before parse tel uri", src, newPos}

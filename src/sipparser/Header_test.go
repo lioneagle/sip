@@ -82,6 +82,8 @@ func TestParseSipHeaders(t *testing.T) {
 		{"Record-Route: <tel:12345>\r\nRecord-Route: <sip:456@a.com>\r\n", true, len("Record-Route: <tel:12345>\r\nRecord-Route: <sip:456@a.com>\r\n"), "Record-Route: <tel:12345>, <sip:456@a.com>\r\n"},
 		{"Content-Disposition: early-session\r\n", true, len("Content-Disposition: early-session\r\n"), "Content-Disposition: early-session\r\n"},
 		{"Contact: <tel:12345>\r\nContact: sip:456@a.com\r\n", true, len("Contact: <tel:12345>\r\nContact: sip:456@a.com\r\n"), "Contact: <tel:12345>, sip:456@a.com\r\n"},
+
+		{":122334545\r\n", false, 0, ""},
 	}
 
 	context := NewParseContext()

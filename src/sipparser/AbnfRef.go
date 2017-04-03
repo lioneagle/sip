@@ -16,15 +16,34 @@ func (this *AbnfRef) Len() int32 {
 	return this.End - this.Begin
 }
 
-func (this *AbnfRef) Parse(context *ParseContext, src []byte, pos int, inCharset AbnfIsInCharset) (newPos int, err error) {
-	begin, end, newPos, err := parseToken(src, pos, inCharset)
-	if err != nil {
-		return newPos, err
+func (this *AbnfRef) Parse(src []byte, pos int, inCharset AbnfIsInCharset) (end int) {
+	this.Begin = int32(pos)
+	for end = pos; end < len(src); end++ {
+		if !inCharset(src[end]) {
+			break
+		}
 	}
-	if begin >= end {
-		return newPos, &AbnfError{"AbnfRef parse: value is empty", src, newPos}
-	}
-	this.Begin = int32(begin)
+
 	this.End = int32(end)
-	return newPos, nil
+	return end
+}
+
+func (this *AbnfRef) ParseEscapable(src []byte, pos int, inCharset AbnfIsInCharset) (escapeNum, newPos int, err error) {
+	this.Begin = int32(pos)
+	for newPos = pos; newPos < len(src); newPos++ {
+		if src[newPos] == '%' {
+			if (newPos + 2) >= len(src) {
+				return escapeNum, newPos, &AbnfError{"AbnfRef ParseEscapable: reach end after %%", src, newPos}
+			}
+			if !IsHex(src[newPos+1]) || !IsHex(src[newPos+2]) {
+				return escapeNum, newPos, &AbnfError{"AbnfRef ParseEscapable: no hex after %%", src, newPos}
+			}
+			escapeNum++
+			newPos += 2
+		} else if !inCharset(src[newPos]) {
+			break
+		}
+	}
+	this.End = int32(newPos)
+	return escapeNum, newPos, nil
 }

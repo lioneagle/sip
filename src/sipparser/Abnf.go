@@ -10,16 +10,10 @@ import (
 var print_mem bool = false
 
 const (
-	ABNF_UNKNOWN_URI   = int32(0)
-	ABNF_SIP_URI       = int32(1)
-	ABNF_SIPS_URI      = int32(2)
-	ABNF_TEL_URI       = int32(3)
-	ABNF_ABSOULUTE_URI = int32(4)
-)
 
-const (
-	ABNF_SIP_ADDR_SPEC = int32(0)
-	ABNF_SIP_NAME_ADDR = int32(1)
+	// single characters
+	ABNF_NAME_COLON = ":"
+	ABNF_NAME_SPACE = " "
 )
 
 type AbnfIsInCharset func(ch byte) bool

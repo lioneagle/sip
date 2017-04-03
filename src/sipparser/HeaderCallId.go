@@ -40,7 +40,8 @@ func (this *SipHeaderCallId) Parse(context *ParseContext, src []byte, pos int) (
 		return newPos, err
 	}
 
-	if !EqualNoCase(src[name.Begin:name.End], StringToByteSlice("Call-ID")) && !EqualNoCase(src[name.Begin:name.End], StringToByteSlice("i")) {
+	if !EqualNoCase(src[name.Begin:name.End], StringToByteSlice(ABNF_NAME_SIP_HDR_CALL_ID)) &&
+		!EqualNoCase(src[name.Begin:name.End], StringToByteSlice(ABNF_NAME_SIP_HDR_CALL_ID_S)) {
 		return newPos, &AbnfError{"Call-ID parse: wrong header-name", src, newPos}
 	}
 
@@ -67,7 +68,7 @@ func (this *SipHeaderCallId) ParseValue(context *ParseContext, src []byte, pos i
 }
 
 func (this *SipHeaderCallId) Encode(context *ParseContext, buf *bytes.Buffer) {
-	buf.WriteString("Call-ID: ")
+	buf.WriteString(ABNF_NAME_SIP_HDR_CALL_ID_COLON)
 	this.id1.Encode(context, buf)
 	if this.id2.Exist() {
 		buf.WriteByte('@')

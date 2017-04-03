@@ -37,7 +37,8 @@ func (this *SipHeaderContentLength) Parse(context *ParseContext, src []byte, pos
 		return newPos, err
 	}
 
-	if !EqualNoCase(src[name.Begin:name.End], StringToByteSlice("Content-Length")) && !EqualNoCase(src[name.Begin:name.End], StringToByteSlice("l")) {
+	if !EqualNoCase(src[name.Begin:name.End], StringToByteSlice(ABNF_NAME_SIP_HDR_CONTENT_LENGTH)) &&
+		!EqualNoCase(src[name.Begin:name.End], StringToByteSlice(ABNF_NAME_SIP_HDR_CONTENT_LENGTH_S)) {
 		return newPos, &AbnfError{"Content-Length parse: wrong header-name", src, newPos}
 	}
 
@@ -59,7 +60,7 @@ func (this *SipHeaderContentLength) ParseValue(context *ParseContext, src []byte
 }
 
 func (this *SipHeaderContentLength) Encode(context *ParseContext, buf *bytes.Buffer) {
-	buf.WriteString("Content-Length: ")
+	buf.WriteString(ABNF_NAME_SIP_HDR_CONTENT_LENGTH_COLON)
 	EncodeUInt(buf, uint64(this.size))
 }
 

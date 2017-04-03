@@ -41,7 +41,8 @@ func (this *SipHeaderFrom) Parse(context *ParseContext, src []byte, pos int) (ne
 		return newPos, err
 	}
 
-	if !EqualNoCase(src[name.Begin:name.End], StringToByteSlice("From")) && !EqualNoCase(src[name.Begin:name.End], StringToByteSlice("f")) {
+	if !EqualNoCase(src[name.Begin:name.End], StringToByteSlice(ABNF_NAME_SIP_HDR_FROM)) &&
+		!EqualNoCase(src[name.Begin:name.End], StringToByteSlice(ABNF_NAME_SIP_HDR_FROM_S)) {
 		return newPos, &AbnfError{"From parse: wrong header-name", src, newPos}
 	}
 
@@ -60,7 +61,7 @@ func (this *SipHeaderFrom) ParseValue(context *ParseContext, src []byte, pos int
 }
 
 func (this *SipHeaderFrom) Encode(context *ParseContext, buf *bytes.Buffer) {
-	buf.WriteString("From: ")
+	buf.WriteString(ABNF_NAME_SIP_HDR_FROM_COLON)
 	this.addr.Encode(context, buf)
 	this.params.Encode(context, buf, ';')
 }

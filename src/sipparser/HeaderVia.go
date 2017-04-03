@@ -68,7 +68,8 @@ func (this *SipHeaderVia) Parse(context *ParseContext, src []byte, pos int) (new
 		return newPos, err
 	}
 
-	if !EqualNoCase(src[name.Begin:name.End], StringToByteSlice("Via")) && !EqualNoCase(src[name.Begin:name.End], StringToByteSlice("v")) {
+	if !EqualNoCase(src[name.Begin:name.End], StringToByteSlice(ABNF_NAME_SIP_HDR_VIA)) &&
+		!EqualNoCase(src[name.Begin:name.End], StringToByteSlice(ABNF_NAME_SIP_HDR_VIA_S)) {
 		return newPos, &AbnfError{"Via parse: wrong header-name", src, newPos}
 	}
 
@@ -107,7 +108,7 @@ func (this *SipHeaderVia) ParseValue(context *ParseContext, src []byte, pos int)
 }
 
 func (this *SipHeaderVia) Encode(context *ParseContext, buf *bytes.Buffer) {
-	buf.WriteString("Via: ")
+	buf.WriteString(ABNF_NAME_SIP_HDR_VIA_COLON)
 	this.EncodeValue(context, buf)
 }
 

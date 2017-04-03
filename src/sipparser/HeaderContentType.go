@@ -54,7 +54,8 @@ func (this *SipHeaderContentType) Parse(context *ParseContext, src []byte, pos i
 		return newPos, err
 	}
 
-	if !EqualNoCase(src[name.Begin:name.End], StringToByteSlice("Content-Type")) && !EqualNoCase(src[name.Begin:name.End], StringToByteSlice("c")) {
+	if !EqualNoCase(src[name.Begin:name.End], StringToByteSlice(ABNF_NAME_SIP_HDR_CONTENT_TYPE)) &&
+		!EqualNoCase(src[name.Begin:name.End], StringToByteSlice(ABNF_NAME_SIP_HDR_CONTENT_TYPE_S)) {
 		return newPos, &AbnfError{"Content-Type parse: wrong header-name", src, newPos}
 	}
 

@@ -99,7 +99,8 @@ func (this *SipHeaderContact) Parse(context *ParseContext, src []byte, pos int) 
 		return newPos, err
 	}
 
-	if !EqualNoCase(src[name.Begin:name.End], StringToByteSlice("Contact")) && !EqualNoCase(src[name.Begin:name.End], StringToByteSlice("m")) {
+	if !EqualNoCase(src[name.Begin:name.End], StringToByteSlice(ABNF_NAME_SIP_HDR_CONTACT_ID)) &&
+		!EqualNoCase(src[name.Begin:name.End], StringToByteSlice(ABNF_NAME_SIP_HDR_CONTACT_ID_S)) {
 		return newPos, &AbnfError{"Contact parse: wrong header-name", src, newPos}
 	}
 
@@ -132,7 +133,7 @@ func (this *SipHeaderContact) ParseValue(context *ParseContext, src []byte, pos 
 }
 
 func (this *SipHeaderContact) Encode(context *ParseContext, buf *bytes.Buffer) {
-	buf.WriteString("Contact: ")
+	buf.WriteString(ABNF_NAME_SIP_HDR_CONTACT_ID_COLON)
 	if this.isStar {
 		buf.WriteByte('*')
 	} else {

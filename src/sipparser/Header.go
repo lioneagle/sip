@@ -8,25 +8,25 @@ import (
 var total_headers int
 
 var g_SipHeaderFullNameMaps = map[string]string{
-	"f": "From",
-	"t": "To",
-	"v": "Via",
-	"i": "Call-ID",
+	ABNF_NAME_SIP_HDR_FROM_S:    ABNF_NAME_SIP_HDR_FROM,
+	ABNF_NAME_SIP_HDR_TO_S:      ABNF_NAME_SIP_HDR_TO,
+	ABNF_NAME_SIP_HDR_VIA_S:     ABNF_NAME_SIP_HDR_VIA,
+	ABNF_NAME_SIP_HDR_CALL_ID_S: ABNF_NAME_SIP_HDR_CALL_ID,
 
-	"m": "Contact",
-	"e": "Content-Encoding",
-	"l": "Content-Length",
-	"c": "Content-Type",
-	"s": "Subject",
-	"k": "Supported",
-	"u": "Allow-Events",
-	"o": "Event",
-	"r": "Refer-To",
-	"a": "Accept-Contact",
-	"j": "Reject-Contact",
-	"d": "Request-Disposition",
-	"b": "Referred-By",
-	"x": "Session-Expires",
+	ABNF_NAME_SIP_HDR_CONTACT_ID_S:          ABNF_NAME_SIP_HDR_CONTACT_ID,
+	ABNF_NAME_SIP_HDR_CONTENT_ENCODING_S:    ABNF_NAME_SIP_HDR_CONTENT_ENCODING,
+	ABNF_NAME_SIP_HDR_CONTENT_LENGTH_S:      ABNF_NAME_SIP_HDR_CONTENT_LENGTH,
+	ABNF_NAME_SIP_HDR_CONTENT_TYPE_S:        ABNF_NAME_SIP_HDR_CONTENT_TYPE,
+	ABNF_NAME_SIP_HDR_SUBJECTE_S:            ABNF_NAME_SIP_HDR_SUBJECTE,
+	ABNF_NAME_SIP_HDR_SUPPORTED_S:           ABNF_NAME_SIP_HDR_SUPPORTED,
+	ABNF_NAME_SIP_HDR_ALLOW_EVENTS_S:        ABNF_NAME_SIP_HDR_ALLOW_EVENTS,
+	ABNF_NAME_SIP_HDR_EVENT_S:               ABNF_NAME_SIP_HDR_EVENT,
+	ABNF_NAME_SIP_HDR_REFER_TO_S:            ABNF_NAME_SIP_HDR_REFER_TO,
+	ABNF_NAME_SIP_HDR_ACCEPT_CONTACT_S:      ABNF_NAME_SIP_HDR_ACCEPT_CONTACT,
+	ABNF_NAME_SIP_HDR_REJECT_CONTACT_S:      ABNF_NAME_SIP_HDR_REJECT_CONTACT,
+	ABNF_NAME_SIP_HDR_REQUEST_DISPOSITION_S: ABNF_NAME_SIP_HDR_REQUEST_DISPOSITION,
+	ABNF_NAME_SIP_HDR_REFERRED_BY_S:         ABNF_NAME_SIP_HDR_REFERRED_BY,
+	ABNF_NAME_SIP_HDR_SESSION_EXPIRES_S:     ABNF_NAME_SIP_HDR_SESSION_EXPIRES,
 }
 
 func GetSipHeaderFullName(name string) (fullName string) {
@@ -337,9 +337,9 @@ func (this *SipHeaders) ParseMultiKnownHeader(context *ParseContext, src []byte,
 }
 
 func ParseHeaderName(context *ParseContext, src []byte, pos int) (name AbnfRef, newPos int, err error) {
-	newPos, err = name.Parse(context, src, pos, IsSipToken)
-	if err != nil {
-		return name, newPos, err
+	newPos = name.Parse(src, pos, IsSipToken)
+	if name.End <= name.Begin {
+		return name, newPos, &AbnfError{"SipHeaders parse: no header-name", src, newPos}
 	}
 
 	newPos, err = ParseHcolon(src, newPos)
