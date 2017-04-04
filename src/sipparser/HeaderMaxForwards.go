@@ -58,6 +58,10 @@ func (this *SipHeaderMaxForwards) ParseValue(context *ParseContext, src []byte, 
 
 func (this *SipHeaderMaxForwards) Encode(context *ParseContext, buf *bytes.Buffer) {
 	buf.WriteString("Max-Forwards: ")
+	this.EncodeValue(context, buf)
+}
+
+func (this *SipHeaderMaxForwards) EncodeValue(context *ParseContext, buf *bytes.Buffer) {
 	EncodeUInt(buf, uint64(this.size))
 }
 
@@ -72,4 +76,11 @@ func ParseSipMaxForwards(context *ParseContext, src []byte, pos int) (newPos int
 	}
 	newPos, err = header.ParseValue(context, src, pos)
 	return newPos, addr, err
+}
+
+func EncodeSipMaxForwardsValue(parsed AbnfPtr, context *ParseContext, buf *bytes.Buffer) {
+	if parsed == ABNF_PTR_NIL {
+		return
+	}
+	parsed.GetSipHeaderMaxForwards(context).EncodeValue(context, buf)
 }

@@ -148,8 +148,7 @@ func (this *SipStartLine) Encode(context *ParseContext, buf *bytes.Buffer) {
 	} else {
 		this.EncodeStatusLine(context, buf)
 	}
-	buf.WriteByte('\r')
-	buf.WriteByte('\n')
+	buf.WriteString("\r\n")
 }
 
 func (this *SipStartLine) EncodeRequestLine(context *ParseContext, buf *bytes.Buffer) {

@@ -69,11 +69,14 @@ func (this *SipHeaderCallId) ParseValue(context *ParseContext, src []byte, pos i
 
 func (this *SipHeaderCallId) Encode(context *ParseContext, buf *bytes.Buffer) {
 	buf.WriteString(ABNF_NAME_SIP_HDR_CALL_ID_COLON)
+	this.EncodeValue(context, buf)
+}
+
+func (this *SipHeaderCallId) EncodeValue(context *ParseContext, buf *bytes.Buffer) {
 	this.id1.Encode(context, buf)
 	if this.id2.Exist() {
 		buf.WriteByte('@')
 		this.id2.Encode(context, buf)
-
 	}
 }
 
@@ -88,4 +91,11 @@ func ParseSipCallId(context *ParseContext, src []byte, pos int) (newPos int, par
 	}
 	newPos, err = header.ParseValue(context, src, pos)
 	return newPos, addr, err
+}
+
+func EncodeSipCallIdValue(parsed AbnfPtr, context *ParseContext, buf *bytes.Buffer) {
+	if parsed == ABNF_PTR_NIL {
+		return
+	}
+	parsed.GetSipHeaderCallId(context).EncodeValue(context, buf)
 }

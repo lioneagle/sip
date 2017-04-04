@@ -9,18 +9,19 @@ import (
 func TestSipHeaderContentLengthParse(t *testing.T) {
 
 	testdata := []struct {
-		src    string
-		ok     bool
-		newPos int
-		encode string
+		src         string
+		ok          bool
+		newPos      int
+		encode      string
+		encodeStart int
 	}{
-		{"Content-Length: 1234", true, len("Content-Length: 1234"), "Content-Length: 1234"},
-		{"l: 1234", true, len("l: 1234"), "Content-Length: 1234"},
+		{"Content-Length: 1234", true, len("Content-Length: 1234"), "Content-Length:       1234", len("Content-Length: ")},
+		{"l: 1234", true, len("l: 1234"), "Content-Length:       1234", len("Content-Length: ")},
 
-		{" Content-Lengt: 1234", false, 0, ""},
-		{"Content-Lengt: 1234", false, len("Content-Lengt: "), ""},
-		{"Content-Length: ", false, len("Content-Length: "), ""},
-		{"Content-Length: a123", false, len("Content-Length: "), ""},
+		{" Content-Lengt: 1234", false, 0, "", 0},
+		{"Content-Lengt: 1234", false, len("Content-Lengt: "), "", 0},
+		{"Content-Length: ", false, len("Content-Length: "), "", 0},
+		{"Content-Length: a123", false, len("Content-Length: "), "", 0},
 	}
 
 	context := NewParseContext()
@@ -45,8 +46,17 @@ func TestSipHeaderContentLengthParse(t *testing.T) {
 			t.Errorf("%s[%d] failed: newPos = %d, wanted = %d\n", prefix, i, newPos, v.newPos)
 		}
 
-		if v.ok && v.encode != header.String(context) {
+		if !v.ok {
+			continue
+		}
+
+		if v.encode != header.String(context) {
 			t.Errorf("%s[%d] failed: encode = %s, wanted = %s\n", prefix, i, header.String(context), v.encode)
+			continue
+		}
+
+		if v.encodeStart != int(header.encodeStart) {
+			t.Errorf("%s[%d] failed: encodeStart = %s, wanted = %s\n", prefix, i, header.encodeStart, v.encodeStart)
 			continue
 		}
 	}

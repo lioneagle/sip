@@ -61,6 +61,10 @@ func (this *SipHeaderRoute) ParseValue(context *ParseContext, src []byte, pos in
 
 func (this *SipHeaderRoute) Encode(context *ParseContext, buf *bytes.Buffer) {
 	buf.WriteString("Route: ")
+	this.EncodeValue(context, buf)
+}
+
+func (this *SipHeaderRoute) EncodeValue(context *ParseContext, buf *bytes.Buffer) {
 	this.addr.Encode(context, buf)
 	this.params.Encode(context, buf, ';')
 }
@@ -76,4 +80,11 @@ func ParseSipRoute(context *ParseContext, src []byte, pos int) (newPos int, pars
 	}
 	newPos, err = header.ParseValue(context, src, pos)
 	return newPos, addr, err
+}
+
+func EncodeSipRouteValue(parsed AbnfPtr, context *ParseContext, buf *bytes.Buffer) {
+	if parsed == ABNF_PTR_NIL {
+		return
+	}
+	parsed.GetSipHeaderRoute(context).EncodeValue(context, buf)
 }

@@ -106,34 +106,6 @@ func Escape(src []byte, inCharset AbnfIsInCharset) (dst []byte) {
 	return dst
 }
 
-func parseToken(src []byte, pos int, inCharset AbnfIsInCharset) (tokenBegin, tokenEnd, newPos int, err error) {
-	tokenBegin = pos
-	for newPos = pos; newPos < len(src); newPos++ {
-		if !inCharset(src[newPos]) {
-			break
-		}
-	}
-	return tokenBegin, newPos, newPos, nil
-}
-
-func parseTokenEscapable(src []byte, pos int, inCharset AbnfIsInCharset) (tokenBegin, tokenEnd, newPos int, err error) {
-	tokenBegin = pos
-	for newPos = pos; newPos < len(src); newPos++ {
-		if src[newPos] == '%' {
-			if (newPos + 2) >= len(src) {
-				return tokenBegin, newPos, newPos, &AbnfError{"token parse: parse escape token failed: reach end", src, newPos}
-			}
-			if !IsHex(src[newPos+1]) || !IsHex(src[newPos+2]) {
-				return tokenBegin, newPos, newPos, &AbnfError{"token parse: parse escape token failed: no hex after %", src, newPos}
-			}
-			newPos += 2
-		} else if !inCharset(src[newPos]) {
-			break
-		}
-	}
-	return tokenBegin, newPos, newPos, nil
-}
-
 func ParseUInt(src []byte, pos int) (digit, num, newPos int, ok bool) {
 	if pos >= len(src) || !IsDigit(src[pos]) {
 		return 0, 0, pos, false
@@ -193,9 +165,8 @@ func ParseHcolon(src []byte, pos int) (newPos int, err error) {
 	 *
 	 * HCOLON  =  *( SP / HTAB ) ":" SWS
 	 */
-	newPos = pos
-
-	_, _, newPos, err = parseToken(src, pos, IsWspChar)
+	ref := AbnfRef{}
+	newPos = ref.Parse(src, pos, IsWspChar)
 
 	if newPos >= len(src) {
 		return newPos, &AbnfError{"HCOLON parse: reach end before ':'", src, newPos}

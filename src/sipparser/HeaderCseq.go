@@ -67,6 +67,10 @@ func (this *SipHeaderCseq) ParseValue(context *ParseContext, src []byte, pos int
 
 func (this *SipHeaderCseq) Encode(context *ParseContext, buf *bytes.Buffer) {
 	buf.WriteString("CSeq: ")
+	this.EncodeValue(context, buf)
+}
+
+func (this *SipHeaderCseq) EncodeValue(context *ParseContext, buf *bytes.Buffer) {
 	EncodeUInt(buf, uint64(this.id))
 	buf.WriteByte(' ')
 	this.method.Encode(context, buf)
@@ -83,4 +87,11 @@ func ParseSipCseq(context *ParseContext, src []byte, pos int) (newPos int, parse
 	}
 	newPos, err = header.ParseValue(context, src, pos)
 	return newPos, addr, err
+}
+
+func EncodeSipCseqValue(parsed AbnfPtr, context *ParseContext, buf *bytes.Buffer) {
+	if parsed == ABNF_PTR_NIL {
+		return
+	}
+	parsed.GetSipHeaderCseq(context).EncodeValue(context, buf)
 }

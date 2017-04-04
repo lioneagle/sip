@@ -4,6 +4,9 @@ import (
 	"unsafe"
 )
 
+const ABNF_SIP_CONTENT_LENGGTH_SPACE = 10
+const ABNF_SIP_CONTENT_LENGGTH_PRINT_FMT = "%10d"
+
 const (
 	// basic
 	ABNF_NAME_SIP_HCOLON = ABNF_NAME_COLON + ABNF_NAME_SPACE
@@ -238,6 +241,14 @@ func (this AbnfPtr) GetSipHeaderRoute(context *ParseContext) *SipHeaderRoute {
 
 func (this AbnfPtr) GetSipHeaderMaxForwards(context *ParseContext) *SipHeaderMaxForwards {
 	return (*SipHeaderMaxForwards)(unsafe.Pointer(&context.allocator.mem[this]))
+}
+
+func (this AbnfPtr) GetSipMsgBody(context *ParseContext) *SipMsgBody {
+	return (*SipMsgBody)(unsafe.Pointer(&context.allocator.mem[this]))
+}
+
+func (this AbnfPtr) GetSipMsgBodies(context *ParseContext) *SipMsgBodies {
+	return (*SipMsgBodies)(unsafe.Pointer(&context.allocator.mem[this]))
 }
 
 ///////////////////////////////////////////////

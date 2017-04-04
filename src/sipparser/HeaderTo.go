@@ -62,6 +62,10 @@ func (this *SipHeaderTo) ParseValue(context *ParseContext, src []byte, pos int) 
 
 func (this *SipHeaderTo) Encode(context *ParseContext, buf *bytes.Buffer) {
 	buf.WriteString(ABNF_NAME_SIP_HDR_TO_COLON)
+	this.EncodeValue(context, buf)
+}
+
+func (this *SipHeaderTo) EncodeValue(context *ParseContext, buf *bytes.Buffer) {
 	this.addr.Encode(context, buf)
 	this.params.Encode(context, buf, ';')
 }
@@ -77,4 +81,11 @@ func ParseSipTo(context *ParseContext, src []byte, pos int) (newPos int, parsed 
 	}
 	newPos, err = header.ParseValue(context, src, pos)
 	return newPos, addr, err
+}
+
+func EncodeSipToValue(parsed AbnfPtr, context *ParseContext, buf *bytes.Buffer) {
+	if parsed == ABNF_PTR_NIL {
+		return
+	}
+	parsed.GetSipHeaderTo(context).EncodeValue(context, buf)
 }

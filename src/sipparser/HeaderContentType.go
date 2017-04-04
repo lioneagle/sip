@@ -83,7 +83,11 @@ func (this *SipHeaderContentType) ParseValue(context *ParseContext, src []byte, 
 }
 
 func (this *SipHeaderContentType) Encode(context *ParseContext, buf *bytes.Buffer) {
-	buf.WriteString("Content-Type: ")
+	buf.WriteString(ABNF_NAME_SIP_HDR_CONTENT_TYPE_COLON)
+	this.EncodeValue(context, buf)
+}
+
+func (this *SipHeaderContentType) EncodeValue(context *ParseContext, buf *bytes.Buffer) {
 	this.mainType.Encode(context, buf)
 	buf.WriteByte('/')
 	this.subType.Encode(context, buf)
@@ -101,4 +105,11 @@ func ParseSipContentType(context *ParseContext, src []byte, pos int) (newPos int
 	}
 	newPos, err = header.ParseValue(context, src, pos)
 	return newPos, addr, err
+}
+
+func EncodeSipContentTypeValue(parsed AbnfPtr, context *ParseContext, buf *bytes.Buffer) {
+	if parsed == ABNF_PTR_NIL {
+		return
+	}
+	parsed.GetSipHeaderContentType(context).EncodeValue(context, buf)
 }

@@ -2,12 +2,13 @@ package sipparser
 
 import (
 	"bytes"
-	//"fmt"
+	"fmt"
 	"unsafe"
 )
 
 type SipHeaderContentLength struct {
-	size uint32
+	size        uint32
+	encodeStart uint32 // record start position when encoding for modify length of sip msg
 }
 
 func NewSipHeaderContentLength(context *ParseContext) (*SipHeaderContentLength, AbnfPtr) {
@@ -22,10 +23,12 @@ func NewSipHeaderContentLength(context *ParseContext) (*SipHeaderContentLength, 
 
 func (this *SipHeaderContentLength) Init() {
 	this.size = 0
+	this.encodeStart = 0
 }
 
-func (this *SipHeaderContentLength) AllowMulti() bool { return false }
-func (this *SipHeaderContentLength) HasValue() bool   { return true }
+func (this *SipHeaderContentLength) AllowMulti() bool    { return false }
+func (this *SipHeaderContentLength) HasValue() bool      { return true }
+func (this *SipHeaderContentLength) SetValue(size int32) { this.size = uint32(size) }
 
 /* RFC3261
  *
@@ -61,7 +64,12 @@ func (this *SipHeaderContentLength) ParseValue(context *ParseContext, src []byte
 
 func (this *SipHeaderContentLength) Encode(context *ParseContext, buf *bytes.Buffer) {
 	buf.WriteString(ABNF_NAME_SIP_HDR_CONTENT_LENGTH_COLON)
-	EncodeUInt(buf, uint64(this.size))
+	this.EncodeValue(context, buf)
+}
+
+func (this *SipHeaderContentLength) EncodeValue(context *ParseContext, buf *bytes.Buffer) {
+	buf.WriteString(fmt.Sprintf(ABNF_SIP_CONTENT_LENGGTH_PRINT_FMT, this.size))
+	this.encodeStart = uint32(len(buf.Bytes()) - ABNF_SIP_CONTENT_LENGGTH_SPACE)
 }
 
 func (this *SipHeaderContentLength) String(context *ParseContext) string {
@@ -75,4 +83,11 @@ func ParseSipContentLength(context *ParseContext, src []byte, pos int) (newPos i
 	}
 	newPos, err = header.ParseValue(context, src, pos)
 	return newPos, addr, err
+}
+
+func EncodeSipContentLengthValue(parsed AbnfPtr, context *ParseContext, buf *bytes.Buffer) {
+	if parsed == ABNF_PTR_NIL {
+		return
+	}
+	parsed.GetSipHeaderContentLength(context).EncodeValue(context, buf)
 }

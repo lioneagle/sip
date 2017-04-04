@@ -80,6 +80,7 @@ func TestEqualNoCase(t *testing.T) {
 	}
 }
 
+/*
 func TestUnescape(t *testing.T) {
 
 	wanted := []struct {
@@ -104,7 +105,7 @@ func TestUnescape(t *testing.T) {
 			t.Errorf("TestUnescape[%d] failed, ret = %s, wanted = %s\n", i, string(u), v.unescaped)
 		}
 	}
-}
+}*/
 
 func TestEscape(t *testing.T) {
 
@@ -167,80 +168,4 @@ func makeFullCharset() (ret []byte) {
 		ret = append(ret, byte(i))
 	}
 	return ret
-}
-
-func TestParseToken(t *testing.T) {
-
-	wanted := []struct {
-		name        string
-		isInCharset func(ch byte) bool
-		src         string
-		err         bool
-		begin       int
-		end         int
-		newPos      int
-	}{
-
-		{"IsDigit", IsDigit, "01234abc", false, 0, 5, 5},
-		{"IsDigit", IsDigit, "56789=bc", false, 0, 5, 5},
-		{"IsDigit", IsDigit, "ad6789abc", true, 0, 0, 0},
-	}
-
-	for i, v := range wanted {
-		begin, end, newPos, err := parseToken([]byte(v.src), 0, v.isInCharset)
-		if err != nil {
-			if !v.err {
-				t.Errorf("TestParseToken[%d], %s: parse failed, want success\n", i, v.name)
-			}
-		} else {
-			if begin != v.begin {
-				t.Errorf("TestParseToken[%d], %s: begin = %d, want = %d\n", i, v.name, begin, v.begin)
-			} else if end != v.end {
-				t.Errorf("TestParseToken[%d], %s: end = %d, want = %d\n", i, v.name, end, v.end)
-			} else if newPos != v.newPos {
-				t.Errorf("TestParseToken[%d], %s: newPos = %d, want = %d\n", i, v.name, newPos, v.newPos)
-			}
-		}
-	}
-}
-
-func TestParseTokenEscapable(t *testing.T) {
-
-	wanted := []struct {
-		name        string
-		isInCharset func(ch byte) bool
-		src         string
-		err         bool
-		begin       int
-		end         int
-		newPos      int
-	}{
-
-		{"IsDigit", IsDigit, "01234abc", false, 0, 5, 5},
-		{"IsDigit", IsDigit, "56789=bc", false, 0, 5, 5},
-		{"IsDigit", IsDigit, "ad6789abc", true, 0, 0, 0},
-		{"IsDigit", IsDigit, "%301234abc", false, 0, 7, 7},
-		{"IsDigit", IsDigit, "%30%311234abc", false, 0, 10, 10},
-		{"IsDigit", IsDigit, "%30%31123%3a", false, 0, 12, 12},
-		{"IsDigit", IsDigit, "%3c%31123%", true, 0, 10, 10},
-		{"IsDigit", IsDigit, "%30%31123%F", true, 0, 10, 10},
-		{"IsDigit", IsDigit, "%3x%31123%F", true, 0, 0, 0},
-	}
-
-	for i, v := range wanted {
-		begin, end, newPos, err := parseTokenEscapable([]byte(v.src), 0, v.isInCharset)
-		if err != nil {
-			if !v.err {
-				t.Errorf("TestParseTokenEscapable[%d], %s: parse failed, want success\n", i, v.name)
-			}
-		} else {
-			if begin != v.begin {
-				t.Errorf("TestParseTokenEscapable[%d], %s: begin = %d, want = %d\n", i, v.name, begin, v.begin)
-			} else if end != v.end {
-				t.Errorf("TestParseTokenEscapable[%d], %s: end = %d, want = %d\n", i, v.name, end, v.end)
-			} else if newPos != v.newPos {
-				t.Errorf("TestParseTokenEscapable[%d], %s: newPos = %d, want = %d\n", i, v.name, newPos, v.newPos)
-			}
-		}
-	}
 }

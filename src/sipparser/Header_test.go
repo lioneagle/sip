@@ -77,13 +77,13 @@ func TestParseSipHeaders(t *testing.T) {
 		{"Call-ID: abc123@a.com\r\n", true, len("Call-ID: abc123@a.com\r\n"), "Call-ID: abc123@a.com\r\n"},
 		{"Date: Sat, 13 Nov 2010 23:29:00 GMT\r\n", true, len("Date: Sat, 13 Nov 2010 23:29:00 GMT\r\n"), "Date: Sat, 13 Nov 2010 23:29:00 GMT\r\n"},
 		{"CSeq: 1234 INVITE\r\n", true, len("CSeq: 1234 INVITE\r\n"), "CSeq: 1234 INVITE\r\n"},
-		{"Content-Length: 1234\r\n", true, len("Content-Length: 1234\r\n"), "Content-Length: 1234\r\n"},
+		{"Content-Length: 1234\r\n", true, len("Content-Length: 1234\r\n"), "Content-Length:       1234\r\n"},
 		{"Content-Type: application/isup\r\n", true, len("Content-Type: application/isup\r\n"), "Content-Type: application/isup\r\n"},
 		{"Max-Forwards: 1234\r\n", true, len("Max-Forwards: 1234\r\n"), "Max-Forwards: 1234\r\n"},
 		{"Route: <tel:12345>\r\nRoute: <sip:456@a.com>\r\n", true, len("Route: <tel:12345>\r\nRoute: <sip:456@a.com>\r\n"), "Route: <tel:12345>, <sip:456@a.com>\r\n"},
 		{"Record-Route: <tel:12345>\r\nRecord-Route: <sip:456@a.com>\r\n", true, len("Record-Route: <tel:12345>\r\nRecord-Route: <sip:456@a.com>\r\n"), "Record-Route: <tel:12345>, <sip:456@a.com>\r\n"},
 		{"Content-Disposition: early-session\r\n", true, len("Content-Disposition: early-session\r\n"), "Content-Disposition: early-session\r\n"},
-		{"Contact: <tel:12345>\r\nContact: sip:456@a.com\r\n", true, len("Contact: <tel:12345>\r\nContact: sip:456@a.com\r\n"), "Contact: <tel:12345>, sip:456@a.com\r\n"},
+		{"Contact: <tel:12345>\r\nContact: sip:456@a.com\r\n", true, len("Contact: <tel:12345>\r\nContact: sip:456@a.com\r\n"), "Contact: <tel:12345>, <sip:456@a.com>\r\n"},
 
 		{":122334545\r\n", false, 0, ""},
 	}

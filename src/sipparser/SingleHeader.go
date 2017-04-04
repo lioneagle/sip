@@ -33,6 +33,8 @@ func (this *SipSingleHeader) Init() {
 func (this *SipSingleHeader) HasInfo() bool      { return this.info != nil }
 func (this *SipSingleHeader) HasShortName() bool { return this.HasInfo() && this.info.HasShortName() }
 func (this *SipSingleHeader) ShortName() []byte  { return this.info.ShortName() }
+func (this *SipSingleHeader) IsParsed() bool     { return this.parsed != ABNF_PTR_NIL }
+func (this *SipSingleHeader) GetParsed() AbnfPtr { return this.parsed }
 
 func (this *SipSingleHeader) EqualNameBytes(context *ParseContext, name []byte) bool {
 	if this.info != nil {
@@ -59,7 +61,9 @@ func (this *SipSingleHeader) Encode(context *ParseContext, buf *bytes.Buffer) {
 }
 
 func (this *SipSingleHeader) EncodeValue(context *ParseContext, buf *bytes.Buffer) {
-	if this.value.Exist() {
+	if this.IsParsed() && this.info != nil && this.info.encodeFunc != nil {
+		this.info.encodeFunc(this.parsed, context, buf)
+	} else if this.value.Exist() {
 		this.value.Encode(context, buf)
 	}
 }
@@ -101,6 +105,27 @@ func (this *SipSingleHeaders) GetHeaderByBytes(context *ParseContext, name []byt
 
 func (this *SipSingleHeaders) GetHeaderByString(context *ParseContext, name string) (val *SipSingleHeader, ok bool) {
 	return this.GetHeaderByBytes(context, StringToByteSlice(name))
+}
+
+func (this *SipSingleHeaders) GetHeaderParsedByString(context *ParseContext, name string) (parsed AbnfPtr, ok bool) {
+	header, ok := this.GetHeaderByString(context, name)
+	if !ok {
+		return ABNF_PTR_NIL, false
+	}
+
+	if header.IsParsed() {
+		return header.GetParsed(), true
+	}
+
+	if header.info == nil || header.info.parseFunc == nil || !header.value.Exist() {
+		return ABNF_PTR_NIL, false
+	}
+
+	_, parsed, err := header.info.parseFunc(context, header.value.GetAsByteSlice(context), 0)
+	if err != nil || parsed == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL, false
+	}
+	return parsed, true
 }
 
 func (this *SipSingleHeaders) AddHeader(context *ParseContext, header AbnfPtr) {

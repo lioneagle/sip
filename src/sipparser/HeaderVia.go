@@ -140,3 +140,10 @@ func ParseSipVia(context *ParseContext, src []byte, pos int) (newPos int, parsed
 	newPos, err = header.ParseValue(context, src, pos)
 	return newPos, addr, err
 }
+
+func EncodeSipViaValue(parsed AbnfPtr, context *ParseContext, buf *bytes.Buffer) {
+	if parsed == ABNF_PTR_NIL {
+		return
+	}
+	parsed.GetSipHeaderVia(context).EncodeValue(context, buf)
+}

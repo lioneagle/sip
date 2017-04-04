@@ -68,6 +68,10 @@ func (this *SipHeaderContentDisposition) ParseValue(context *ParseContext, src [
 
 func (this *SipHeaderContentDisposition) Encode(context *ParseContext, buf *bytes.Buffer) {
 	buf.WriteString("Content-Disposition: ")
+	this.EncodeValue(context, buf)
+}
+
+func (this *SipHeaderContentDisposition) EncodeValue(context *ParseContext, buf *bytes.Buffer) {
 	this.dispType.Encode(context, buf)
 	this.params.Encode(context, buf, ';')
 }
@@ -83,4 +87,11 @@ func ParseSipContentDisposition(context *ParseContext, src []byte, pos int) (new
 	}
 	newPos, err = header.ParseValue(context, src, pos)
 	return newPos, addr, err
+}
+
+func EncodeSipContentDispositionValue(parsed AbnfPtr, context *ParseContext, buf *bytes.Buffer) {
+	if parsed == ABNF_PTR_NIL {
+		return
+	}
+	parsed.GetSipHeaderContentDisposition(context).EncodeValue(context, buf)
 }

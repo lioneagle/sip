@@ -134,6 +134,10 @@ func (this *SipHeaderContact) ParseValue(context *ParseContext, src []byte, pos 
 
 func (this *SipHeaderContact) Encode(context *ParseContext, buf *bytes.Buffer) {
 	buf.WriteString(ABNF_NAME_SIP_HDR_CONTACT_ID_COLON)
+	this.EncodeValue(context, buf)
+}
+
+func (this *SipHeaderContact) EncodeValue(context *ParseContext, buf *bytes.Buffer) {
 	if this.isStar {
 		buf.WriteByte('*')
 	} else {
@@ -153,4 +157,11 @@ func ParseSipContact(context *ParseContext, src []byte, pos int) (newPos int, pa
 	}
 	newPos, err = header.ParseValue(context, src, pos)
 	return newPos, addr, err
+}
+
+func EncodeSipContactValue(parsed AbnfPtr, context *ParseContext, buf *bytes.Buffer) {
+	if parsed == ABNF_PTR_NIL {
+		return
+	}
+	parsed.GetSipHeaderContact(context).EncodeValue(context, buf)
 }
