@@ -120,5 +120,5 @@ func BenchmarkSipMsgEncode(b *testing.B) {
 		context.allocator.FreePart(remain)
 		sipmsg.Encode(context, buf)
 	}
-	fmt.Println("")
+	fmt.Printf("")
 }

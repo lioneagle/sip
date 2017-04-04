@@ -17,8 +17,13 @@ func (this AbnfPtr) GetUintptr(context *ParseContext) uintptr {
 	return (uintptr)(unsafe.Pointer(&context.allocator.mem[this]))
 }
 
+/*
 func (this AbnfPtr) GetAbnfToken(context *ParseContext) *AbnfToken {
 	return (*AbnfToken)(unsafe.Pointer(&context.allocator.mem[this]))
+}*/
+
+func (this AbnfPtr) GetAbnfBuf(context *ParseContext) *AbnfBuf {
+	return (*AbnfBuf)(unsafe.Pointer(&context.allocator.mem[this]))
 }
 
 func (this AbnfPtr) GetAbnfListNode(context *ParseContext) *AbnfListNode {

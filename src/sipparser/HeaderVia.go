@@ -8,7 +8,7 @@ import (
 
 type SipHeaderVia struct {
 	version   SipVersion
-	transport AbnfToken
+	transport AbnfBuf
 	sentBy    SipHostPort
 	params    SipGenericParams
 }

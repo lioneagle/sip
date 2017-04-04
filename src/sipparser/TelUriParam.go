@@ -9,7 +9,7 @@ import (
 type TelUriContext struct {
 	exist        bool
 	isDomainName bool
-	desc         AbnfToken
+	desc         AbnfBuf
 }
 
 func NewTelUriContext(context *ParseContext) (*TelUriContext, AbnfPtr) {
@@ -56,8 +56,8 @@ func (this *TelUriContext) String(context *ParseContext) string {
 }
 
 type TelUriParam struct {
-	name  AbnfToken
-	value AbnfToken
+	name  AbnfBuf
+	value AbnfBuf
 }
 
 func NewTelUriParam(context *ParseContext) (*TelUriParam, AbnfPtr) {

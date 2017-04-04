@@ -14,7 +14,7 @@ const (
 )
 
 type SipGenericParam struct {
-	name      AbnfToken
+	name      AbnfBuf
 	valueType int32
 	value     AbnfPtr
 	parsed    AbnfPtr
@@ -64,7 +64,7 @@ func (this *SipGenericParam) Parse(context *ParseContext, src []byte, pos int) (
 	/* @@TODO: 目前解gen-value时，暂不考虑解析出host，因为一般没有必要解析出来，以后再考虑添加这个功能 */
 
 	if IsSipToken(src[newPos]) {
-		token, addr := NewAbnfToken(context)
+		token, addr := NewAbnfBuf(context)
 		if token == nil {
 			return newPos, &AbnfError{"generic-param  parse: out of memory for token value", src, newPos}
 		}
@@ -97,7 +97,7 @@ func (this *SipGenericParam) Encode(context *ParseContext, buf *bytes.Buffer) {
 	if this.valueType != SIP_GENERIC_VALUE_TYPE_NOT_EXIST && this.value != ABNF_PTR_NIL {
 		if this.valueType == SIP_GENERIC_VALUE_TYPE_TOKEN {
 			buf.WriteByte('=')
-			this.value.GetAbnfToken(context).Encode(context, buf)
+			this.value.GetAbnfBuf(context).Encode(context, buf)
 		} else if this.valueType == SIP_GENERIC_VALUE_TYPE_QUOTED_STRING {
 			buf.WriteByte('=')
 			this.value.GetSipQuotedString(context).Encode(context, buf)

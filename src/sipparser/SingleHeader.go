@@ -8,8 +8,8 @@ import (
 
 type SipSingleHeader struct {
 	info   *SipHeaderInfo
-	name   AbnfToken
-	value  AbnfToken
+	name   AbnfBuf
+	value  AbnfBuf
 	parsed AbnfPtr
 }
 
@@ -41,7 +41,7 @@ func (this *SipSingleHeader) EqualNameBytes(context *ParseContext, name []byte) 
 		}
 		return EqualNoCase(this.info.shortName, name)
 	}
-	return this.name.EqualBytesNoCase(context, name)
+	return this.name.EqualByteSliceNoCase(context, name)
 }
 
 func (this *SipSingleHeader) EqualNameString(context *ParseContext, name string) bool {

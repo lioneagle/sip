@@ -8,8 +8,8 @@ import (
 )
 
 type SipUriParam struct {
-	name  AbnfToken
-	value AbnfToken
+	name  AbnfBuf
+	value AbnfBuf
 }
 
 func NewSipUriParam(context *ParseContext) (*SipUriParam, AbnfPtr) {

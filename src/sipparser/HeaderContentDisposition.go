@@ -7,7 +7,7 @@ import (
 )
 
 type SipHeaderContentDisposition struct {
-	dispType AbnfToken
+	dispType AbnfBuf
 	params   SipGenericParams
 }
 

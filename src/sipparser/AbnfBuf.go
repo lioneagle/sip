@@ -148,15 +148,15 @@ func (this *AbnfBuf) GetAsString(context *ParseContext) string {
 }
 
 //*
-func (this *AbnfBuf) ParseEnableEmpty(context *ParseContext, src []byte, pos int, inCharset AbnfIsInCharset) (newPos int, err error) {
+func (this *AbnfBuf) ParseEnableEmpty(context *ParseContext, src []byte, pos int, inCharset AbnfIsInCharset) (newPos int) {
 	ref := AbnfRef{}
 	newPos = ref.Parse(src, pos, inCharset)
 	if ref.Begin < ref.End {
 		this.SetByteSlice(context, src[ref.Begin:ref.End])
 	} else {
-		this.SetNonExist()
+		this.SetEmpty()
 	}
-	return newPos, nil
+	return newPos
 }
 
 func (this *AbnfBuf) Parse(context *ParseContext, src []byte, pos int, inCharset AbnfIsInCharset) (newPos int, err error) {
@@ -164,16 +164,24 @@ func (this *AbnfBuf) Parse(context *ParseContext, src []byte, pos int, inCharset
 	newPos = ref.Parse(src, pos, inCharset)
 
 	if ref.Begin >= ref.End {
-		return newPos, &AbnfError{"AbnfBuf parse: value is empty", src, newPos}
+		return newPos, &AbnfError{"AbnfBuf Parse: value is empty", src, newPos}
 	}
 	this.SetByteSlice(context, src[ref.Begin:ref.End])
 	return newPos, nil
 }
 
-func (this *AbnfBuf) ParseEscapable(context *ParseContext, src []byte, pos int, inCharset AbnfIsInCharset) (newPos int, err error) {
-
+func (this *AbnfBuf) ParseEscapableEnableEmpty(context *ParseContext, src []byte, pos int, inCharset AbnfIsInCharset) (newPos int, err error) {
 	ref := AbnfRef{}
 	escapeNum, newPos, err := ref.ParseEscapable(src, pos, inCharset)
+	if err != nil {
+		return newPos, err
+	}
+
+	if ref.Begin >= ref.End {
+		this.SetEmpty()
+		return newPos, nil
+	}
+
 	if escapeNum == 0 {
 		this.SetByteSlice(context, src[ref.Begin:ref.End])
 
@@ -183,30 +191,40 @@ func (this *AbnfBuf) ParseEscapable(context *ParseContext, src []byte, pos int, 
 	return newPos, nil
 }
 
-func (this *AbnfBuf) simpleEqual(rhs *AbnfBuf) bool {
-	return this.size != rhs.size || this.addr == ABNF_PTR_NIL || rhs.addr == ABNF_PTR_NIL
+func (this *AbnfBuf) ParseEscapable(context *ParseContext, src []byte, pos int, inCharset AbnfIsInCharset) (newPos int, err error) {
+	ref := AbnfRef{}
+	escapeNum, newPos, err := ref.ParseEscapable(src, pos, inCharset)
+	if err != nil {
+		return newPos, err
+	}
+
+	if ref.Begin >= ref.End {
+		return newPos, &AbnfError{"AbnfBuf ParseEscapable: value is empty", src, newPos}
+	}
+
+	if escapeNum == 0 {
+		this.SetByteSlice(context, src[ref.Begin:ref.End])
+
+	} else {
+		this.SetByteSliceWithUnescape(context, src[ref.Begin:ref.End], escapeNum)
+	}
+	return newPos, nil
+}
+
+func (this *AbnfBuf) simpleNotEqual(rhs *AbnfBuf) bool {
+	return (this.size != rhs.size) || (this.addr == ABNF_PTR_NIL) || (rhs.addr == ABNF_PTR_NIL)
 }
 
 func (this *AbnfBuf) Equal(context *ParseContext, rhs *AbnfBuf) bool {
 	if this.addr == rhs.addr {
 		return true
 	}
-	return bytes.Equal(this.GetAsByteSlice(context), rhs.GetAsByteSlice(context))
-}
-
-func (this *AbnfBuf) EqualNoCase(context *ParseContext, rhs *AbnfBuf) bool {
-	if this.addr == ABNF_PTR_NIL || rhs.addr == ABNF_PTR_NIL {
+	if this.simpleNotEqual(rhs) {
 		return false
 	}
-	return EqualNoCase(this.GetAsByteSlice(context), rhs.GetAsByteSlice(context))
-}
 
-/*func (this *AbnfBuf) Equal(context *ParseContext, rhs *AbnfBuf) bool {
-	if this.addr == rhs.addr {
+	if this.Empty() {
 		return true
-	}
-	if !this.simpleEqual(rhs) {
-		return false
 	}
 	return bytes.Equal(this.GetAsByteSlice(context), rhs.GetAsByteSlice(context))
 }
@@ -215,11 +233,16 @@ func (this *AbnfBuf) EqualNoCase(context *ParseContext, rhs *AbnfBuf) bool {
 	if this.addr == rhs.addr {
 		return true
 	}
-	if !this.simpleEqual(rhs) {
+
+	if this.simpleNotEqual(rhs) {
 		return false
 	}
+
+	if this.Empty() {
+		return true
+	}
 	return EqualNoCase(this.GetAsByteSlice(context), rhs.GetAsByteSlice(context))
-}*/
+}
 
 func (this *AbnfBuf) EqualByteSlice(context *ParseContext, rhs []byte) bool {
 	if this.addr == ABNF_PTR_NIL || this.Size() != int32(len(rhs)) {

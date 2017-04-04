@@ -77,7 +77,7 @@ func (this *SipDisplayName) Parse(context *ParseContext, src []byte, pos int) (n
 				return newPos, err
 			}
 		}
-		name, addr := NewAbnfToken(context)
+		name, addr := NewAbnfBuf(context)
 		if name == nil {
 			return newPos, &AbnfError{"DisplayName parse: out of memory after tokens", src, newPos}
 		}
@@ -94,7 +94,7 @@ func (this *SipDisplayName) Encode(context *ParseContext, buf *bytes.Buffer) {
 		if this.isQuotedString {
 			this.value.GetSipQuotedString(context).Encode(context, buf)
 		} else {
-			this.value.GetAbnfToken(context).Encode(context, buf)
+			this.value.GetAbnfBuf(context).Encode(context, buf)
 		}
 	}
 }

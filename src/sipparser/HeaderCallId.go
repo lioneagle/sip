@@ -7,8 +7,8 @@ import (
 )
 
 type SipHeaderCallId struct {
-	id1 AbnfToken
-	id2 AbnfToken
+	id1 AbnfBuf
+	id2 AbnfBuf
 }
 
 func NewSipHeaderCallId(context *ParseContext) (*SipHeaderCallId, AbnfPtr) {

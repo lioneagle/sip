@@ -346,7 +346,7 @@ func ParseHeaderName(context *ParseContext, src []byte, pos int) (name AbnfRef, 
 	return name, newPos, err
 }
 
-func ParseHeaderValue(context *ParseContext, src []byte, pos int) (value AbnfToken, newPos int, err error) {
+func ParseHeaderValue(context *ParseContext, src []byte, pos int) (value AbnfBuf, newPos int, err error) {
 	newPos = pos
 	begin, end, ok := FindCrlfRFC3261(src, newPos)
 	if !ok {

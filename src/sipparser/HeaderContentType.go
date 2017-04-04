@@ -7,8 +7,8 @@ import (
 )
 
 type SipHeaderContentType struct {
-	mainType AbnfToken
-	subType  AbnfToken
+	mainType AbnfBuf
+	subType  AbnfBuf
 	params   SipGenericParams
 }
 

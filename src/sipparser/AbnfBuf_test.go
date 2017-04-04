@@ -182,6 +182,252 @@ func TestAbnfBufSetByteSliceWithUnescape(t *testing.T) {
 	}
 }
 
+func TestAbnfBufParseEnableEmpty(t *testing.T) {
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1000)
+
+	testdata := []struct {
+		isInCharset func(ch byte) bool
+		src         string
+		isEmpty     bool
+		newPos      int
+		dst         string
+	}{
+		{IsDigit, "", true, 0, ""},
+		{IsDigit, "ad6789abc", true, 0, ""},
+		{IsDigit, "01234abc", false, len("01234"), "01234"},
+		{IsDigit, "5678=bc", false, len("5678"), "5678"},
+	}
+	prefix := FuncName()
+
+	for i, v := range testdata {
+		context.allocator.FreeAll()
+		buf, _ := NewAbnfBuf(context)
+		if buf == nil {
+			t.Errorf("%s[%d]: NewAbnfBuf failed\n", prefix, i)
+			continue
+		}
+
+		newPos := buf.ParseEnableEmpty(context, []byte(v.src), 0, v.isInCharset)
+
+		if !buf.Exist() {
+			t.Errorf("%s[%d]: should be exist\n", prefix, i)
+			continue
+		}
+
+		if buf.Empty() && !v.isEmpty {
+			t.Errorf("%s[%d]: should not be empty\n", prefix, i)
+			continue
+		}
+
+		if !buf.Empty() && v.isEmpty {
+			t.Errorf("%s[%d]: should be empty\n", prefix, i)
+			continue
+		}
+
+		if newPos != v.newPos {
+			t.Errorf("%s[%d]: newPos = %d, wanted = %d\n", prefix, i, newPos, v.newPos)
+			continue
+		}
+
+		if !v.isEmpty && !buf.EqualString(context, v.dst) {
+			t.Errorf("%s[%d]: wrong value = %s, wanted = %s\n", prefix, i, buf.String(context), v.dst)
+			continue
+		}
+	}
+}
+
+func TestAbnfBufParse(t *testing.T) {
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1000)
+
+	testdata := []struct {
+		isInCharset func(ch byte) bool
+		src         string
+		ok          bool
+		newPos      int
+		dst         string
+	}{
+
+		{IsDigit, "01234abc", true, len("01234"), "01234"},
+		{IsDigit, "5678=bc", true, len("5678"), "5678"},
+
+		{IsDigit, "", false, 0, ""},
+		{IsDigit, "ad6789abc", false, 0, ""},
+	}
+	prefix := FuncName()
+
+	for i, v := range testdata {
+		context.allocator.FreeAll()
+		buf, _ := NewAbnfBuf(context)
+		if buf == nil {
+			t.Errorf("%s[%d]: NewAbnfBuf failed\n", prefix, i)
+			continue
+		}
+
+		newPos, err := buf.Parse(context, []byte(v.src), 0, v.isInCharset)
+
+		if err != nil && v.ok {
+			t.Errorf("%s[%d]: should be ok\n", prefix, i)
+			continue
+		}
+
+		if err == nil && !v.ok {
+			t.Errorf("%s[%d]: should not be ok\n", prefix, i)
+			continue
+		}
+
+		if newPos != v.newPos {
+			t.Errorf("%s[%d]: newPos = %d, wanted = %d\n", prefix, i, newPos, v.newPos)
+			continue
+		}
+
+		if v.ok && buf.Empty() {
+			t.Errorf("%s[%d]: should not be empty\n", prefix, i)
+			continue
+		}
+
+		if v.ok && !buf.EqualString(context, v.dst) {
+			t.Errorf("%s[%d]: wrong value = %s, wanted = %s\n", prefix, i, buf.String(context), v.dst)
+			continue
+		}
+	}
+}
+
+func TestAbnfBufParseEscapableEnableEmpty(t *testing.T) {
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1000)
+
+	testdata := []struct {
+		isInCharset func(ch byte) bool
+		src         string
+		ok          bool
+		isEmpty     bool
+		newPos      int
+		dst         string
+	}{
+		{IsDigit, "", true, true, 0, ""},
+		{IsDigit, "ad6789abc", true, true, 0, ""},
+		{IsDigit, "01234abc", true, false, len("01234"), "01234"},
+		{IsDigit, "01%3234abc", true, false, len("01%3234"), "01234"},
+		{IsDigit, "56%378=bc", true, false, len("56%378"), "5678"},
+
+		{IsDigit, "56%3x8=bc", false, false, len("56"), ""},
+	}
+	prefix := FuncName()
+
+	for i, v := range testdata {
+		context.allocator.FreeAll()
+		buf, _ := NewAbnfBuf(context)
+		if buf == nil {
+			t.Errorf("%s[%d]: NewAbnfBuf failed\n", prefix, i)
+			continue
+		}
+
+		newPos, err := buf.ParseEscapableEnableEmpty(context, []byte(v.src), 0, v.isInCharset)
+		if err != nil && v.ok {
+			t.Errorf("%s[%d]: should be ok err = %s\n", prefix, i, err.Error())
+			continue
+		}
+
+		if err == nil && !v.ok {
+			t.Errorf("%s[%d]: should not be ok \n", prefix, i)
+			continue
+		}
+
+		if newPos != v.newPos {
+			t.Errorf("%s[%d]: newPos = %d, wanted = %d\n", prefix, i, newPos, v.newPos)
+			continue
+		}
+
+		if !v.ok {
+			continue
+		}
+
+		if !buf.Exist() && v.ok {
+			t.Errorf("%s[%d]: should be exist\n", prefix, i)
+			continue
+		}
+
+		if buf.Empty() && !v.isEmpty {
+			t.Errorf("%s[%d]: should not be empty\n", prefix, i)
+			continue
+		}
+
+		if !buf.Empty() && v.isEmpty {
+			t.Errorf("%s[%d]: should be empty\n", prefix, i)
+			continue
+		}
+
+		if !v.isEmpty && !buf.EqualString(context, v.dst) {
+			t.Errorf("%s[%d]: wrong value = %s, wanted = %s\n", prefix, i, buf.String(context), v.dst)
+			continue
+		}
+	}
+}
+
+func TestAbnfBufParseEscapable(t *testing.T) {
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1000)
+
+	testdata := []struct {
+		isInCharset func(ch byte) bool
+		src         string
+		ok          bool
+		newPos      int
+		dst         string
+	}{
+
+		{IsDigit, "01234abc", true, len("01234"), "01234"},
+		{IsDigit, "5678=bc", true, len("5678"), "5678"},
+		{IsDigit, "012%334abc", true, len("012%334"), "01234"},
+		{IsDigit, "567%38=bc", true, len("567%38"), "5678"},
+
+		{IsDigit, "", false, 0, ""},
+		{IsDigit, "ad6789abc", false, 0, ""},
+		{IsDigit, "012%3x4abc", false, len("012"), ""},
+		{IsDigit, "01223%", false, len("01223"), ""},
+		{IsDigit, "01223%4", false, len("01223"), ""},
+	}
+	prefix := FuncName()
+
+	for i, v := range testdata {
+		context.allocator.FreeAll()
+		buf, _ := NewAbnfBuf(context)
+		if buf == nil {
+			t.Errorf("%s[%d]: NewAbnfBuf failed\n", prefix, i)
+			continue
+		}
+
+		newPos, err := buf.ParseEscapable(context, []byte(v.src), 0, v.isInCharset)
+
+		if err != nil && v.ok {
+			t.Errorf("%s[%d]: should be ok\n", prefix, i)
+			continue
+		}
+
+		if err == nil && !v.ok {
+			t.Errorf("%s[%d]: should not be ok\n", prefix, i)
+			continue
+		}
+
+		if newPos != v.newPos {
+			t.Errorf("%s[%d]: newPos = %d, wanted = %d\n", prefix, i, newPos, v.newPos)
+			continue
+		}
+
+		if v.ok && buf.Empty() {
+			t.Errorf("%s[%d]: should not be empty\n", prefix, i)
+			continue
+		}
+
+		if v.ok && !buf.EqualString(context, v.dst) {
+			t.Errorf("%s[%d]: wrong value = %s, wanted = %s\n", prefix, i, buf.String(context), v.dst)
+			continue
+		}
+	}
+}
+
 func TestAbnfBufSetString(t *testing.T) {
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1000)
@@ -223,8 +469,8 @@ func TestAbnfBufEqual(t *testing.T) {
 		return
 	}
 
-	if buf1.EqualNoCase(context, buf2) {
-		t.Errorf("%s failed: should not be equal", prefix)
+	if !buf1.EqualNoCase(context, buf2) {
+		t.Errorf("%s failed: should be equal", prefix)
 		return
 	}
 
@@ -254,6 +500,32 @@ func TestAbnfBufEqual(t *testing.T) {
 
 	if !buf1.EqualStringNoCase(context, "abc") {
 		t.Errorf("%s failed: not equal, buf1 = %s, buf2 = %s\n", prefix, buf1.String(context), buf2.String(context))
+		return
+	}
+
+	buf1.SetEmpty()
+	buf2.SetEmpty()
+
+	if !buf1.Equal(context, buf2) {
+		t.Errorf("%s failed: should be equal", prefix)
+		return
+	}
+
+	if !buf1.EqualNoCase(context, buf2) {
+		t.Errorf("%s failed: should be equal", prefix)
+		return
+	}
+
+	buf1.SetNonExist()
+	buf2.SetNonExist()
+
+	if !buf1.Equal(context, buf2) {
+		t.Errorf("%s failed: should be equal", prefix)
+		return
+	}
+
+	if !buf1.EqualNoCase(context, buf2) {
+		t.Errorf("%s failed: should be equal", prefix)
 		return
 	}
 }

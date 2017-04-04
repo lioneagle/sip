@@ -153,7 +153,7 @@ func ParseUInt(src []byte, pos int) (digit, num, newPos int, ok bool) {
 
 }
 
-func ParseUriScheme(context *ParseContext, src []byte, pos int) (newPos int, scheme *AbnfToken, err error) {
+func ParseUriScheme(context *ParseContext, src []byte, pos int) (newPos int, scheme *AbnfBuf, err error) {
 	/* RFC3261 Section 25.1, page 223
 	 *
 	 * scheme         =  ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
@@ -168,7 +168,7 @@ func ParseUriScheme(context *ParseContext, src []byte, pos int) (newPos int, sch
 		return newPos, nil, &AbnfError{"uri-scheme parse: parse scheme failed: fisrt char is not alpha", src, newPos}
 	}
 
-	scheme = &AbnfToken{}
+	scheme = &AbnfBuf{}
 
 	newPos, err = scheme.Parse(context, src, newPos, IsUriScheme)
 	if err != nil {

@@ -8,8 +8,8 @@ import (
 )
 
 type SipVersion struct {
-	major AbnfToken
-	minor AbnfToken
+	major AbnfBuf
+	minor AbnfBuf
 }
 
 func NewSipVersion(context *ParseContext) (*SipVersion, AbnfPtr) {

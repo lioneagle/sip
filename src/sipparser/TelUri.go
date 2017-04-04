@@ -8,7 +8,7 @@ import (
 
 type TelUri struct {
 	isGlobalNumber bool
-	number         AbnfToken
+	number         AbnfBuf
 	context        TelUriContext
 	params         TelUriParams
 }
@@ -140,9 +140,9 @@ func (this *TelUri) ParseGlobalNumber(context *ParseContext, src []byte, pos int
 		return newPos, err
 	}
 
-	this.number.value.SetByteSlice(context, src[pos:newPos])
+	//this.number.SetByteSlice(context, src[pos:newPos])
 
-	this.number.value.SetByteSlice(context, this.RemoveVisualSeperator(context, src[pos:newPos]))
+	this.number.SetByteSlice(context, this.RemoveVisualSeperator(context, src[pos:newPos]))
 
 	if this.number.Size() <= 1 {
 		return newPos, &AbnfError{"tel-uri parse: global-number is empty", src, newPos}
@@ -159,7 +159,7 @@ func (this *TelUri) ParseLocalNumber(context *ParseContext, src []byte, pos int)
 		return newPos, err
 	}
 
-	this.number.value.SetByteSlice(context, this.RemoveVisualSeperator(context, this.number.GetAsByteSlice(context)))
+	this.number.SetByteSlice(context, this.RemoveVisualSeperator(context, this.number.GetAsByteSlice(context)))
 
 	if this.number.Empty() {
 		return newPos, &AbnfError{"tel-uri parse: local-number is empty", src, newPos}
@@ -219,7 +219,7 @@ func (this *TelUri) ParseParams(context *ParseContext, src []byte, pos int) (new
 			this.context.isDomainName = (param.value.GetAsByteSlice(context)[0] != '+')
 			this.context.desc = param.value
 			if !this.context.isDomainName {
-				this.context.desc.value.SetByteSlice(context, this.RemoveVisualSeperator(context, this.context.desc.GetAsByteSlice(context)))
+				this.context.desc.SetByteSlice(context, this.RemoveVisualSeperator(context, this.context.desc.GetAsByteSlice(context)))
 			}
 		} else {
 			this.params.PushBack(context, addr)

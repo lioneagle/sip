@@ -9,9 +9,9 @@ import (
 type SipStartLine struct {
 	isRequest    bool
 	statusCode   uint16
-	method       AbnfToken
+	method       AbnfBuf
 	version      SipVersion
-	reasonPhrase AbnfToken
+	reasonPhrase AbnfBuf
 	addrspec     SipAddrSpec
 }
 

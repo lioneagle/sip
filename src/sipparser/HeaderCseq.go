@@ -8,7 +8,7 @@ import (
 
 type SipHeaderCseq struct {
 	id     uint32
-	method AbnfToken
+	method AbnfBuf
 }
 
 func NewSipHeaderCseq(context *ParseContext) (*SipHeaderCseq, AbnfPtr) {

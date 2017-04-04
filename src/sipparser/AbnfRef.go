@@ -33,10 +33,10 @@ func (this *AbnfRef) ParseEscapable(src []byte, pos int, inCharset AbnfIsInChars
 	for newPos = pos; newPos < len(src); newPos++ {
 		if src[newPos] == '%' {
 			if (newPos + 2) >= len(src) {
-				return escapeNum, newPos, &AbnfError{"AbnfRef ParseEscapable: reach end after %%", src, newPos}
+				return escapeNum, newPos, &AbnfError{"AbnfRef ParseEscapable: reach end after %", src, newPos}
 			}
 			if !IsHex(src[newPos+1]) || !IsHex(src[newPos+2]) {
-				return escapeNum, newPos, &AbnfError{"AbnfRef ParseEscapable: no hex after %%", src, newPos}
+				return escapeNum, newPos, &AbnfError{"AbnfRef ParseEscapable: no hex after %", src, newPos}
 			}
 			escapeNum++
 			newPos += 2

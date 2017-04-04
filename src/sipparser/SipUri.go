@@ -8,8 +8,8 @@ import (
 
 type SipUri struct {
 	isSecure bool
-	user     AbnfToken
-	password AbnfToken
+	user     AbnfBuf
+	password AbnfBuf
 	hostport SipHostPort
 	params   SipUriParams
 	headers  SipUriHeaders

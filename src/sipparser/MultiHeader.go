@@ -8,7 +8,7 @@ import (
 
 type SipMultiHeader struct {
 	info    *SipHeaderInfo
-	name    AbnfToken
+	name    AbnfBuf
 	headers SipSingleHeaders
 }
 
@@ -41,7 +41,7 @@ func (this *SipMultiHeader) EqualNameBytes(context *ParseContext, name []byte) b
 		}
 		return EqualNoCase(this.info.shortName, name)
 	}
-	return this.name.EqualBytesNoCase(context, name)
+	return this.name.EqualByteSliceNoCase(context, name)
 }
 
 func (this *SipMultiHeader) EqualNameString(context *ParseContext, name string) bool {
