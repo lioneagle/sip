@@ -20,23 +20,24 @@ func TestSipQuotedStringParseOK(t *testing.T) {
 
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
 
 	for i, v := range testdata {
 		quotedString, _ := NewSipQuotedString(context)
 
 		_, err := quotedString.Parse(context, []byte(v.src), 0)
 		if err != nil && v.parseOk {
-			t.Errorf("TestSipQuotedStringParseOK[%d] failed, %s\n", i, err.Error())
+			t.Errorf("%s[%d] failed: %s\n", prefix, i, err.Error())
 			continue
 		}
 
 		if err == nil && !v.parseOk {
-			t.Errorf("TestSipQuotedStringParseOK[%d] failed, parse failed wanted\n", i)
+			t.Errorf("%s[%d] failed: parse failed wanted\n", prefix, i)
 			continue
 		}
 
 		if quotedString.String(context) != v.wanted {
-			t.Errorf("TestSipQuotedStringParseOK[%d] failed, value = %s, wanted = %s\n", i, quotedString.String(context), v.wanted)
+			t.Errorf("%s[%d] failed: value = %s, wanted = %s\n", prefix, i, quotedString.String(context), v.wanted)
 			continue
 		}
 
@@ -59,19 +60,20 @@ func TestSipQuotedStringParseNOK(t *testing.T) {
 
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
 
 	for i, v := range testdata {
 		quotedString, _ := NewSipQuotedString(context)
 
 		newPos, err := quotedString.Parse(context, []byte(v.src), 0)
 		if err == nil {
-			t.Errorf("TestSipQuotedStringParseNOK[%d] failed", i)
+			t.Errorf("%s[%d] failed", prefix, i)
 			continue
 		}
 
 		if newPos != v.newPos {
 			fmt.Print(err)
-			t.Errorf("TestSipQuotedStringParseNOK[%d] failed, newPos = %d, wanted = %d\n", i, newPos, v.newPos)
+			t.Errorf("%s[%d] failed: newPos = %d, wanted = %d\n", prefix, i, newPos, v.newPos)
 			continue
 		}
 	}

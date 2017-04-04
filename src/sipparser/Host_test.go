@@ -16,7 +16,7 @@ func TestSipHostUnknownString(t *testing.T) {
 	str := host.String(context)
 
 	if str != "unknown host" {
-		t.Errorf("TestSipHostUnknownString failed, str = %s, wanted = %s\n", str, "unknown host")
+		t.Errorf("TestSipHostUnknownString failed: str = %s, wanted = %s\n", str, "unknown host")
 	}
 }
 
@@ -33,7 +33,7 @@ func TestSipHostIpv4String(t *testing.T) {
 	str := host.String(context)
 
 	if str != "10.1.1.1" {
-		t.Errorf("TestSipHostIpv4String failed, str = %s, wanted = %s\n", str, "10.1.1.1")
+		t.Errorf("TestSipHostIpv4String failed: str = %s, wanted = %s\n", str, "10.1.1.1")
 	}
 }
 
@@ -50,7 +50,7 @@ func TestSipHostIpv6String(t *testing.T) {
 	str := host.String(context)
 
 	if str != "[10.1.1.1]" {
-		t.Errorf("TestSipHostIpv6String failed, str = %s, wanted = %s\n", str, "[10.1.1.1]")
+		t.Errorf("TestSipHostIpv6String failed: str = %s, wanted = %s\n", str, "[10.1.1.1]")
 	}
 }
 
@@ -63,13 +63,13 @@ func TestSipHostHostnameString(t *testing.T) {
 	host.SetHostname(context, []byte("abc.com"))
 
 	if !host.IsHostname() {
-		t.Errorf("TestSipHostHostnameString failed, host is not hostname\n")
+		t.Errorf("TestSipHostHostnameString failed: host is not hostname\n")
 	}
 
 	str := host.String(context)
 
 	if str != "abc.com" {
-		t.Errorf("TestSipHostHostnameString failed, str = %s, wanted = %s\n", str, "abc.com")
+		t.Errorf("TestSipHostHostnameString failed: str = %s, wanted = %s\n", str, "abc.com")
 	}
 }
 
@@ -98,29 +98,31 @@ func TestSipHostParseOk(t *testing.T) {
 		{"ab-c.com", "ab-c.com", len("ab-c.com"), host.IsHostname},
 	}
 
+	prefix := FuncName()
+
 	for i, v := range testdata {
 		host.Init()
 		newPos, err := host.Parse(context, []byte(v.test), 0)
 
 		if err != nil {
-			t.Errorf("TestSipHostParseOk[%d] failed, %s\n", i, err.Error())
+			t.Errorf("%s[%d] failed: %s\n", prefix, i, err.Error())
 			continue
 		}
 
 		if newPos != v.newPos {
-			t.Errorf("TestSipHostParseOk[%d] failed, newPos = %d, wanted = %d\n", i, newPos, len(v.wanted))
+			t.Errorf("%s[%d] failed: newPos = %d, wanted = %d\n", prefix, i, newPos, len(v.wanted))
 			continue
 		}
 
 		if !v.hosttype() {
-			t.Errorf("TestSipHostParseOk[%d] failed, host is not ipv4\n", i)
+			t.Errorf("%s[%d] failed: host is not ipv4\n", prefix, i)
 			continue
 		}
 
 		str := host.String(context)
 
 		if str != v.wanted {
-			t.Errorf("TestSipHostParseOk[%d] failed, str = %s, wanted = %s\n", i, str, v.wanted)
+			t.Errorf("%s[%d] failed: str = %s, wanted = %s\n", prefix, i, str, v.wanted)
 			continue
 		}
 	}
@@ -145,7 +147,7 @@ func TestSipHostParseNOk(t *testing.T) {
 		_, err := host.Parse(context, []byte(v.test), 0)
 
 		if err == nil {
-			t.Errorf("TestSipHostParseNOk[%d] failed, should return err\n", i)
+			t.Errorf("TestSipHostParseNOk[%d] failed: should return err\n", i)
 			continue
 		}
 	}
@@ -174,33 +176,35 @@ func TestSipHostPortParseOk(t *testing.T) {
 		{"ab-c.com:123", "ab-c.com:123", len("ab-c.com:123"), host.IsHostname, true, 123},
 	}
 
+	prefix := FuncName()
+
 	for i, v := range testdata {
 		host.Init()
 		newPos, err := host.Parse(context, []byte(v.test), 0)
 
 		if err != nil {
-			t.Errorf("TestSipHostPortParseOk[%d] failed, %s\n", i, err.Error())
+			t.Errorf("%s[%d] failed: %s\n", prefix, i, err.Error())
 			continue
 		}
 
 		if newPos != v.newPos {
-			t.Errorf("TestSipHostPortParseOk[%d] failed, newPos = %d, wanted = %d\n", i, newPos, v.newPos)
+			t.Errorf("%s[%d] failed: newPos = %d, wanted = %d\n", prefix, i, newPos, v.newPos)
 			continue
 		}
 
 		if !v.hosttype() {
-			t.Errorf("TestSipHostPortParseOk[%d] failed, host is not ipv4\n", i)
+			t.Errorf("%s[%d] failed: host is not ipv4\n", prefix, i)
 			continue
 		}
 
 		if v.hasPort != host.HasPort() {
-			t.Errorf("TestSipHostPortParseOk[%d] failed, has port or not failed\n", i)
+			t.Errorf("%s[%d] failed: has port or not failed\n", prefix, i)
 			continue
 		}
 
 		if v.hasPort {
 			if v.port != host.GetPort() {
-				t.Errorf("TestSipHostPortParseOk[%d] failed, has port or not failed\n", i)
+				t.Errorf("%s[%d] failed: has port or not failed\n", prefix, i)
 				continue
 			}
 		}
@@ -208,7 +212,7 @@ func TestSipHostPortParseOk(t *testing.T) {
 		str := host.String(context)
 
 		if str != v.wanted {
-			t.Errorf("TestSipHostPortParseOk[%d] failed, str = %s, wanted = %s\n", i, str, v.wanted)
+			t.Errorf("%s[%d] failed: str = %s, wanted = %s\n", prefix, i, str, v.wanted)
 			continue
 		}
 	}
@@ -237,7 +241,7 @@ func TestSipHostPortParseNOk(t *testing.T) {
 		_, err := host.Parse(context, []byte(v.test), 0)
 
 		if err == nil {
-			t.Errorf("TestSipHostPortParseNOk[%d] failed, should return err\n", i)
+			t.Errorf("TestSipHostPortParseNOk[%d] failed: should return err\n", i)
 			continue
 		}
 	}

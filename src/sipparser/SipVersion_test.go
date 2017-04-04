@@ -27,28 +27,29 @@ func TestSipVersionParse(t *testing.T) {
 
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
 
 	for i, v := range testdata {
 		version, _ := NewSipVersion(context)
 
 		newPos, err := version.Parse(context, []byte(v.src), 0)
 		if v.ok && err != nil {
-			t.Errorf("TestSipVersionParse[%d] failed, %s\n", i, err.Error())
+			t.Errorf("%s[%d] failed: %s\n", prefix, i, err.Error())
 			continue
 		}
 
 		if !v.ok && err == nil {
-			t.Errorf("TestSipVersionParse[%d] failed, should not be ok\n", i)
+			t.Errorf("%s[%d] failed: should not be ok\n", prefix, i)
 			continue
 		}
 
 		if newPos != v.newPos {
-			t.Errorf("TestSipVersionParse[%d] failed, newPos = %d, wanted = %d\n", i, newPos, v.newPos)
+			t.Errorf("%s[%d] failed: newPos = %d, wanted = %d\n", prefix, i, newPos, v.newPos)
 			continue
 		}
 
 		if v.ok && v.dst != version.String(context) {
-			t.Errorf("TestSipVersionParse[%d] failed, version = %s, wanted = %s\n", i, version.String(context), v.dst)
+			t.Errorf("%s[%d] failed: version = %s, wanted = %s\n", prefix, i, version.String(context), v.dst)
 			continue
 		}
 	}

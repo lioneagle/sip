@@ -55,12 +55,12 @@ func TestCharset(t *testing.T) {
 	for i, v := range wanted {
 		for _, ch := range v.chars {
 			if !v.funcPtr(ch) {
-				t.Errorf("contains[%d] failed, ch = 0x%02x\n", i, ch)
+				t.Errorf("contains[%d] failed: ch = 0x%02x\n", i, ch)
 			}
 		}
 		for _, ch := range makeNotContains(v.chars) {
 			if v.funcPtr(ch) {
-				t.Errorf("notcontains[%d] failed, ch = 0x%02x\n", i, ch)
+				t.Errorf("notcontains[%d] failed: ch = 0x%02x\n", i, ch)
 			}
 		}
 	}

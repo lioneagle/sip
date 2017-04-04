@@ -25,48 +25,49 @@ func TestTelUriParseOK(t *testing.T) {
 
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
 
 	for i, v := range testdata {
 		uri, _ := NewTelUri(context)
 
 		newPos, err := uri.Parse(context, []byte(v.src), 0)
 		if err != nil {
-			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, %s\n", i, err.Error())
+			t.Errorf("%s[%d] failed: %s\n", prefix, i, err.Error())
 			continue
 		}
 
 		if v.isGlobalNumber && !uri.IsGlobalNumber() {
-			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, global-number wanted\n", i)
+			t.Errorf("%s[%d] failed: global-number wanted\n", prefix, i)
 			continue
 		}
 
 		if !v.isGlobalNumber && !uri.IsLocalNumber() {
-			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, local-number wanted\n", i)
+			t.Errorf("%s[%d] failed: local-number wanted\n", prefix, i)
 			continue
 		}
 
 		if newPos != len(v.src) {
-			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, newPos = %d, wanted = %d\n", i, newPos, len(v.src))
+			t.Errorf("%s[%d] failed: newPos = %d, wanted = %d\n", prefix, i, newPos, len(v.src))
 			continue
 		}
 
 		if uri.number.String(context) != v.number {
-			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, number = %s, wanted = %s\n", i, uri.number.String(context), v.number)
+			t.Errorf("%s[%d] failed: number = %s, wanted = %s\n", prefix, i, uri.number.String(context), v.number)
 			continue
 		}
 
 		if uri.context.desc.String(context) != v.phoneContext {
-			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, user wrong, user = %s, wanted = %s", i, uri.context.desc.String(context), v.phoneContext)
+			t.Errorf("%s[%d] failed: user wrong, user = %s, wanted = %s", prefix, i, uri.context.desc.String(context), v.phoneContext)
 			continue
 		}
 
 		if v.phoneContextIsDomainName && !uri.context.isDomainName {
-			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, phone-context should be domain-name", i)
+			t.Errorf("%s[%d] failed: phone-context should be domain-name", prefix, i)
 			continue
 		}
 
 		if !v.phoneContextIsDomainName && uri.context.isDomainName {
-			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, phone-context should be global-number", i)
+			t.Errorf("%s[%d] failed: phone-context should be global-number", prefix, i)
 			continue
 		}
 	}
@@ -75,13 +76,14 @@ func TestTelUriParseOK(t *testing.T) {
 func TestTelUriParamsParseOK(t *testing.T) {
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
 
 	uri, _ := NewTelUri(context)
 	src := "tel:+86123;ttl=10;user%32=phone%31;a;b;c;d;e"
 
 	_, err := uri.Parse(context, []byte(src), 0)
 	if err != nil {
-		t.Errorf("TestTelUriParamsParseOK failed, err = %s\n", err.Error())
+		t.Errorf("%s failed, err = %s\n", prefix, err.Error())
 		return
 	}
 
@@ -102,22 +104,22 @@ func TestTelUriParamsParseOK(t *testing.T) {
 	for i, v := range testdata {
 		param, ok := uri.params.GetParam(context, v.name)
 		if !ok {
-			t.Errorf("TestTelUriParamsParseOK[%d] failed, cannot get %s param\n", i, v.name)
+			t.Errorf("%s[%d] failed: cannot get %s param\n", prefix, i, v.name)
 			continue
 		}
 
 		if param.value.Exist() && !v.hasValue {
-			t.Errorf("TestTelUriParamsParseOK[%d] failed, should have no pvalue\n", i)
+			t.Errorf("%s[%d] failed: should have no pvalue\n", prefix, i)
 			continue
 		}
 
 		if !param.value.Exist() && v.hasValue {
-			t.Errorf("TestTelUriParamsParseOK[%d] failed, should have pvalue\n", i)
+			t.Errorf("%s[%d] failed: should have pvalue\n", prefix, i)
 			continue
 		}
 
 		if param.value.Exist() && param.value.String(context) != v.value {
-			t.Errorf("TestTelUriParamsParseOK[%d] failed, pvalue = %s, wanted = %s\n", i, param.value.String(context), v.value)
+			t.Errorf("%s[%d] failed: pvalue = %s, wanted = %s\n", prefix, i, param.value.String(context), v.value)
 			continue
 		}
 
@@ -140,18 +142,19 @@ func TestTelUriParseNOK(t *testing.T) {
 
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
 
 	for i, v := range testdata {
 		uri, _ := NewTelUri(context)
 
 		newPos, err := uri.Parse(context, []byte(v.src), 0)
 		if err == nil {
-			t.Errorf("TestTelUriParseNOK[%d] failed", i)
+			t.Errorf("%s[%d] failed", prefix, i)
 			continue
 		}
 
 		if newPos != v.newPos {
-			t.Errorf("TestTelUriParseNOK[%d] failed, newPos = %d, wanted = %d\n", i, newPos, v.newPos)
+			t.Errorf("%s[%d] failed: newPos = %d, wanted = %d\n", prefix, i, newPos, v.newPos)
 			continue
 		}
 	}
@@ -172,20 +175,21 @@ func TestTelUriEncode(t *testing.T) {
 
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
 
 	for i, v := range testdata {
 		uri, _ := NewTelUri(context)
 
 		_, err := uri.Parse(context, []byte(v.src), 0)
 		if err != nil {
-			t.Errorf("TestTelUriEncode[%d] failed, parse failed, err = %s\n", i, err.Error())
+			t.Errorf("%s[%d] failed: parse failed, err = %s\n", prefix, i, err.Error())
 			continue
 		}
 
 		str := uri.String(context)
 
 		if str != v.dst {
-			t.Errorf("TestTelUriEncode[%d] failed, uri = %s, wanted = %s\n", i, str, v.dst)
+			t.Errorf("%s[%d] failed: uri = %s, wanted = %s\n", prefix, i, str, v.dst)
 			continue
 		}
 	}
@@ -211,6 +215,7 @@ func TestTelUriEqual(t *testing.T) {
 
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
 
 	for i, v := range testdata {
 		uri1, _ := NewTelUri(context)
@@ -218,23 +223,23 @@ func TestTelUriEqual(t *testing.T) {
 
 		_, err := uri1.Parse(context, []byte(v.uri1), 0)
 		if err != nil {
-			t.Errorf("TestTelUriEqual[%d] failed, uri1 parse failed, err = %s\n", i, err.Error())
+			t.Errorf("%s[%d] failed: uri1 parse failed, err = %s\n", prefix, i, err.Error())
 			continue
 		}
 
 		_, err = uri2.Parse(context, []byte(v.uri2), 0)
 		if err != nil {
-			t.Errorf("TestTelUriEqual[%d] failed, uri2 parse failed, err = %s\n", i, err.Error())
+			t.Errorf("%s[%d] failed: uri2 parse failed, err = %s\n", prefix, i, err.Error())
 			continue
 		}
 
 		if v.equal && !uri1.Equal(context, uri2) {
-			t.Errorf("TestTelUriEqual[%d] failed, should be equal, uri1 = %s, uri2 = %s\n", i, v.uri1, v.uri2)
+			t.Errorf("%s[%d] failed: should be equal, uri1 = %s, uri2 = %s\n", prefix, i, v.uri1, v.uri2)
 			continue
 		}
 
 		if !v.equal && uri1.Equal(context, uri2) {
-			t.Errorf("TestTelUriEqual[%d] failed, should not be equal, uri1 = %s, uri2 = %s\n", i, v.uri1, v.uri2)
+			t.Errorf("%s[%d] failed: should not be equal, uri1 = %s, uri2 = %s\n", prefix, i, v.uri1, v.uri2)
 			continue
 		}
 	}

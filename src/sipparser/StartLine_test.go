@@ -48,37 +48,38 @@ func TestSipStartLineParse(t *testing.T) {
 
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
 
 	for i, v := range testdata {
 		startLine := NewSipStartLine()
 		newPos, err := startLine.Parse(context, []byte(v.src), 0)
 
 		if v.ok && err != nil {
-			t.Errorf("TestSipStartLineParse[%d] failed, err = %s\n", i, err)
+			t.Errorf("%s[%d] failed: err = %s\n", prefix, i, err)
 			continue
 		}
 
 		if !v.ok && err == nil {
-			t.Errorf("TestSipStartLineParse[%d] failed, should parse failed", i)
+			t.Errorf("%s[%d] failed: should parse failed", prefix, i)
 			continue
 		}
 
 		if v.isRequest && !startLine.IsRequest() {
-			t.Errorf("TestSipStartLineParse[%d] failed, should be Request-Line", i)
+			t.Errorf("%s[%d] failed: should be Request-Line", prefix, i)
 			continue
 		}
 
 		if !v.isRequest && startLine.IsRequest() {
-			t.Errorf("TestSipStartLineParse[%d] failed, should be Status-Line", i)
+			t.Errorf("%s[%d] failed: should be Status-Line", prefix, i)
 			continue
 		}
 
 		if v.newPos != newPos {
-			t.Errorf("TestSipStartLineParse[%d] failed, newPos = %d, wanted = %d\n", i, newPos, v.newPos)
+			t.Errorf("%s[%d] failed: newPos = %d, wanted = %d\n", prefix, i, newPos, v.newPos)
 		}
 
 		if v.ok && v.encode != startLine.String(context) {
-			t.Errorf("TestSipStartLineParse[%d] failed, encode = %s, wanted = %s\n", i, startLine.String(context), v.encode)
+			t.Errorf("%s[%d] failed: encode = %s, wanted = %s\n", prefix, i, startLine.String(context), v.encode)
 			continue
 		}
 	}

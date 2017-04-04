@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
+	"runtime"
 	"unsafe"
 )
 
@@ -49,4 +50,12 @@ func StringToByteSlice(str string) []byte {
 
 func ByteSliceToString(bytes []byte) string {
 	return *(*string)(unsafe.Pointer(&bytes))
+}
+
+func FuncName() string {
+	pc, _, _, ok := runtime.Caller(1)
+	if !ok {
+		return ""
+	}
+	return runtime.FuncForPC(pc).Name()
 }

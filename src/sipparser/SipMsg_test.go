@@ -24,27 +24,28 @@ func TestSipMsgParse(t *testing.T) {
 
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 100)
+	prefix := FuncName()
 
 	for i, v := range testdata {
 		sipmsg, _ := NewSipMsg(context)
 		newPos, err := sipmsg.Parse(context, []byte(v.src), 0)
 
 		if v.ok && err != nil {
-			t.Errorf("TestSipMsgParse[%d] failed, err = %s\n", i, err)
+			t.Errorf("%s[%d] failed: err = %s\n", prefix, i, err)
 			continue
 		}
 
 		if !v.ok && err == nil {
-			t.Errorf("TestSipMsgParse[%d] failed, should parse failed", i)
+			t.Errorf("%s[%d] failed: should parse failed", prefix, i)
 			continue
 		}
 
 		if v.newPos != newPos {
-			t.Errorf("TestSipMsgParse[%d] failed, newPos = %d, wanted = %d\n", i, newPos, v.newPos)
+			t.Errorf("%s[%d] failed: newPos = %d, wanted = %d\n", prefix, i, newPos, v.newPos)
 		}
 
 		if v.ok && v.encode != sipmsg.String(context) {
-			t.Errorf("TestSipMsgParse[%d] failed, encode = %s, wanted = %s\n", i, sipmsg.String(context), v.encode)
+			t.Errorf("%s[%d] failed: encode = %s, wanted = %s\n", prefix, i, sipmsg.String(context), v.encode)
 			continue
 		}
 	}

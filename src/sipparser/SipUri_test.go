@@ -32,43 +32,44 @@ func TestSipUriParseOK(t *testing.T) {
 
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
 
 	for i, v := range testdata {
 		uri, _ := NewSipUri(context)
 
 		newPos, err := uri.Parse(context, []byte(v.src), 0)
 		if err != nil {
-			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, %s\n", i, err.Error())
+			t.Errorf("%s[%d] failed: %s\n", prefix, i, err.Error())
 			continue
 		}
 
 		if v.isSipsUri && !uri.IsSipsUri() {
-			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, sips-uri wanted\n", i)
+			t.Errorf("%s[%d] failed: sips-uri wanted\n", prefix, i)
 			continue
 		}
 
 		if !v.isSipsUri && !uri.IsSipUri() {
-			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, sip-uri wanted\n", i)
+			t.Errorf("%s[%d] failed: sip-uri wanted\n", prefix, i)
 			continue
 		}
 
 		if newPos != len(v.src) {
-			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, newPos = %d, wanted = %d\n", i, newPos, len(v.src))
+			t.Errorf("%s[%d] failed: newPos = %d, wanted = %d\n", prefix, i, newPos, len(v.src))
 			continue
 		}
 
 		if uri.user.String(context) != v.user {
-			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, user wrong, user = %s, wanted = %s", i, uri.user.value.String(context), v.user)
+			t.Errorf("%s[%d] failed: user wrong, user = %s, wanted = %s", prefix, i, uri.user.value.String(context), v.user)
 			continue
 		}
 
 		if uri.password.String(context) != v.password {
-			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, password wrong, password = %s, wanted = %s", i, uri.password.value.String(context), v.password)
+			t.Errorf("%s[%d] failed: password wrong, password = %s, wanted = %s", prefix, i, uri.password.value.String(context), v.password)
 			continue
 		}
 
 		if uri.hostport.String(context) != v.hostport {
-			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, host wrong, host = %s, wanted = %s", i, uri.hostport, v.hostport)
+			t.Errorf("%s[%d] failed: host wrong, host = %s, wanted = %s", prefix, i, uri.hostport, v.hostport)
 			continue
 		}
 	}
@@ -77,13 +78,14 @@ func TestSipUriParseOK(t *testing.T) {
 func TestSipUriParamsParseOK(t *testing.T) {
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
 
 	uri, _ := NewSipUri(context)
 	src := "sip:123@abc.com;ttl=10;user%32=phone%31;a;b;c;d;e?xx=yy&x1=aa"
 
 	_, err := uri.Parse(context, []byte(src), 0)
 	if err != nil {
-		t.Errorf("TestSipUriParamsParseOK failed, err = %s\n", err.Error())
+		t.Errorf("%s failed, err = %s\n", prefix, err.Error())
 		return
 	}
 
@@ -104,22 +106,22 @@ func TestSipUriParamsParseOK(t *testing.T) {
 	for i, v := range testdata {
 		param, ok := uri.params.GetParam(context, v.name)
 		if !ok {
-			t.Errorf("TestSipUriParamsParseOK[%d] failed, cannot get %s param\n", i, v.name)
+			t.Errorf("%s[%d] failed: cannot get %s param\n", prefix, i, v.name)
 			continue
 		}
 
 		if param.value.Exist() && !v.hasValue {
-			t.Errorf("TestSipUriParamsParseOK[%d] failed, should have no pvalue\n", i)
+			t.Errorf("%s[%d] failed: should have no pvalue\n", prefix, i)
 			continue
 		}
 
 		if !param.value.Exist() && v.hasValue {
-			t.Errorf("TestSipUriParamsParseOK[%d] failed, should have pvalue\n", i)
+			t.Errorf("%s[%d] failed: should have pvalue\n", prefix, i)
 			continue
 		}
 
 		if param.value.Exist() && param.value.String(context) != v.value {
-			t.Errorf("TestSipUriParamsParseOK[%d] failed, pvalue = %s, wanted = %s\n", i, param.value.String(context), v.value)
+			t.Errorf("%s[%d] failed: pvalue = %s, wanted = %s\n", prefix, i, param.value.String(context), v.value)
 			continue
 		}
 
@@ -129,13 +131,14 @@ func TestSipUriParamsParseOK(t *testing.T) {
 func TestSipUriHeadersParseOK(t *testing.T) {
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
 
 	uri, _ := NewSipUri(context)
 	src := "sip:123@abc.com;ttl=10;user=phone;a;b;c;d;e?xx=yy&x1=aa"
 
 	_, err := uri.Parse(context, []byte(src), 0)
 	if err != nil {
-		t.Errorf("TestSipUriHeadersParseOK failed, err = %s\n", err.Error())
+		t.Errorf("%s failed, err = %s\n", err.Error())
 		return
 	}
 
@@ -151,22 +154,22 @@ func TestSipUriHeadersParseOK(t *testing.T) {
 	for i, v := range testdata {
 		header, ok := uri.headers.GetHeader(context, v.name)
 		if !ok {
-			t.Errorf("TestSipUriHeadersParseOK[%d] failed, cannot get ttl param\n", i)
+			t.Errorf("%s[%d] failed: cannot get ttl param\n", prefix, i)
 			continue
 		}
 
 		if header.value.Exist() && !v.hasValue {
-			t.Errorf("TestSipUriHeadersParseOK[%d] failed, should have no pvalue\n", i)
+			t.Errorf("%s[%d] failed: should have no pvalue\n", prefix, i)
 			continue
 		}
 
 		if !header.value.Exist() && v.hasValue {
-			t.Errorf("TestSipUriHeadersParseOK[%d] failed, should have pvalue\n", i)
+			t.Errorf("%s[%d] failed: should have pvalue\n", prefix, i)
 			continue
 		}
 
 		if header.value.Exist() && header.value.String(context) != v.value {
-			t.Errorf("TestSipUriHeadersParseOK[%d] failed, pvalue = %s, wanted = %s\n", i, header.value.String(context), v.value)
+			t.Errorf("%s[%d] failed: pvalue = %s, wanted = %s\n", prefix, i, header.value.String(context), v.value)
 			continue
 		}
 	}
@@ -196,18 +199,19 @@ func TestSipUriParseNOK(t *testing.T) {
 
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
 
 	for i, v := range testdata {
 		uri, _ := NewSipUri(context)
 
 		newPos, err := uri.Parse(context, []byte(v.src), 0)
 		if err == nil {
-			t.Errorf("TestSipUriUserinfoParseNOK[%d] failed", i)
+			t.Errorf("%s[%d] failed", prefix, i)
 			continue
 		}
 
 		if newPos != v.newPos {
-			t.Errorf("TestSipUriUserinfoParseNOK[%d] failed, newPos = %d, wanted = %d\n", i, newPos, v.newPos)
+			t.Errorf("%s[%d] failed: newPos = %d, wanted = %d\n", prefix, i, newPos, v.newPos)
 			continue
 		}
 	}
@@ -228,20 +232,21 @@ func TestSipUriEncode(t *testing.T) {
 
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
 
 	for i, v := range testdata {
 		uri, _ := NewSipUri(context)
 
 		_, err := uri.Parse(context, []byte(v.src), 0)
 		if err != nil {
-			t.Errorf("TestSipUriEncode[%d] failed, parse failed, err = %s\n", i, err.Error())
+			t.Errorf("%s[%d] failed: parse failed, err = %s\n", prefix, i, err.Error())
 			continue
 		}
 
 		str := uri.String(context)
 
 		if str != v.dst {
-			t.Errorf("TestSipUriUserinfoParseOK[%d] failed, uri = %s, wanted = %s\n", i, str, v.dst)
+			t.Errorf("%s[%d] failed: uri = %s, wanted = %s\n", prefix, i, str, v.dst)
 			continue
 		}
 	}
@@ -277,6 +282,7 @@ func TestSipUriEqual(t *testing.T) {
 
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
 
 	for i, v := range testdata {
 		uri1, _ := NewSipUri(context)
@@ -284,23 +290,23 @@ func TestSipUriEqual(t *testing.T) {
 
 		_, err := uri1.Parse(context, []byte(v.uri1), 0)
 		if err != nil {
-			t.Errorf("TestSipUriEqual[%d] failed, uri1 parse failed, err = %s\n", i, err.Error())
+			t.Errorf("%s[%d] failed: uri1 parse failed, err = %s\n", prefix, i, err.Error())
 			continue
 		}
 
 		_, err = uri2.Parse(context, []byte(v.uri2), 0)
 		if err != nil {
-			t.Errorf("TestSipUriEqual[%d] failed, uri2 parse failed, err = %s\n", i, err.Error())
+			t.Errorf("%s[%d] failed: uri2 parse failed, err = %s\n", prefix, i, err.Error())
 			continue
 		}
 
 		if v.equal && !uri1.Equal(context, uri2) {
-			t.Errorf("TestSipUriEqual[%d] failed, should be equal, uri1 = %s, uri2 = %s\n", i, v.uri1, v.uri2)
+			t.Errorf("%s[%d] failed: should be equal, uri1 = %s, uri2 = %s\n", prefix, i, v.uri1, v.uri2)
 			continue
 		}
 
 		if !v.equal && uri1.Equal(context, uri2) {
-			t.Errorf("TestSipUriEqual[%d] failed, should not be equal, uri1 = %s, uri2 = %s\n", i, v.uri1, v.uri2)
+			t.Errorf("%s[%d] failed: should not be equal, uri1 = %s, uri2 = %s\n", prefix, i, v.uri1, v.uri2)
 			continue
 		}
 	}

@@ -31,7 +31,7 @@ func TestToUpper(t *testing.T) {
 
 func TestCompareNoCase(t *testing.T) {
 
-	wanted := []struct {
+	testdata := []struct {
 		s1  string
 		s2  string
 		ret int
@@ -44,7 +44,7 @@ func TestCompareNoCase(t *testing.T) {
 		{"089+=abcdefghigklmnopqrstuvwxyz123", "089+=ABCDEFGHIGKLMNOPQRSTUVWXYZ123", 0},
 	}
 
-	for i, v := range wanted {
+	for i, v := range testdata {
 		u := CompareNoCase([]byte(v.s1), []byte(v.s2))
 		if u < 0 {
 			u = -1

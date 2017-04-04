@@ -25,27 +25,28 @@ func TestSipHeaderContentLengthParse(t *testing.T) {
 
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
 
 	for i, v := range testdata {
 		header, _ := NewSipHeaderContentLength(context)
 		newPos, err := header.Parse(context, []byte(v.src), 0)
 
 		if v.ok && err != nil {
-			t.Errorf("TestSipHeaderContentLengthParse[%d] failed, err = %s\n", i, err)
+			t.Errorf("%s[%d] failed: err = %s\n", prefix, i, err)
 			continue
 		}
 
 		if !v.ok && err == nil {
-			t.Errorf("TestSipHeaderContentLengthParse[%d] failed, should parse failed", i)
+			t.Errorf("%s[%d] failed: should parse failed", prefix, i)
 			continue
 		}
 
 		if v.newPos != newPos {
-			t.Errorf("TestSipHeaderContentLengthParse[%d] failed, newPos = %d, wanted = %d\n", i, newPos, v.newPos)
+			t.Errorf("%s[%d] failed: newPos = %d, wanted = %d\n", prefix, i, newPos, v.newPos)
 		}
 
 		if v.ok && v.encode != header.String(context) {
-			t.Errorf("TestSipHeaderContentLengthParse[%d] failed, encode = %s, wanted = %s\n", i, header.String(context), v.encode)
+			t.Errorf("%s[%d] failed: encode = %s, wanted = %s\n", prefix, i, header.String(context), v.encode)
 			continue
 		}
 	}

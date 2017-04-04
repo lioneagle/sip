@@ -23,27 +23,28 @@ func TestGenericParamParse(t *testing.T) {
 
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
 
 	for i, v := range testdata {
 		param, _ := NewSipGenericParam(context)
 		newPos, err := param.Parse(context, []byte(v.src), 0)
 
 		if v.ok && err != nil {
-			t.Errorf("TestGenericParamParse[%d] failed, err = %s\n", i, err)
+			t.Errorf("%s[%d] failed: err = %s\n", prefix, i, err)
 			continue
 		}
 
 		if !v.ok && err == nil {
-			t.Errorf("TestGenericParamParse[%d] failed, should parse failed", i)
+			t.Errorf("%s[%d] failed: should parse failed", prefix, i)
 			continue
 		}
 
 		if v.newPos != newPos {
-			t.Errorf("TestGenericParamParse[%d] failed, newPos = %d, wanted = %d\n", i, newPos, v.newPos)
+			t.Errorf("%s[%d] failed: newPos = %d, wanted = %d\n", prefix, i, newPos, v.newPos)
 		}
 
 		if v.encode != param.String(context) {
-			t.Errorf("TestGenericParamParse[%d] failed, encode = %s, wanted = %s\n", i, param.String(context), v.encode)
+			t.Errorf("%s[%d] failed: encode = %s, wanted = %s\n", prefix, i, param.String(context), v.encode)
 			continue
 		}
 	}
@@ -73,27 +74,28 @@ func TestGenericParamsParse(t *testing.T) {
 
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
 
 	for i, v := range testdata {
 		params, _ := NewSipGenericParams(context)
 		newPos, err := params.Parse(context, []byte(v.src), 0, ';')
 
 		if v.ok && err != nil {
-			t.Errorf("TestGenericParamsParse[%d] failed, err = %s\n", i, err)
+			t.Errorf("%s[%d] failed: err = %s\n", prefix, i, err)
 			continue
 		}
 
 		if !v.ok && err == nil {
-			t.Errorf("TestGenericParamsParse[%d] failed, should parse failed", i)
+			t.Errorf("%s[%d] failed: should parse failed", prefix, i)
 			continue
 		}
 
 		if v.newPos != newPos {
-			t.Errorf("TestGenericParamsParse[%d] failed, newPos = %d, wanted = %d\n", i, newPos, v.newPos)
+			t.Errorf("%s[%d] failed: newPos = %d, wanted = %d\n", prefix, i, newPos, v.newPos)
 		}
 
 		if v.ok && v.encode != params.String(context, ';') {
-			t.Errorf("TestGenericParamsParse[%d] failed, encode = %s, wanted = %s\n", i, params.String(context, ';'), v.encode)
+			t.Errorf("%s[%d] failed: encode = %s, wanted = %s\n", prefix, i, params.String(context, ';'), v.encode)
 			continue
 		}
 	}
