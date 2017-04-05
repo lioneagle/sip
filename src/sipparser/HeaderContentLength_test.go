@@ -9,14 +9,14 @@ import (
 func TestSipHeaderContentLengthParse(t *testing.T) {
 
 	testdata := []struct {
-		src         string
-		ok          bool
-		newPos      int
-		encode      string
-		encodeStart int
+		src       string
+		ok        bool
+		newPos    int
+		encode    string
+		encodeEnd int
 	}{
-		{"Content-Length: 1234", true, len("Content-Length: 1234"), "Content-Length:       1234", len("Content-Length: ")},
-		{"l: 1234", true, len("l: 1234"), "Content-Length:       1234", len("Content-Length: ")},
+		{"Content-Length: 1234", true, len("Content-Length: 1234"), "Content-Length:       1234", len("Content-Length:       1234")},
+		{"l: 1234", true, len("l: 1234"), "Content-Length:       1234", len("Content-Length:       1234")},
 
 		{" Content-Lengt: 1234", false, 0, "", 0},
 		{"Content-Lengt: 1234", false, len("Content-Lengt: "), "", 0},
@@ -55,8 +55,8 @@ func TestSipHeaderContentLengthParse(t *testing.T) {
 			continue
 		}
 
-		if v.encodeStart != int(header.encodeStart) {
-			t.Errorf("%s[%d] failed: encodeStart = %s, wanted = %s\n", prefix, i, header.encodeStart, v.encodeStart)
+		if v.encodeEnd != int(header.encodeEnd) {
+			t.Errorf("%s[%d] failed: encodeEnd = %s, wanted = %s\n", prefix, i, header.encodeEnd, v.encodeEnd)
 			continue
 		}
 	}

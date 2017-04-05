@@ -33,8 +33,13 @@ func (this *SipQuotedString) Encode(context *ParseContext, buf *bytes.Buffer) {
 func (this *SipQuotedString) String(context *ParseContext) string {
 	return AbnfEncoderToString(context, this)
 }
+
 func (this *SipQuotedString) SetValue(context *ParseContext, value []byte) {
 	this.value.SetByteSlice(context, value)
+}
+
+func (this *SipQuotedString) GetAsByteSlice(context *ParseContext) []byte {
+	return this.value.GetAsByteSlice(context)
 }
 
 func (this *SipQuotedString) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {

@@ -7,8 +7,8 @@ import (
 )
 
 type SipHeaderContentLength struct {
-	size        uint32
-	encodeStart uint32 // record start position when encoding for modify length of sip msg
+	size      uint32
+	encodeEnd uint32 // record end position when encoding for modify length of sip msg
 }
 
 func NewSipHeaderContentLength(context *ParseContext) (*SipHeaderContentLength, AbnfPtr) {
@@ -23,7 +23,7 @@ func NewSipHeaderContentLength(context *ParseContext) (*SipHeaderContentLength, 
 
 func (this *SipHeaderContentLength) Init() {
 	this.size = 0
-	this.encodeStart = 0
+	this.encodeEnd = 0
 }
 
 func (this *SipHeaderContentLength) AllowMulti() bool    { return false }
@@ -68,8 +68,8 @@ func (this *SipHeaderContentLength) Encode(context *ParseContext, buf *bytes.Buf
 }
 
 func (this *SipHeaderContentLength) EncodeValue(context *ParseContext, buf *bytes.Buffer) {
-	buf.WriteString(fmt.Sprintf(ABNF_SIP_CONTENT_LENGGTH_PRINT_FMT, this.size))
-	this.encodeStart = uint32(len(buf.Bytes()) - ABNF_SIP_CONTENT_LENGGTH_SPACE)
+	buf.WriteString(fmt.Sprintf(ABNF_SIP_CONTENT_LENGTH_PRINT_FMT, this.size))
+	this.encodeEnd = uint32(len(buf.Bytes()))
 }
 
 func (this *SipHeaderContentLength) String(context *ParseContext) string {

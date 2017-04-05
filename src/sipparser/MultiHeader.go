@@ -34,7 +34,18 @@ func (this *SipMultiHeader) ShortName() []byte  { return this.info.ShortName() }
 
 func (this *SipMultiHeader) Size() int32 { return this.headers.Size() }
 
-func (this *SipMultiHeader) EqualNameBytes(context *ParseContext, name []byte) bool {
+func (this *SipMultiHeader) NameHasPrefixByteSlice(context *ParseContext, prefix []byte) bool {
+	if this.info != nil {
+		return HasPrefixByteSliceNoCase(this.info.name, prefix)
+	}
+	return this.name.HasPrefixByteSliceNoCase(context, prefix)
+}
+
+func (this *SipMultiHeader) SetNameByteSlice(context *ParseContext, name []byte) {
+	this.name.SetByteSlice(context, name)
+}
+
+func (this *SipMultiHeader) EqualNameByteSlice(context *ParseContext, name []byte) bool {
 	if this.info != nil {
 		if EqualNoCase(this.info.name, name) {
 			return true
@@ -45,7 +56,7 @@ func (this *SipMultiHeader) EqualNameBytes(context *ParseContext, name []byte) b
 }
 
 func (this *SipMultiHeader) EqualNameString(context *ParseContext, name string) bool {
-	return this.EqualNameBytes(context, StringToByteSlice(name))
+	return this.EqualNameByteSlice(context, StringToByteSlice(name))
 }
 
 func (this *SipMultiHeader) AddHeader(context *ParseContext, header AbnfPtr) {
@@ -86,10 +97,10 @@ func (this *SipMultiHeaders) Init() {
 
 func (this *SipMultiHeaders) Size() int32 { return this.Len() }
 func (this *SipMultiHeaders) Empty() bool { return this.Len() == 0 }
-func (this *SipMultiHeaders) GetHeaderByBytes(context *ParseContext, name []byte) (val *SipMultiHeader, ok bool) {
+func (this *SipMultiHeaders) GetHeaderByByteSlice(context *ParseContext, name []byte) (val *SipMultiHeader, ok bool) {
 	for e := this.Front(context); e != nil; e = e.Next(context) {
 		v := e.Value.GetSipMultiHeader(context)
-		if v.EqualNameBytes(context, name) {
+		if v.EqualNameByteSlice(context, name) {
 			return v, true
 		}
 	}
@@ -97,7 +108,28 @@ func (this *SipMultiHeaders) GetHeaderByBytes(context *ParseContext, name []byte
 }
 
 func (this *SipMultiHeaders) GetHeaderByString(context *ParseContext, name string) (val *SipMultiHeader, ok bool) {
-	return this.GetHeaderByBytes(context, StringToByteSlice(name))
+	return this.GetHeaderByByteSlice(context, StringToByteSlice(name))
+}
+
+// remove Content-* headers from sip message except Content-Length and Content-Type*/
+func (this *SipMultiHeaders) RemoveContentHeaders(context *ParseContext) {
+	prefix := StringToByteSlice("Content-")
+
+	for e := this.Front(context); e != nil; {
+		v := e.Value.GetSipMultiHeader(context)
+		if v.EqualNameString(context, ABNF_NAME_SIP_HDR_CONTENT_TYPE) ||
+			v.EqualNameString(context, ABNF_NAME_SIP_HDR_CONTENT_LENGTH) {
+			e = e.Next(context)
+			continue
+		}
+
+		if !v.NameHasPrefixByteSlice(context, prefix) {
+			e = e.Next(context)
+			continue
+		}
+
+		e = this.Remove(context, e)
+	}
 }
 
 func (this *SipMultiHeaders) AddHeader(context *ParseContext, header AbnfPtr) {

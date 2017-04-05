@@ -4,8 +4,8 @@ import (
 	"unsafe"
 )
 
-const ABNF_SIP_CONTENT_LENGGTH_SPACE = 10
-const ABNF_SIP_CONTENT_LENGGTH_PRINT_FMT = "%10d"
+const ABNF_SIP_CONTENT_LENGTH_SPACE = 10
+const ABNF_SIP_CONTENT_LENGTH_PRINT_FMT = "%10d"
 
 const (
 	// basic

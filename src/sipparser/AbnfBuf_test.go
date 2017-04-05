@@ -7,10 +7,6 @@ import (
 )
 
 func TestAbnfBufNew(t *testing.T) {
-	context := NewParseContext()
-	context.allocator = NewMemAllocator(1000)
-	prefix := FuncName()
-
 	testdata := []struct {
 		allocatorSize int32
 		ok            bool
@@ -22,6 +18,10 @@ func TestAbnfBufNew(t *testing.T) {
 		{1, false},
 		{7, false},
 	}
+
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1000)
+	prefix := FuncName()
 
 	for i, v := range testdata {
 
@@ -70,8 +70,6 @@ func TestAbnfBufNew(t *testing.T) {
 }
 
 func TestAbnfBufSetByteSlice(t *testing.T) {
-	context := NewParseContext()
-
 	testdata := []struct {
 		allocatorSize int32
 		buf           string
@@ -86,6 +84,7 @@ func TestAbnfBufSetByteSlice(t *testing.T) {
 		{10, "123", false, 0},
 	}
 
+	context := NewParseContext()
 	prefix := FuncName()
 
 	var buf *AbnfBuf
@@ -125,8 +124,6 @@ func TestAbnfBufSetByteSlice(t *testing.T) {
 }
 
 func TestAbnfBufSetByteSliceWithUnescape(t *testing.T) {
-	context := NewParseContext()
-
 	testdata := []struct {
 		allocatorSize int32
 		buf           string
@@ -144,6 +141,7 @@ func TestAbnfBufSetByteSliceWithUnescape(t *testing.T) {
 		{10, "123", 0, "123", false, 0},
 	}
 
+	context := NewParseContext()
 	prefix := FuncName()
 
 	var buf *AbnfBuf
@@ -182,10 +180,96 @@ func TestAbnfBufSetByteSliceWithUnescape(t *testing.T) {
 	}
 }
 
-func TestAbnfBufParseEnableEmpty(t *testing.T) {
-	context := NewParseContext()
-	context.allocator = NewMemAllocator(1000)
+func TestAbnfBufHasPrefixByteSlice(t *testing.T) {
+	testdata := []struct {
+		buf       string
+		prefix    string
+		hasPrefix bool
+	}{
+		{"abc-", "abc-", true},
 
+		{"", "", false},
+		{"abc-", "", false},
+		{"", "abc-", false},
+		{"abc-", "abc-def", false},
+		{"abc-as", "aBc-", false},
+		{"xa", "abc-", false},
+	}
+
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(10000)
+	prefix := FuncName()
+
+	var buf *AbnfBuf
+
+	for i, v := range testdata {
+		context.allocator.FreeAll()
+		buf, _ = NewAbnfBuf(context)
+		if buf == nil {
+			t.Errorf("%s[%d]: NewAbnfBuf failed\n", prefix, i)
+			continue
+		}
+		buf.SetString(context, v.buf)
+
+		hasPrefix := buf.HasPrefixByteSlice(context, []byte(v.prefix))
+
+		if !hasPrefix && v.hasPrefix {
+			t.Errorf("%s[%d]: should have prefix\n", prefix, i)
+			continue
+		}
+
+		if hasPrefix && !v.hasPrefix {
+			t.Errorf("%s[%d]: should not have prefix\n", prefix, i)
+			continue
+		}
+	}
+}
+
+func TestAbnfBufHasPrefixByteSliceNoCase(t *testing.T) {
+	testdata := []struct {
+		buf       string
+		prefix    string
+		hasPrefix bool
+	}{
+		{"abc-", "aBC-", true},
+
+		{"", "", false},
+		{"aBc-", "", false},
+		{"", "abc-", false},
+		{"abc-", "aBc-def", false},
+		{"xa", "Abc-", false},
+	}
+
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(10000)
+	prefix := FuncName()
+
+	var buf *AbnfBuf
+
+	for i, v := range testdata {
+		context.allocator.FreeAll()
+		buf, _ = NewAbnfBuf(context)
+		if buf == nil {
+			t.Errorf("%s[%d]: NewAbnfBuf failed\n", prefix, i)
+			continue
+		}
+		buf.SetString(context, v.buf)
+
+		hasPrefix := buf.HasPrefixByteSliceNoCase(context, []byte(v.prefix))
+
+		if !hasPrefix && v.hasPrefix {
+			t.Errorf("%s[%d]: should have prefix\n", prefix, i)
+			continue
+		}
+
+		if hasPrefix && !v.hasPrefix {
+			t.Errorf("%s[%d]: should not have prefix\n", prefix, i)
+			continue
+		}
+	}
+}
+
+func TestAbnfBufParseEnableEmpty(t *testing.T) {
 	testdata := []struct {
 		isInCharset func(ch byte) bool
 		src         string
@@ -198,7 +282,10 @@ func TestAbnfBufParseEnableEmpty(t *testing.T) {
 		{IsDigit, "01234abc", false, len("01234"), "01234"},
 		{IsDigit, "5678=bc", false, len("5678"), "5678"},
 	}
+
 	prefix := FuncName()
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1000)
 
 	for i, v := range testdata {
 		context.allocator.FreeAll()
@@ -238,9 +325,6 @@ func TestAbnfBufParseEnableEmpty(t *testing.T) {
 }
 
 func TestAbnfBufParse(t *testing.T) {
-	context := NewParseContext()
-	context.allocator = NewMemAllocator(1000)
-
 	testdata := []struct {
 		isInCharset func(ch byte) bool
 		src         string
@@ -255,6 +339,9 @@ func TestAbnfBufParse(t *testing.T) {
 		{IsDigit, "", false, 0, ""},
 		{IsDigit, "ad6789abc", false, 0, ""},
 	}
+
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1000)
 	prefix := FuncName()
 
 	for i, v := range testdata {
@@ -295,9 +382,6 @@ func TestAbnfBufParse(t *testing.T) {
 }
 
 func TestAbnfBufParseEscapableEnableEmpty(t *testing.T) {
-	context := NewParseContext()
-	context.allocator = NewMemAllocator(1000)
-
 	testdata := []struct {
 		isInCharset func(ch byte) bool
 		src         string
@@ -314,6 +398,9 @@ func TestAbnfBufParseEscapableEnableEmpty(t *testing.T) {
 
 		{IsDigit, "56%3x8=bc", false, false, len("56"), ""},
 	}
+
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1000)
 	prefix := FuncName()
 
 	for i, v := range testdata {
@@ -367,9 +454,6 @@ func TestAbnfBufParseEscapableEnableEmpty(t *testing.T) {
 }
 
 func TestAbnfBufParseEscapable(t *testing.T) {
-	context := NewParseContext()
-	context.allocator = NewMemAllocator(1000)
-
 	testdata := []struct {
 		isInCharset func(ch byte) bool
 		src         string
@@ -389,6 +473,9 @@ func TestAbnfBufParseEscapable(t *testing.T) {
 		{IsDigit, "01223%", false, len("01223"), ""},
 		{IsDigit, "01223%4", false, len("01223"), ""},
 	}
+
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1000)
 	prefix := FuncName()
 
 	for i, v := range testdata {

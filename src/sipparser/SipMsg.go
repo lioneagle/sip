@@ -74,18 +74,43 @@ func (this *SipMsg) ParseMultiBody(context *ParseContext, src []byte, pos int) (
 	return newPos, nil
 }
 
-func (this *SipMsg) Encode(context *ParseContext, buf *bytes.Buffer) error {
-	// @@TODO: calculate length of msg-body and create or modify Content-Length header
-	var contentLength *SipSingHeader
-	headerPtr, ok := this.headers.GetSingleHeaderParsed(context, ABNF_NAME_SIP_HDR_CONTENT_LENGTH)
-	if !ok {
-		contentLength, addr := NewSipSingleHeader(context)
-		if contentLength == nil {
-			return &AbnfError{"SipMsg  encode: out of memory for creating Content-Length", nil, 0}
-		}
-		info, _ := GetSipHeaderInfo(ABNF_NAME_SIP_HDR_CONTENT_LENGTH)
-		contentLength.info = info
+func (this *SipMsg) FindOrCreateBoundary(context *ParseContext) (boundary []byte) {
+	var parsedContentType *SipHeaderContentType
 
+	parsedPtr, ok := this.headers.GetSingleHeaderParsed(context, ABNF_NAME_SIP_HDR_CONTENT_TYPE)
+	if ok {
+		parsedContentType = parsedPtr.GetSipHeaderContentType(context)
+		boundary, ok = parsedContentType.GetBoundary(context)
+		if ok {
+			return boundary
+		}
+
+	} else {
+		// create Conten-Type
+		contentType, addr := this.headers.CreateSingleHeader(context, ABNF_NAME_SIP_HDR_CONTENT_TYPE)
+		if contentType == nil {
+			return nil
+		}
+		parsedContentType, parsedPtr = NewSipHeaderContentType(context)
+		if parsedContentType == nil {
+			return nil
+		}
+		contentType.parsed = parsedPtr
+		this.headers.singleHeaders.PushBack(context, addr)
+	}
+
+	/* create boundary */
+	boundary = StringToByteSlice("klsd12fsfj21sdfl1223sdf90asd")
+	parsedContentType.AddBoundary(context, boundary)
+
+	return boundary
+}
+
+func (this *SipMsg) Encode(context *ParseContext, buf *bytes.Buffer) error {
+	// create Content-Length header if not exist
+	err := this.headers.CreateContentLength(context, 0)
+	if err != nil {
+		return err
 	}
 
 	this.startLine.Encode(context, buf)
@@ -100,17 +125,27 @@ func (this *SipMsg) Encode(context *ParseContext, buf *bytes.Buffer) error {
 	if this.bodies.Size() == 1 {
 		this.bodies.EncodeSingle(context, buf)
 	} else {
-		// remove Content-* headers from sip message */
-		// @@TODO: get boundary from msg or create one
-		boundary := []byte("asassdada")
+		// remove Content-* headers from sip message except Content-Length and Content-Type*/
+		this.headers.RemoveContentHeaders(context)
+
+		boundary := this.FindOrCreateBoundary(context)
 		this.bodies.EncodeMulti(context, buf, boundary)
 	}
 
 	// modify Content-Length size or create Content-Length
-	bodySize := strconv.FormatUint(uint64(len(buf.Bytes())-bodyStart), 10)
+	bodySize := StringToByteSlice(strconv.FormatUint(uint64(len(buf.Bytes())-bodyStart), 10))
+	contentLength, ok := this.headers.GetSingleHeaderParsed(context, ABNF_NAME_SIP_HDR_CONTENT_LENGTH)
+	if !ok {
+		return &AbnfError{"SipMsg encode: no Content-Length after encoding msg-body", nil, 0}
+	}
+	encodeEnd := int(contentLength.GetSipHeaderContentLength(context).encodeEnd)
+	copy(buf.Bytes()[encodeEnd-len(bodySize):encodeEnd], bodySize)
 
+	return nil
 }
 
 func (this *SipMsg) String(context *ParseContext) string {
-	return AbnfEncoderToString(context, this)
+	var buf bytes.Buffer
+	this.Encode(context, &buf)
+	return buf.String()
 }

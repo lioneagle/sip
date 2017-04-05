@@ -16,7 +16,8 @@ func TestSipMsgParse(t *testing.T) {
 		newPos int
 		encode string
 	}{
-		{"INVITE sip:123@a.com SIP/2.0\r\nFrom: sip:abc@a.com;tag=1\r\nAllow: a, b\r\n\r\n", true, len("INVITE sip:123@a.com SIP/2.0\r\nFrom: sip:abc@a.com;tag=1\r\nAllow: a, b\r\n\r\n"), "INVITE sip:123@a.com SIP/2.0\r\nFrom: <sip:abc@a.com>;tag=1\r\nAllow: a, b\r\n\r\n"},
+		{"INVITE sip:123@a.com SIP/2.0\r\nFrom: sip:abc@a.com;tag=1\r\nAllow: a, b\r\nContent-Length: 123\r\n\r\n", true, len("INVITE sip:123@a.com SIP/2.0\r\nFrom: sip:abc@a.com;tag=1\r\nAllow: a, b\r\nContent-Length: 123\r\n\r\n"), "INVITE sip:123@a.com SIP/2.0\r\nFrom: <sip:abc@a.com>;tag=1\r\nContent-Length:          0\r\nAllow: a, b\r\n\r\n"},
+		{"INVITE sip:123@a.com SIP/2.0\r\nFrom: sip:abc@a.com;tag=1\r\nAllow: a, b\r\n\r\n", true, len("INVITE sip:123@a.com SIP/2.0\r\nFrom: sip:abc@a.com;tag=1\r\nAllow: a, b\r\n\r\n"), "INVITE sip:123@a.com SIP/2.0\r\nFrom: <sip:abc@a.com>;tag=1\r\nContent-Length:          0\r\nAllow: a, b\r\n\r\n"},
 
 		{" INVITE sip:123@a.com SIP/2.0\r\n", false, 0, ""},
 		{"INVITE sip:123@a.com SIP/2.0\r\n", false, len("INVITE sip:123@a.com SIP/2.0\r\n"), ""},

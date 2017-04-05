@@ -51,7 +51,113 @@ func TestSipHeaderContentTypeParse(t *testing.T) {
 			continue
 		}
 	}
+}
 
+func TestSipHeaderContentTypeGetBoundary(t *testing.T) {
+
+	testdata := []struct {
+		src         string
+		hasBoundary bool
+		boundary    string
+		encode      string
+	}{
+		{"Content-Type: application/sdp;boundary=abc", true, "abc", "Content-Type: application/sdp;boundary=abc"},
+		{"Content-Type: application/sdp;boundary=\"abc\"", true, "abc", "Content-Type: application/sdp;boundary=\"abc\""},
+
+		{"Content-Type: application/sdp", false, "", ""},
+		{"Content-Type: application/sdp;abc;yt;bound=1", false, "", ""},
+	}
+
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
+
+	for i, v := range testdata {
+		header, _ := NewSipHeaderContentType(context)
+		header.Parse(context, []byte(v.src), 0)
+		boundary, ok := header.GetBoundary(context)
+
+		if v.hasBoundary && !ok {
+			t.Errorf("%s[%d] failed: should have boundary\n", prefix, i)
+			continue
+		}
+
+		if !v.hasBoundary && ok {
+			t.Errorf("%s[%d] failed: should not have boundary, boundary = %s\n", prefix, i, boundary)
+			continue
+		}
+
+		if !v.hasBoundary {
+			continue
+		}
+
+		if string(boundary) != v.boundary {
+			t.Errorf("%s[%d] failed: wrong boundary = %s, wanted = %s\n", prefix, i, string(boundary), v.boundary)
+		}
+
+		if header.String(context) != v.encode {
+			t.Errorf("%s[%d] failed: wrong encode = %s, wanted = %s\n", prefix, i, header.String(context), v.encode)
+		}
+	}
+}
+
+func TestSipHeaderContentTypeAddBoundary(t *testing.T) {
+
+	testdata := []struct {
+		src      string
+		boundary string
+		encode   string
+	}{
+		{"Content-Type: application/sdp", "abc", "Content-Type: application/sdp;boundary=\"abc\""},
+	}
+
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
+
+	for i, v := range testdata {
+		header, _ := NewSipHeaderContentType(context)
+		header.Parse(context, []byte(v.src), 0)
+		err := header.AddBoundary(context, []byte(v.boundary))
+
+		if err != nil {
+			t.Errorf("%s[%d] failed: add boundary failed, err = %v\n", prefix, i, err)
+			continue
+		}
+
+		if header.String(context) != v.encode {
+			t.Errorf("%s[%d] failed: wrong encode = %s, wanted = %s\n", prefix, i, header.String(context), v.encode)
+		}
+	}
+}
+
+func TestSipHeaderContentTypeSetType(t *testing.T) {
+
+	testdata := []struct {
+		src      string
+		mainType string
+		subType  string
+		encode   string
+	}{
+		{"Content-Type: application/sdp", "app", "tcp", "Content-Type: app/tcp"},
+		{"Content-Type: application/sdp", "message", "sip", "Content-Type: message/sip"},
+		{"Content-Type: Application/sdp", "application", "isup", "Content-Type: application/isup"},
+	}
+
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
+
+	for i, v := range testdata {
+		header, _ := NewSipHeaderContentType(context)
+		header.Parse(context, []byte(v.src), 0)
+		header.SetMainType(context, v.mainType)
+		header.SetSubType(context, v.subType)
+
+		if header.String(context) != v.encode {
+			t.Errorf("%s[%d] failed: wrong encode = %s, wanted = %s\n", prefix, i, header.String(context), v.encode)
+		}
+	}
 }
 
 func BenchmarkSipHeaderContentTypeParse(b *testing.B) {

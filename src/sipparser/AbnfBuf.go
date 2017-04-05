@@ -99,6 +99,8 @@ func (this *AbnfBuf) SetByteSlice(context *ParseContext, buf []byte) {
 		this.SetExist()
 		copy(this.GetAsByteSlice(context), buf)
 	}
+
+	// remain unchanged
 	return
 }
 
@@ -215,6 +217,30 @@ func (this *AbnfBuf) simpleNotEqual(rhs *AbnfBuf) bool {
 	return (this.size != rhs.size) || (this.addr == ABNF_PTR_NIL) || (rhs.addr == ABNF_PTR_NIL)
 }
 
+func (this *AbnfBuf) simpleHaveNoPrefix(prefix []byte) bool {
+	if !this.Exist() || this.Empty() || this.addr == ABNF_PTR_NIL || len(prefix) == 0 {
+		return true
+	}
+
+	return this.Size() < int32(len(prefix))
+}
+
+func (this *AbnfBuf) HasPrefixByteSlice(context *ParseContext, prefix []byte) bool {
+	if this.simpleHaveNoPrefix(prefix) {
+		return false
+	}
+
+	return bytes.HasPrefix(this.GetAsByteSlice(context), prefix)
+}
+
+func (this *AbnfBuf) HasPrefixByteSliceNoCase(context *ParseContext, prefix []byte) bool {
+	if this.simpleHaveNoPrefix(prefix) {
+		return false
+	}
+
+	return EqualNoCase(this.GetAsByteSlice(context)[:len(prefix)], prefix)
+}
+
 func (this *AbnfBuf) Equal(context *ParseContext, rhs *AbnfBuf) bool {
 	if this.addr == rhs.addr {
 		return true
@@ -241,6 +267,7 @@ func (this *AbnfBuf) EqualNoCase(context *ParseContext, rhs *AbnfBuf) bool {
 	if this.Empty() {
 		return true
 	}
+
 	return EqualNoCase(this.GetAsByteSlice(context), rhs.GetAsByteSlice(context))
 }
 

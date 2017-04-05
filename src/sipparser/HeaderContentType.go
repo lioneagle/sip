@@ -94,6 +94,38 @@ func (this *SipHeaderContentType) EncodeValue(context *ParseContext, buf *bytes.
 	this.params.Encode(context, buf, ';')
 }
 
+func (this *SipHeaderContentType) GetBoundary(context *ParseContext) (boundary []byte, ok bool) {
+	param, ok := this.params.GetParam(context, "boundary")
+	if !ok {
+		return nil, false
+	}
+
+	boundary, ok = param.GetValueAsByteSlice(context)
+	if !ok {
+		return nil, false
+	}
+	return boundary, ok
+}
+
+func (this *SipHeaderContentType) SetMainType(context *ParseContext, mainType string) {
+	this.mainType.SetString(context, mainType)
+}
+
+func (this *SipHeaderContentType) SetSubType(context *ParseContext, subType string) {
+	this.subType.SetString(context, subType)
+}
+
+func (this *SipHeaderContentType) AddBoundary(context *ParseContext, boundary []byte) error {
+	param, addr := NewSipGenericParam(context)
+	if param == nil {
+		return &AbnfError{"Content-Type parse: out of memory for adding boundary", nil, 0}
+	}
+	param.SetNameAsString(context, "boundary")
+	param.SetValueQuotedString(context, boundary)
+	this.params.PushBack(context, addr)
+	return nil
+}
+
 func (this *SipHeaderContentType) String(context *ParseContext) string {
 	return AbnfEncoderToString(context, this)
 }
@@ -101,7 +133,7 @@ func (this *SipHeaderContentType) String(context *ParseContext) string {
 func ParseSipContentType(context *ParseContext, src []byte, pos int) (newPos int, parsed AbnfPtr, err error) {
 	header, addr := NewSipHeaderContentType(context)
 	if header == nil || addr == ABNF_PTR_NIL {
-		return newPos, ABNF_PTR_NIL, &AbnfError{"Content-Type parse: out of memory for new header", src, newPos}
+		return newPos, ABNF_PTR_NIL, &AbnfError{"Content-Type parse: out of memory for new header", nil, 0}
 	}
 	newPos, err = header.ParseValue(context, src, pos)
 	return newPos, addr, err

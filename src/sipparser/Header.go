@@ -165,6 +165,45 @@ func (this *SipHeaders) GetUnknownHeader(context *ParseContext, name string) (he
 	return this.unknownHeaders.GetHeaderByString(context, name)
 }
 
+func (this *SipHeaders) CreateSingleHeader(context *ParseContext, name string) (*SipSingleHeader, AbnfPtr) {
+	header, addr := NewSipSingleHeader(context)
+	if header == nil {
+		return nil, ABNF_PTR_NIL
+	}
+	info, _ := GetSipHeaderInfo(name)
+	header.info = info
+	return header, addr
+}
+
+// remove Content-* headers from sip message except Content-Length and Content-Type*/
+func (this *SipHeaders) RemoveContentHeaders(context *ParseContext) {
+	this.singleHeaders.RemoveContentHeaders(context)
+	this.multiHeaders.RemoveContentHeaders(context)
+	this.unknownHeaders.RemoveContentHeaders(context)
+}
+
+func (this *SipHeaders) CreateContentLength(context *ParseContext, size uint32) error {
+	headerPtr, ok := this.GetSingleHeaderParsed(context, ABNF_NAME_SIP_HDR_CONTENT_LENGTH)
+	if ok {
+		headerPtr.GetSipHeaderContentLength(context).size = size
+		return nil
+	}
+
+	contentLength, addr := this.CreateSingleHeader(context, ABNF_NAME_SIP_HDR_CONTENT_LENGTH)
+	if contentLength == nil {
+		return &AbnfError{"SipHeaders: out of memory for creating Content-Length", nil, 0}
+	}
+
+	parsedContentLength, parsedPtr := NewSipHeaderContentLength(context)
+	if parsedContentLength == nil {
+		return &AbnfError{"SipHeaders  encode: out of memory for creating parsed Content-Length", nil, 0}
+	}
+	parsedContentLength.size = size
+	contentLength.parsed = parsedPtr
+	this.singleHeaders.AddHeader(context, addr)
+	return nil
+}
+
 func (this *SipHeaders) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
 
@@ -213,7 +252,6 @@ func (this *SipHeaders) ParseUnprocessedHeader(context *ParseContext, name AbnfR
 	if header == nil {
 		return newPos, &AbnfError{"SipHeaders  parse: out of memory for unknown headers", src, newPos}
 	}
-	header.name.SetExist()
 	header.name.SetValue(context, src[name.Begin:name.End])
 	header.value, newPos, err = ParseHeaderValue(context, src, newPos)
 	if err != nil {
@@ -226,7 +264,7 @@ func (this *SipHeaders) ParseUnprocessedHeader(context *ParseContext, name AbnfR
 func (this *SipHeaders) ParseSingleKnownHeader(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (newPos int, err error) {
 	newPos = pos
 	//*
-	_, ok := this.singleHeaders.GetHeaderByBytes(context, info.name)
+	_, ok := this.singleHeaders.GetHeaderByByteSlice(context, info.name)
 	if ok {
 		// discard this header
 		_, newPos, err = ParseHeaderValue(context, src, newPos)
@@ -247,10 +285,8 @@ func (this *SipHeaders) ParseSingleKnownHeader(context *ParseContext, src []byte
 		}
 		newHeader.info = info
 		newHeader.parsed = parsed
-		newHeader.name.SetExist()
 		newHeader.name.SetValue(context, info.name)
 		if newPos > begin {
-			newHeader.value.SetExist()
 			newHeader.value.SetValue(context, src[begin:newPos])
 		}
 		this.singleHeaders.AddHeader(context, addr)
@@ -261,7 +297,6 @@ func (this *SipHeaders) ParseSingleKnownHeader(context *ParseContext, src []byte
 			return newPos, &AbnfError{"SipHeaders  parse: out of memory for known unprocessed single headers", src, newPos}
 		}
 		newHeader.info = info
-		newHeader.name.SetExist()
 		newHeader.name.SetValue(context, info.name)
 		newHeader.value, newPos, err = ParseHeaderValue(context, src, newPos)
 		if err != nil {
@@ -277,7 +312,7 @@ func (this *SipHeaders) ParseMultiKnownHeader(context *ParseContext, src []byte,
 	var multiHeader *SipMultiHeader
 
 	newPos = pos
-	multiHeader, ok := this.multiHeaders.GetHeaderByBytes(context, info.name)
+	multiHeader, ok := this.multiHeaders.GetHeaderByByteSlice(context, info.name)
 	if !ok {
 		var addr AbnfPtr
 		multiHeader, addr = NewSipMultiHeader(context)
@@ -285,8 +320,7 @@ func (this *SipHeaders) ParseMultiKnownHeader(context *ParseContext, src []byte,
 			return newPos, &AbnfError{"SipHeaders  parse: out of memory for known multi headers", src, newPos}
 		}
 		multiHeader.info = info
-		multiHeader.name.SetExist()
-		multiHeader.name.SetValue(context, info.name)
+		multiHeader.SetNameByteSlice(context, info.name)
 		this.multiHeaders.AddHeader(context, addr)
 	}
 
@@ -306,11 +340,9 @@ func (this *SipHeaders) ParseMultiKnownHeader(context *ParseContext, src []byte,
 			}
 			newHeader.info = info
 			newHeader.parsed = parsed
-			newHeader.name.SetExist()
-			newHeader.name.SetValue(context, info.name)
+			newHeader.SetNameByteSlice(context, info.name)
 			if newPos > begin {
-				newHeader.value.SetExist()
-				newHeader.value.SetValue(context, src[begin:newPos])
+				newHeader.SetValueByteSlice(context, src[begin:newPos])
 			}
 			multiHeader.AddHeader(context, addr)
 
@@ -330,8 +362,7 @@ func (this *SipHeaders) ParseMultiKnownHeader(context *ParseContext, src []byte,
 			return newPos, &AbnfError{"SipHeaders  parse: out of memory for known unprocessed multi headers", src, newPos}
 		}
 		newHeader.info = info
-		newHeader.name.SetExist()
-		newHeader.name.SetValue(context, info.name)
+		newHeader.SetNameByteSlice(context, info.name)
 		newHeader.value, newPos, err = ParseHeaderValue(context, src, newPos)
 		if err != nil {
 			return newPos, err
@@ -360,7 +391,6 @@ func ParseHeaderValue(context *ParseContext, src []byte, pos int) (value AbnfBuf
 	}
 
 	if begin > newPos {
-		value.SetExist()
 		value.SetValue(context, src[newPos:begin])
 	}
 

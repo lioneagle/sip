@@ -36,7 +36,22 @@ func (this *SipSingleHeader) ShortName() []byte  { return this.info.ShortName() 
 func (this *SipSingleHeader) IsParsed() bool     { return this.parsed != ABNF_PTR_NIL }
 func (this *SipSingleHeader) GetParsed() AbnfPtr { return this.parsed }
 
-func (this *SipSingleHeader) EqualNameBytes(context *ParseContext, name []byte) bool {
+func (this *SipSingleHeader) NameHasPrefixBytes(context *ParseContext, prefix []byte) bool {
+	if this.info != nil {
+		return HasPrefixByteSliceNoCase(this.info.name, prefix)
+	}
+	return this.name.HasPrefixByteSliceNoCase(context, prefix)
+}
+
+func (this *SipSingleHeader) SetNameByteSlice(context *ParseContext, name []byte) {
+	this.name.SetByteSlice(context, name)
+}
+
+func (this *SipSingleHeader) SetValueByteSlice(context *ParseContext, value []byte) {
+	this.name.SetByteSlice(context, value)
+}
+
+func (this *SipSingleHeader) EqualNameByteSlice(context *ParseContext, name []byte) bool {
 	if this.info != nil {
 		if EqualNoCase(this.info.name, name) {
 			return true
@@ -47,7 +62,7 @@ func (this *SipSingleHeader) EqualNameBytes(context *ParseContext, name []byte) 
 }
 
 func (this *SipSingleHeader) EqualNameString(context *ParseContext, name string) bool {
-	return this.EqualNameBytes(context, StringToByteSlice(name))
+	return this.EqualNameByteSlice(context, StringToByteSlice(name))
 }
 
 func (this *SipSingleHeader) Encode(context *ParseContext, buf *bytes.Buffer) {
@@ -92,10 +107,10 @@ func (this *SipSingleHeaders) Init() {
 
 func (this *SipSingleHeaders) Size() int32 { return this.Len() }
 func (this *SipSingleHeaders) Empty() bool { return this.Len() == 0 }
-func (this *SipSingleHeaders) GetHeaderByBytes(context *ParseContext, name []byte) (val *SipSingleHeader, ok bool) {
+func (this *SipSingleHeaders) GetHeaderByByteSlice(context *ParseContext, name []byte) (val *SipSingleHeader, ok bool) {
 	for e := this.Front(context); e != nil; e = e.Next(context) {
 		v := e.Value.GetSipSingleHeader(context)
-		if v.EqualNameBytes(context, name) {
+		if v.EqualNameByteSlice(context, name) {
 			return v, true
 		}
 	}
@@ -104,7 +119,28 @@ func (this *SipSingleHeaders) GetHeaderByBytes(context *ParseContext, name []byt
 }
 
 func (this *SipSingleHeaders) GetHeaderByString(context *ParseContext, name string) (val *SipSingleHeader, ok bool) {
-	return this.GetHeaderByBytes(context, StringToByteSlice(name))
+	return this.GetHeaderByByteSlice(context, StringToByteSlice(name))
+}
+
+// remove Content-* headers from sip message except Content-Length and Content-Type*/
+func (this *SipSingleHeaders) RemoveContentHeaders(context *ParseContext) {
+	prefix := StringToByteSlice("Content-")
+
+	for e := this.Front(context); e != nil; {
+		v := e.Value.GetSipSingleHeader(context)
+		if v.EqualNameString(context, ABNF_NAME_SIP_HDR_CONTENT_TYPE) ||
+			v.EqualNameString(context, ABNF_NAME_SIP_HDR_CONTENT_LENGTH) {
+			e = e.Next(context)
+			continue
+		}
+
+		if !v.NameHasPrefixBytes(context, prefix) {
+			e = e.Next(context)
+			continue
+		}
+
+		e = this.Remove(context, e)
+	}
 }
 
 func (this *SipSingleHeaders) GetHeaderParsedByString(context *ParseContext, name string) (parsed AbnfPtr, ok bool) {

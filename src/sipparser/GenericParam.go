@@ -17,7 +17,7 @@ type SipGenericParam struct {
 	name      AbnfBuf
 	valueType int32
 	value     AbnfPtr
-	parsed    AbnfPtr
+	//parsed    AbnfPtr
 }
 
 func NewSipGenericParam(context *ParseContext) (*SipGenericParam, AbnfPtr) {
@@ -34,7 +34,7 @@ func (this *SipGenericParam) Init() {
 	this.name.Init()
 	this.valueType = SIP_GENERIC_VALUE_TYPE_NOT_EXIST
 	this.value = ABNF_PTR_NIL
-	this.parsed = ABNF_PTR_NIL
+	//this.parsed = ABNF_PTR_NIL
 }
 
 /*
@@ -92,6 +92,33 @@ func (this *SipGenericParam) Parse(context *ParseContext, src []byte, pos int) (
 	return newPos, nil
 }
 
+func (this *SipGenericParam) SetNameAsString(context *ParseContext, name string) {
+	this.name.SetString(context, name)
+}
+
+func (this *SipGenericParam) SetValueQuotedString(context *ParseContext, value []byte) {
+	this.valueType = SIP_GENERIC_VALUE_TYPE_QUOTED_STRING
+
+	quotedString, addr := NewSipQuotedString(context)
+	if quotedString == nil {
+		return
+	}
+
+	quotedString.SetValue(context, value)
+	this.value = addr
+}
+
+func (this *SipGenericParam) GetValueAsByteSlice(context *ParseContext) ([]byte, bool) {
+	if this.valueType != SIP_GENERIC_VALUE_TYPE_NOT_EXIST && this.value != ABNF_PTR_NIL {
+		if this.valueType == SIP_GENERIC_VALUE_TYPE_TOKEN {
+			return this.value.GetAbnfBuf(context).GetAsByteSlice(context), true
+		} else if this.valueType == SIP_GENERIC_VALUE_TYPE_QUOTED_STRING {
+			return this.value.GetSipQuotedString(context).GetAsByteSlice(context), true
+		}
+	}
+	return nil, false
+}
+
 func (this *SipGenericParam) Encode(context *ParseContext, buf *bytes.Buffer) {
 	buf.Write(Escape(this.name.GetAsByteSlice(context), IsSipPname))
 	if this.valueType != SIP_GENERIC_VALUE_TYPE_NOT_EXIST && this.value != ABNF_PTR_NIL {
@@ -129,6 +156,7 @@ func (this *SipGenericParams) Init() {
 
 func (this *SipGenericParams) Size() int32 { return this.Len() }
 func (this *SipGenericParams) Empty() bool { return this.Len() == 0 }
+
 func (this *SipGenericParams) GetParam(context *ParseContext, name string) (val *SipGenericParam, ok bool) {
 	for e := this.Front(context); e != nil; e = e.Next(context) {
 		v := e.Value.GetSipGenericParam(context)

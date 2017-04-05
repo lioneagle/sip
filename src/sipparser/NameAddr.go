@@ -81,7 +81,6 @@ func (this *SipDisplayName) Parse(context *ParseContext, src []byte, pos int) (n
 		if name == nil {
 			return newPos, &AbnfError{"DisplayName parse: out of memory after tokens", src, newPos}
 		}
-		name.SetExist()
 		name.SetValue(context, src[nameBegin:newPos])
 		this.value = addr
 	}

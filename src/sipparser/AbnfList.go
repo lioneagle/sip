@@ -138,7 +138,7 @@ func (this *AbnfList) PopBack(context *ParseContext) *AbnfListNode {
 	tail.next = ABNF_PTR_NIL
 	tail.prev = ABNF_PTR_NIL
 	this.size--
-	return tail
+	return nil
 }
 
 func (this *AbnfList) PopFront(context *ParseContext) *AbnfListNode {
@@ -159,12 +159,16 @@ func (this *AbnfList) PopFront(context *ParseContext) *AbnfListNode {
 	head.next = ABNF_PTR_NIL
 	head.prev = ABNF_PTR_NIL
 	this.size--
-	return head
+
+	if this.head == ABNF_PTR_NIL {
+		return nil
+	}
+	return this.head.GetAbnfListNode(context)
 }
 
 func (this *AbnfList) Remove(context *ParseContext, e *AbnfListNode) *AbnfListNode {
 	if this.size == 0 {
-		return e
+		return nil
 	}
 
 	if e.prev == ABNF_PTR_NIL {
@@ -176,12 +180,13 @@ func (this *AbnfList) Remove(context *ParseContext, e *AbnfListNode) *AbnfListNo
 	}
 
 	e.prev.GetAbnfListNode(context).next = e.next
-	e.next.GetAbnfListNode(context).prev = e.prev
+	next := e.next.GetAbnfListNode(context)
+	next.prev = e.prev
 
 	e.next = ABNF_PTR_NIL
 	e.prev = ABNF_PTR_NIL
 	this.size--
-	return e
+	return next
 }
 
 func (this *AbnfList) RemoveAll(context *ParseContext) {

@@ -148,8 +148,6 @@ func (this *TelUri) ParseGlobalNumber(context *ParseContext, src []byte, pos int
 		return newPos, &AbnfError{"tel-uri parse: global-number is empty", src, newPos}
 	}
 
-	this.number.SetExist()
-
 	return newPos, nil
 }
 
@@ -164,8 +162,6 @@ func (this *TelUri) ParseLocalNumber(context *ParseContext, src []byte, pos int)
 	if this.number.Empty() {
 		return newPos, &AbnfError{"tel-uri parse: local-number is empty", src, newPos}
 	}
-
-	this.number.SetExist()
 
 	return newPos, nil
 }

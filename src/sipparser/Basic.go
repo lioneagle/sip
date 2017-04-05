@@ -59,7 +59,7 @@ func EqualNoCase(s1, s2 []byte) bool {
 	return CompareNoCase(s1, s2) == 0
 }
 
-func Unescape(context *ParseContext, src []byte) (dst []byte) {
+func Unescape(src []byte) (dst []byte) {
 	if bytes.IndexByte(src, '%') == -1 {
 		return src
 	}
@@ -75,6 +75,17 @@ func Unescape(context *ParseContext, src []byte) (dst []byte) {
 	}
 
 	return dst
+}
+
+func HasPrefixByteSliceNoCase(s1, s2 []byte) bool {
+	if len(s1) < len(s2) {
+		return false
+	}
+
+	if len(s2) <= 0 {
+		return false
+	}
+	return EqualNoCase(s1[:len(s2)], s2)
 }
 
 func unescapeToByte(src []byte) byte {

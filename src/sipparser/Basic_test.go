@@ -152,12 +152,10 @@ func TestEscape(t *testing.T) {
 	}
 
 	chars := makeFullCharset()
-	context := NewParseContext()
-	context.allocator = NewMemAllocator(1024 * 30)
 
 	for i, v := range wanted {
 		u := Escape(chars, v.isInCharset)
-		if bytes.Compare(Unescape(context, u), chars) != 0 {
+		if bytes.Compare(Unescape(u), chars) != 0 {
 			t.Errorf("TestEscape[%d]: %s failed\n", i, v.name)
 		}
 	}
