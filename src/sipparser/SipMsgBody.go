@@ -36,6 +36,10 @@ func (this *SipMsgBody) Encode(context *ParseContext, buf *bytes.Buffer) {
 	this.body.Encode(context, buf)
 }
 
+func (this *SipMsgBody) String(context *ParseContext) string {
+	return AbnfEncoderToString(context, this)
+}
+
 type SipMsgBodies struct {
 	AbnfList
 }
@@ -56,6 +60,10 @@ func (this *SipMsgBodies) Init() {
 
 func (this *SipMsgBodies) Size() int32 { return this.Len() }
 func (this *SipMsgBodies) Empty() bool { return this.Len() == 0 }
+
+func (this *SipMsgBodies) AddBody(context *ParseContext, body AbnfPtr) {
+	this.PushBack(context, body)
+}
 
 func (this *SipMsgBodies) EncodeSingle(context *ParseContext, buf *bytes.Buffer) {
 	e := this.Front(context)
@@ -134,4 +142,16 @@ func (this *SipMsgBodies) EncodeMulti(context *ParseContext, buf *bytes.Buffer, 
 	buf.WriteString("--")
 	buf.Write(boundary)
 	buf.WriteString("--")
+}
+
+func (this *SipMsgBodies) StringSingle(context *ParseContext) string {
+	var buf bytes.Buffer
+	this.EncodeSingle(context, &buf)
+	return buf.String()
+}
+
+func (this *SipMsgBodies) StringMulti(context *ParseContext, boundary []byte) string {
+	var buf bytes.Buffer
+	this.EncodeMulti(context, &buf, boundary)
+	return buf.String()
 }

@@ -3,6 +3,7 @@ package sipparser
 import (
 	"bytes"
 	//"fmt"
+	"strings"
 )
 
 var total_headers int
@@ -30,6 +31,7 @@ var g_SipHeaderFullNameMaps = map[string]string{
 }
 
 func GetSipHeaderFullName(name string) (fullName string) {
+	name = strings.ToLower(name)
 	fullName, ok := g_SipHeaderFullNameMaps[name]
 	if !ok {
 		return name
@@ -61,42 +63,43 @@ func (this *SipHeaderInfo) HasShortName() bool { return this.hasShortName }
 func (this *SipHeaderInfo) ShortName() []byte  { return this.shortName }
 
 var g_SipHeaderInfoMaps = map[string]SipHeaderInfo{
-	"From":    {name: []byte("From"), hasShortName: true, shortName: []byte("f"), needParse: true, parseFunc: ParseSipFrom, encodeFunc: EncodeSipFromValue},
-	"To":      {name: []byte("To"), hasShortName: true, shortName: []byte("t"), needParse: true, parseFunc: ParseSipTo, encodeFunc: EncodeSipToValue},
-	"Via":     {name: []byte("Via"), hasShortName: true, shortName: []byte("v"), allowMulti: true, needParse: true, parseFunc: ParseSipVia, encodeFunc: EncodeSipViaValue},
-	"Call-ID": {name: []byte("Call-ID"), hasShortName: true, shortName: []byte("i"), needParse: true, parseFunc: ParseSipCallId, encodeFunc: EncodeSipCallIdValue},
-	"CSeq":    {name: []byte("CSeq"), needParse: true, parseFunc: ParseSipCseq, encodeFunc: EncodeSipCseqValue},
+	"from":    {name: []byte("From"), hasShortName: true, shortName: []byte("f"), needParse: true, parseFunc: ParseSipFrom, encodeFunc: EncodeSipFromValue},
+	"to":      {name: []byte("To"), hasShortName: true, shortName: []byte("t"), needParse: true, parseFunc: ParseSipTo, encodeFunc: EncodeSipToValue},
+	"via":     {name: []byte("Via"), hasShortName: true, shortName: []byte("v"), allowMulti: true, needParse: true, parseFunc: ParseSipVia, encodeFunc: EncodeSipViaValue},
+	"call-id": {name: []byte("Call-ID"), hasShortName: true, shortName: []byte("i"), needParse: true, parseFunc: ParseSipCallId, encodeFunc: EncodeSipCallIdValue},
+	"cseq":    {name: []byte("CSeq"), needParse: true, parseFunc: ParseSipCseq, encodeFunc: EncodeSipCseqValue},
 
-	"Allow":               {name: []byte("Allow"), allowMulti: true},
-	"Contact":             {name: []byte("Contact"), hasShortName: true, shortName: []byte("m"), allowMulti: true, needParse: true, parseFunc: ParseSipContact, encodeFunc: EncodeSipContactValue},
-	"Content-Disposition": {name: []byte("Content-Disposition"), needParse: true, parseFunc: ParseSipContentDisposition, encodeFunc: EncodeSipContentDispositionValue},
-	"Content-Encoding":    {name: []byte("Content-Encoding"), hasShortName: true, shortName: []byte("e"), allowMulti: true},
-	"Content-Length":      {name: []byte("Content-Length"), hasShortName: true, shortName: []byte("l"), needParse: true, parseFunc: ParseSipContentLength, encodeFunc: EncodeSipContentLengthValue},
-	"Content-Type":        {name: []byte("Content-Type"), hasShortName: true, shortName: []byte("c"), needParse: true, parseFunc: ParseSipContentType, encodeFunc: EncodeSipContentTypeValue},
+	"allow":               {name: []byte("Allow"), allowMulti: true},
+	"contact":             {name: []byte("Contact"), hasShortName: true, shortName: []byte("m"), allowMulti: true, needParse: true, parseFunc: ParseSipContact, encodeFunc: EncodeSipContactValue},
+	"content-disposition": {name: []byte("Content-Disposition"), needParse: true, parseFunc: ParseSipContentDisposition, encodeFunc: EncodeSipContentDispositionValue},
+	"content-encoding":    {name: []byte("Content-Encoding"), hasShortName: true, shortName: []byte("e"), allowMulti: true},
+	"content-length":      {name: []byte("Content-Length"), hasShortName: true, shortName: []byte("l"), needParse: true, parseFunc: ParseSipContentLength, encodeFunc: EncodeSipContentLengthValue},
+	"content-type":        {name: []byte("Content-Type"), hasShortName: true, shortName: []byte("c"), needParse: true, parseFunc: ParseSipContentType, encodeFunc: EncodeSipContentTypeValue},
 
-	"Date": {name: []byte("Date")},
+	"date": {name: []byte("Date")},
 
-	"Max-Forwards": {name: []byte("Max-Forwards"), needParse: true, parseFunc: ParseSipMaxForwards, encodeFunc: EncodeSipMaxForwardsValue},
+	"max-forwards": {name: []byte("Max-Forwards"), needParse: true, parseFunc: ParseSipMaxForwards, encodeFunc: EncodeSipMaxForwardsValue},
 
-	"Record-Route": {name: []byte("Record-Route"), allowMulti: true, needParse: true, parseFunc: ParseSipRecordRoute, encodeFunc: EncodeSipRecordRouteValue},
-	"Route":        {name: []byte("Route"), allowMulti: true, needParse: true, parseFunc: ParseSipRoute, encodeFunc: EncodeSipRouteValue},
+	"record-route": {name: []byte("Record-Route"), allowMulti: true, needParse: true, parseFunc: ParseSipRecordRoute, encodeFunc: EncodeSipRecordRouteValue},
+	"route":        {name: []byte("Route"), allowMulti: true, needParse: true, parseFunc: ParseSipRoute, encodeFunc: EncodeSipRouteValue},
 
-	"Subject":   {name: []byte("Subject"), hasShortName: true, shortName: []byte("s")},
-	"Supported": {name: []byte("Supported"), hasShortName: true, shortName: []byte("k"), allowMulti: true},
+	"subject":   {name: []byte("Subject"), hasShortName: true, shortName: []byte("s")},
+	"supported": {name: []byte("Supported"), hasShortName: true, shortName: []byte("k"), allowMulti: true},
 
-	"Allow-Events": {name: []byte("Allow-Events"), hasShortName: true, shortName: []byte("u")},
-	"Event":        {name: []byte("Event"), hasShortName: true, shortName: []byte("o")},
+	"allow-events": {name: []byte("Allow-Events"), hasShortName: true, shortName: []byte("u")},
+	"event":        {name: []byte("Event"), hasShortName: true, shortName: []byte("o")},
 
-	"Refer-To":            {name: []byte("Refer-To"), hasShortName: true, shortName: []byte("r")},
-	"Accept-Contact":      {name: []byte("Accept-Contact"), hasShortName: true, shortName: []byte("a"), allowMulti: true},
-	"Reject-Contact":      {name: []byte("Reject-Contact"), hasShortName: true, shortName: []byte("j"), allowMulti: true},
-	"Request-Disposition": {name: []byte("Request-Disposition"), hasShortName: true, shortName: []byte("d"), allowMulti: true},
+	"refer-to":            {name: []byte("Refer-To"), hasShortName: true, shortName: []byte("r")},
+	"accept-contact":      {name: []byte("Accept-Contact"), hasShortName: true, shortName: []byte("a"), allowMulti: true},
+	"reject-contact":      {name: []byte("Reject-Contact"), hasShortName: true, shortName: []byte("j"), allowMulti: true},
+	"request-disposition": {name: []byte("Request-Disposition"), hasShortName: true, shortName: []byte("d"), allowMulti: true},
 
-	"Referred-By":     {name: []byte("Referred-By"), hasShortName: true, shortName: []byte("b")},
-	"Session-Expires": {name: []byte("Session-Expires"), hasShortName: true, shortName: []byte("x")},
+	"referred-by":     {name: []byte("Referred-By"), hasShortName: true, shortName: []byte("b")},
+	"session-expires": {name: []byte("Session-Expires"), hasShortName: true, shortName: []byte("x")},
 }
 
 func GetSipHeaderInfo(name string) (info *SipHeaderInfo, ok bool) {
+	name = strings.ToLower(name)
 	info1, ok := g_SipHeaderInfoMaps[name]
 	if !ok {
 		return nil, false
@@ -163,6 +166,18 @@ func (this *SipHeaders) GetMultiHeader(context *ParseContext, name string) (head
 
 func (this *SipHeaders) GetUnknownHeader(context *ParseContext, name string) (header *SipSingleHeader, ok bool) {
 	return this.unknownHeaders.GetHeaderByString(context, name)
+}
+
+func (this *SipHeaders) GenerateAndAddSingleHeader(context *ParseContext, name, value string) (*SipSingleHeader, AbnfPtr) {
+	return this.singleHeaders.GenerateAndAddHeader(context, name, value)
+}
+
+func (this *SipHeaders) GenerateAndAddMultiHeader(context *ParseContext, name, value string) (*SipSingleHeader, AbnfPtr) {
+	return this.multiHeaders.GenerateAndAddHeader(context, name, value)
+}
+
+func (this *SipHeaders) GenerateAndAddUnknownHeader(context *ParseContext, name, value string) (*SipSingleHeader, AbnfPtr) {
+	return this.unknownHeaders.GenerateAndAddHeader(context, name, value)
 }
 
 func (this *SipHeaders) CreateSingleHeader(context *ParseContext, name string) (*SipSingleHeader, AbnfPtr) {

@@ -32,6 +32,10 @@ func (this *SipMultiHeader) HasInfo() bool      { return this.info != nil }
 func (this *SipMultiHeader) HasShortName() bool { return this.HasInfo() && this.info.HasShortName() }
 func (this *SipMultiHeader) ShortName() []byte  { return this.info.ShortName() }
 
+func (this *SipMultiHeader) SetInfo(name string) {
+	this.info, _ = GetSipHeaderInfo(name)
+}
+
 func (this *SipMultiHeader) Size() int32 { return this.headers.Size() }
 
 func (this *SipMultiHeader) NameHasPrefixByteSlice(context *ParseContext, prefix []byte) bool {
@@ -61,6 +65,16 @@ func (this *SipMultiHeader) EqualNameString(context *ParseContext, name string) 
 
 func (this *SipMultiHeader) AddHeader(context *ParseContext, header AbnfPtr) {
 	this.headers.AddHeader(context, header)
+}
+
+func (this *SipMultiHeader) GenerateAndAddHeader(context *ParseContext, name, value string) (*SipSingleHeader, AbnfPtr) {
+	header, addr := GenerateSingleHeader(context, name, value)
+	if header == nil {
+		return nil, ABNF_PTR_NIL
+	}
+
+	this.AddHeader(context, addr)
+	return header, addr
 }
 
 func (this *SipMultiHeader) Encode(context *ParseContext, buf *bytes.Buffer) {
@@ -134,6 +148,20 @@ func (this *SipMultiHeaders) RemoveContentHeaders(context *ParseContext) {
 
 func (this *SipMultiHeaders) AddHeader(context *ParseContext, header AbnfPtr) {
 	this.PushBack(context, header)
+}
+
+func (this *SipMultiHeaders) GenerateAndAddHeader(context *ParseContext, name, value string) (*SipSingleHeader, AbnfPtr) {
+	multiHeader, ok := this.GetHeaderByByteSlice(context, StringToByteSlice(name))
+	if multiHeader == nil || !ok {
+		var addr AbnfPtr
+		multiHeader, addr = NewSipMultiHeader(context)
+		if multiHeader == nil {
+			return nil, ABNF_PTR_NIL
+		}
+		multiHeader.SetNameByteSlice(context, StringToByteSlice(name))
+		this.AddHeader(context, addr)
+	}
+	return multiHeader.GenerateAndAddHeader(context, name, value)
 }
 
 func (this *SipMultiHeaders) Encode(context *ParseContext, buf *bytes.Buffer) {

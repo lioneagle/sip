@@ -95,12 +95,14 @@ func (this *SipMsg) FindOrCreateBoundary(context *ParseContext) (boundary []byte
 		if parsedContentType == nil {
 			return nil
 		}
+		parsedContentType.SetMainType(context, "multipart")
+		parsedContentType.SetSubType(context, "mixed")
 		contentType.parsed = parsedPtr
 		this.headers.singleHeaders.PushBack(context, addr)
 	}
 
 	/* create boundary */
-	boundary = StringToByteSlice("klsd12fsfj21sdfl1223sdf90asd")
+	boundary = StringToByteSlice("sip-unique-boundary-aasdasdewfd")
 	parsedContentType.AddBoundary(context, boundary)
 
 	return boundary
@@ -125,6 +127,10 @@ func (this *SipMsg) Encode(context *ParseContext, buf *bytes.Buffer) error {
 	if this.bodies.Size() == 1 {
 		this.bodies.EncodeSingle(context, buf)
 	} else {
+		_, ok := this.headers.GetSingleHeader(context, "MIME-Version")
+		if !ok {
+			this.headers.GenerateAndAddSingleHeader(context, "MIME-Version", "1.0")
+		}
 		// remove Content-* headers from sip message except Content-Length and Content-Type*/
 		this.headers.RemoveContentHeaders(context)
 

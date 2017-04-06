@@ -48,7 +48,60 @@ func TestGenericParamParse(t *testing.T) {
 			continue
 		}
 	}
+}
 
+func TestGenericParamSetValueQuotedString(t *testing.T) {
+
+	testdata := []struct {
+		name   string
+		value  string
+		encode string
+	}{
+		{"tag", "asac", "tag=\"asac\""},
+		{"boundary", "assk2121", "boundary=\"assk2121\""},
+	}
+
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
+
+	for i, v := range testdata {
+		param, _ := NewSipGenericParam(context)
+		param.SetNameAsString(context, v.name)
+		param.SetValueQuotedString(context, []byte(v.value))
+
+		if v.encode != param.String(context) {
+			t.Errorf("%s[%d] failed: encode = %s, wanted = %s\n", prefix, i, param.String(context), v.encode)
+			continue
+		}
+	}
+}
+
+func TestGenericParamSetValueToken(t *testing.T) {
+
+	testdata := []struct {
+		name   string
+		value  string
+		encode string
+	}{
+		{"tag", "asac", "tag=asac"},
+		{"boundary", "assk2121", "boundary=assk2121"},
+	}
+
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
+
+	for i, v := range testdata {
+		param, _ := NewSipGenericParam(context)
+		param.SetNameAsString(context, v.name)
+		param.SetValueToken(context, []byte(v.value))
+
+		if v.encode != param.String(context) {
+			t.Errorf("%s[%d] failed: encode = %s, wanted = %s\n", prefix, i, param.String(context), v.encode)
+			continue
+		}
+	}
 }
 
 func TestGenericParamsParse(t *testing.T) {

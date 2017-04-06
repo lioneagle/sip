@@ -96,14 +96,23 @@ func (this *SipGenericParam) SetNameAsString(context *ParseContext, name string)
 	this.name.SetString(context, name)
 }
 
+func (this *SipGenericParam) SetValueToken(context *ParseContext, value []byte) {
+	this.valueType = SIP_GENERIC_VALUE_TYPE_TOKEN
+	token, addr := NewAbnfBuf(context)
+	if token == nil {
+		return
+	}
+
+	token.SetValue(context, value)
+	this.value = addr
+}
+
 func (this *SipGenericParam) SetValueQuotedString(context *ParseContext, value []byte) {
 	this.valueType = SIP_GENERIC_VALUE_TYPE_QUOTED_STRING
-
 	quotedString, addr := NewSipQuotedString(context)
 	if quotedString == nil {
 		return
 	}
-
 	quotedString.SetValue(context, value)
 	this.value = addr
 }

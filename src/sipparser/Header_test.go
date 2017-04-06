@@ -54,7 +54,7 @@ func TestFindCrlfRFC3261(t *testing.T) {
 }
 
 //*
-func TestParseSipHeaders(t *testing.T) {
+func TestSipHeadersParse(t *testing.T) {
 
 	testdata := []struct {
 		src    string
@@ -67,10 +67,10 @@ func TestParseSipHeaders(t *testing.T) {
 		{"X1 \t :\r\n\t122334545\r\n", true, len("X1 \t :\r\n\t122334545\r\n"), "X1: 122334545\r\n"},
 		{"X1 \t :\r\n 122334545\r\n", true, len("X1 \t :\r\n 122334545\r\n"), "X1: 122334545\r\n"},
 		{"X1:122334545\r\nX2:tt\r\n", true, len("X1:122334545\r\nX2:tt\r\n"), "X1: 122334545\r\nX2: tt\r\n"},
-		{"From: <tel:12345>\r\n", true, len("From: <tel:12345>\r\n"), "From: <tel:12345>\r\n"},
+		{"fRom: <tel:12345>\r\n", true, len("From: <tel:12345>\r\n"), "From: <tel:12345>\r\n"},
 		{"To: <tel:12345>\r\n", true, len("To: <tel:12345>\r\n"), "To: <tel:12345>\r\n"},
 		{"f: <tel:12345>\r\n", true, len("f: <tel:12345>\r\n"), "From: <tel:12345>\r\n"},
-		{"f: <tel:12345>\r\nto: <sip:456@a.com>\r\n", true, len("f: <tel:12345>\r\nto: <sip:456@a.com>\r\n"), "From: <tel:12345>\r\nto: <sip:456@a.com>\r\n"},
+		{"f: <tel:12345>\r\nto: <sip:456@a.com>\r\n", true, len("f: <tel:12345>\r\nto: <sip:456@a.com>\r\n"), "From: <tel:12345>\r\nTo: <sip:456@a.com>\r\n"},
 		{"Via: SIP/2.0/UDP 10.1.1.1:5060;branch=123\r\n", true, len("Via: SIP/2.0/UDP 10.1.1.1:5060;branch=123\r\n"), "Via: SIP/2.0/UDP 10.1.1.1:5060;branch=123\r\n"},
 		{"Via: SIP/2.0/UDP 10.1.1.1:5060;branch=123\r\nVia: SIP/2.0/TCP 10.1.1.1:5060;branch=456\r\n", true, len("Via: SIP/2.0/UDP 10.1.1.1:5060;branch=123\r\nVia: SIP/2.0/TCP 10.1.1.1:5060;branch=456\r\n"), "Via: SIP/2.0/UDP 10.1.1.1:5060;branch=123, SIP/2.0/TCP 10.1.1.1:5060;branch=456\r\n"},
 		{"Allow: abc, b34\r\nAllow: hhh\r\n", true, len("Allow: abc, b34\r\nAllow: hhh\r\n"), "Allow: abc, b34, hhh\r\n"},
@@ -118,6 +118,34 @@ func TestParseSipHeaders(t *testing.T) {
 		}
 	}
 
+}
+
+func TestSipHeaders(t *testing.T) {
+
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
+
+	headers := NewSipHeaders()
+	headers.GenerateAndAddSingleHeader(context, "From", "<sip:123@asdsad.com")
+	headers.GenerateAndAddSingleHeader(context, "Content-Length", "123")
+	headers.GenerateAndAddSingleHeader(context, "Content-Type", "application/sdp")
+	headers.GenerateAndAddSingleHeader(context, "Content-Disposition", "render")
+
+	headers.GenerateAndAddMultiHeader(context, "Content-Encoding", "gzip")
+	headers.GenerateAndAddMultiHeader(context, "Content-Encoding", "tar")
+	headers.GenerateAndAddMultiHeader(context, "Content-Language", "fr")
+	headers.GenerateAndAddMultiHeader(context, "Content-Language", "en")
+
+	headers.GenerateAndAddUnknownHeader(context, "Content-ABC", "xx1")
+	headers.GenerateAndAddUnknownHeader(context, "Content-ABC", "xx2")
+
+	headers.RemoveContentHeaders(context)
+
+	encode := "From: <sip:123@asdsad.com\r\n" + "Content-Length: 123\r\n" + "Content-Type: application/sdp\r\n"
+	if headers.String(context) != encode {
+		t.Errorf("%s failed: encode = %s, wanted = %s\n", prefix, headers.String(context), encode)
+	}
 }
 
 //*/
