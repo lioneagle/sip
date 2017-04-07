@@ -59,9 +59,7 @@ func checkList(t *testing.T, context *ParseContext, prefix string, list *AbnfLis
 		return checkEmptyList(t, prefix, list)
 	}
 
-	var iter *AbnfListNode
-
-	iter = list.Front(context)
+	iter := list.Front(context)
 	for i, node := range nodes {
 		new_prefix := fmt.Sprintf("%s[%d]", prefix, i)
 		if !checkListNode(t, context, new_prefix, iter, node) {

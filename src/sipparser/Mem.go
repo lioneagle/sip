@@ -219,4 +219,4 @@ func GetBytesDataAddr(buf *[]byte) unsafe.Pointer {
 	return unsafe.Pointer((*reflect.SliceHeader)(unsafe.Pointer(buf)).Data)
 }
 
-var g_allocator *MemAllocator = NewMemAllocator(1024 * 128)
+//var g_allocator *MemAllocator = NewMemAllocator(1024 * 128)

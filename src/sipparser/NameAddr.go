@@ -158,12 +158,7 @@ func (this *SipNameAddr) Parse(context *ParseContext, src []byte, pos int) (newP
 		return newPos, err
 	}
 
-	newPos, err = ParseRightAngleQuote(src, newPos)
-	if err != nil {
-		return newPos, err
-	}
-
-	return newPos, nil
+	return ParseRightAngleQuote(src, newPos)
 }
 
 func (this *SipNameAddr) Encode(context *ParseContext, buf *bytes.Buffer) {

@@ -135,8 +135,8 @@ func (this *SipStartLine) ParseRequestLine(context *ParseContext, src []byte, po
 
 	newPos, err = this.version.Parse(context, src, newPos+1)
 	if err != nil {
-		//return newPos, &AbnfError{"RequestLine parse: wrong SIP-Version", src, newPos}
-		return newPos, err
+		return newPos, &AbnfError{"RequestLine parse: wrong SIP-Version", src, newPos}
+		//return newPos, err
 	}
 
 	return newPos, nil

@@ -155,7 +155,7 @@ func TestEscape(t *testing.T) {
 
 	for i, v := range wanted {
 		u := Escape(chars, v.isInCharset)
-		if bytes.Compare(Unescape(u), chars) != 0 {
+		if !bytes.Equal(Unescape(u), chars) {
 			t.Errorf("TestEscape[%d]: %s failed\n", i, v.name)
 		}
 	}

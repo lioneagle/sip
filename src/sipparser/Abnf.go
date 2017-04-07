@@ -39,7 +39,7 @@ func (err *AbnfError) Error() string {
 	if err.pos < len(err.src) {
 		return fmt.Sprintf("%s at src[%d]: %s", err.description, err.pos, string(err.src[err.pos:]))
 	}
-	return fmt.Sprintf("%s", err.description)
+	return err.description
 }
 
 func StringToByteSlice(str string) []byte {

@@ -105,12 +105,7 @@ func (this *SipUri) ParseAfterSchemeWithoutParam(context *ParseContext, src []by
 	}
 	//return newPos, nil
 
-	newPos, err = this.hostport.Parse(context, src, newPos)
-	if err != nil {
-		return newPos, err
-	}
-
-	return newPos, nil
+	return this.hostport.Parse(context, src, newPos)
 }
 
 func (this *SipUri) Encode(context *ParseContext, buf *bytes.Buffer) {
