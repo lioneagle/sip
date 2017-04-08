@@ -129,6 +129,7 @@ func TestSipHeaders(t *testing.T) {
 	headers := NewSipHeaders()
 	headers.GenerateAndAddSingleHeader(context, "From", "<sip:123@asdsad.com")
 	headers.GenerateAndAddSingleHeader(context, "Content-Length", "123")
+	headers.GenerateAndAddSingleHeader(context, "MIME-Version", "1.0")
 	headers.GenerateAndAddSingleHeader(context, "Content-Type", "application/sdp")
 	headers.GenerateAndAddSingleHeader(context, "Content-Disposition", "render")
 
@@ -142,9 +143,15 @@ func TestSipHeaders(t *testing.T) {
 
 	headers.RemoveContentHeaders(context)
 
-	encode := "From: <sip:123@asdsad.com\r\n" + "Content-Length: 123\r\n" + "Content-Type: application/sdp\r\n"
-	if headers.String(context) != encode {
-		t.Errorf("%s failed: encode = %s, wanted = %s\n", prefix, headers.String(context), encode)
+	dst := "From: <sip:123@asdsad.com\r\n" +
+		"Content-Length: 123\r\n" +
+		"MIME-Version: 1.0\r\n" +
+		"Content-Type: application/sdp\r\n"
+
+	encoded := headers.String(context)
+
+	if encoded != dst {
+		t.Errorf("%s failed: encode = \n%s\n\nwanted = \n%s\n", prefix, encoded, dst)
 	}
 }
 

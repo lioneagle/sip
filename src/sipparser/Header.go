@@ -96,6 +96,8 @@ var g_SipHeaderInfoMaps = map[string]SipHeaderInfo{
 
 	"referred-by":     {name: []byte("Referred-By"), hasShortName: true, shortName: []byte("b")},
 	"session-expires": {name: []byte("Session-Expires"), hasShortName: true, shortName: []byte("x")},
+
+	"mime-version": {name: []byte("MIME-Version")},
 }
 
 func GetSipHeaderInfo(name string) (info *SipHeaderInfo, ok bool) {
@@ -195,6 +197,12 @@ func (this *SipHeaders) RemoveContentHeaders(context *ParseContext) {
 	this.singleHeaders.RemoveContentHeaders(context)
 	this.multiHeaders.RemoveContentHeaders(context)
 	this.unknownHeaders.RemoveContentHeaders(context)
+}
+
+func (this *SipHeaders) CopyContentHeaders(context *ParseContext, rhs *SipHeaders) {
+	this.singleHeaders.CopyContentHeaders(context, &rhs.singleHeaders)
+	this.multiHeaders.CopyContentHeaders(context, &rhs.multiHeaders)
+	this.unknownHeaders.CopyContentHeaders(context, &rhs.unknownHeaders)
 }
 
 func (this *SipHeaders) CreateContentLength(context *ParseContext, size uint32) error {

@@ -66,5 +66,26 @@ func TestSipMultiHeaders(t *testing.T) {
 	if headers.String(context) != "Route: <sip:123@ada.com>;ax=ads, <tel:+1233>\r\n" {
 		t.Errorf("%s failed: encode = %s, wanted = %s\n", prefix, headers.String(context), "Route: <sip:123@ada.com>;ax=ads, <tel:+1233>\r\n")
 	}
+}
+
+func TestSipMultiHeadersRemoveHeaderByNameString(t *testing.T) {
+
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+	prefix := FuncName()
+
+	headers, _ := NewSipMultiHeaders(context)
+	headers.GenerateAndAddHeader(context, "Route", "<sip:123@ada.com>;ax=ads")
+	headers.GenerateAndAddHeader(context, "Route", "<tel:+1233>")
+	headers.GenerateAndAddHeader(context, "Content-xxY", "adsdfd")
+	headers.GenerateAndAddHeader(context, "Content-xxY", "hht")
+
+	headers.RemoveHeaderByNameString(context, "Route")
+
+	encoded := headers.String(context)
+	dst := "Content-xxY: adsdfd, hht\r\n"
+	if encoded != dst {
+		t.Errorf("%s failed: encode = %s, wanted = %s\n", prefix, encoded, dst)
+	}
 
 }

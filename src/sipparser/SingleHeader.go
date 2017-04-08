@@ -28,6 +28,7 @@ func GenerateSingleHeader(context *ParseContext, name, value string) (*SipSingle
 	if header == nil {
 		return nil, ABNF_PTR_NIL
 	}
+
 	header.SetInfo(name)
 	header.SetNameByteSlice(context, StringToByteSlice(name))
 	header.SetValueByteSlice(context, StringToByteSlice(value))
@@ -134,6 +135,18 @@ func (this *SipSingleHeaders) GetHeaderByByteSlice(context *ParseContext, name [
 	return nil, false
 }
 
+func (this *SipSingleHeaders) RemoveHeaderByNameString(context *ParseContext, name string) {
+	name1 := StringToByteSlice(name)
+	for e := this.Front(context); e != nil; {
+		v := e.Value.GetSipSingleHeader(context)
+		if v.EqualNameByteSlice(context, name1) {
+			e = this.Remove(context, e)
+			continue
+		}
+		e = e.Next(context)
+	}
+}
+
 func (this *SipSingleHeaders) GetHeaderByString(context *ParseContext, name string) (val *SipSingleHeader, ok bool) {
 	return this.GetHeaderByByteSlice(context, StringToByteSlice(name))
 }
@@ -156,6 +169,18 @@ func (this *SipSingleHeaders) RemoveContentHeaders(context *ParseContext) {
 		}
 
 		e = this.Remove(context, e)
+	}
+}
+
+// copy Content-* headers to other heades*/
+func (this *SipSingleHeaders) CopyContentHeaders(context *ParseContext, rhs *SipSingleHeaders) {
+	prefix := StringToByteSlice("Content-")
+
+	for e := this.Front(context); e != nil; e = e.Next(context) {
+		v := e.Value.GetSipSingleHeader(context)
+		if v.NameHasPrefixBytes(context, prefix) {
+			rhs.AddHeader(context, e.Value)
+		}
 	}
 }
 

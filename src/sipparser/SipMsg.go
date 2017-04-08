@@ -59,19 +59,99 @@ func (this *SipMsg) ParseMsgBody(context *ParseContext, src []byte, pos int) (ne
 	contentType := headerPtr.GetSipHeaderContentType(context)
 	if contentType.mainType.EqualStringNoCase(context, "multipart") {
 		// mime bodies
-		return this.ParseMultiBody(context, src, newPos)
+		// get boundary
+		boundary, ok := contentType.GetBoundary(context)
+		if !ok {
+			return newPos, &AbnfError{"SipMsg parse: no boundary for multipart body", src, newPos}
+		}
+		return this.ParseMultiBody(context, src, newPos, boundary)
 	}
 
 	return this.ParseSingleBody(context, src, newPos)
 }
 
 func (this *SipMsg) ParseSingleBody(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	left := len(src) - pos
+	bodySize := 0
+	parsedPtr, ok := this.headers.GetSingleHeaderParsed(context, ABNF_NAME_SIP_HDR_CONTENT_LENGTH)
+	if ok {
+		bodySize = int(parsedPtr.GetSipHeaderContentLength(context).size)
+		if bodySize > left {
+			bodySize = left
+		}
+	}
 
+	if bodySize == 0 {
+		return newPos, nil
+	}
+
+	body, addr := NewSipMsgBody(context)
+	if body == nil {
+		return newPos, &AbnfError{"SipMsg parse: out of memory for sip-mshg-body", src, newPos}
+	}
+	// copy Content-* headers from sip-msg to sip-msg-body's headers
+	body.headers.CopyContentHeaders(context, &this.headers)
+
+	body.SetBody(context, src[pos:pos+bodySize])
+	this.bodies.AddBody(context, addr)
 	return newPos, nil
 }
 
-func (this *SipMsg) ParseMultiBody(context *ParseContext, src []byte, pos int) (newPos int, err error) {
-	return newPos, nil
+func (this *SipMsg) ParseMultiBody(context *ParseContext, src []byte, pos int, boundary []byte) (newPos int, err error) {
+	var ok bool
+
+	dash_boundary := append([]byte{'-', '-'}, boundary...)
+	delimiter := append([]byte{'\r', '\n'}, dash_boundary...)
+
+	newPos = pos
+	pos1 := bytes.Index(src[newPos:], dash_boundary)
+	if pos1 != 0 {
+		return newPos, &AbnfError{"SipMsg ParseMultiBody: no first dash-bounday", src, newPos}
+	}
+
+	newPos += len(dash_boundary)
+
+	for newPos < len(src) {
+		if newPos+1 >= len(src) {
+
+			return newPos, &AbnfError{"SipMsg ParseMultiBody: reach end without close-delimiter", src, newPos}
+		}
+
+		if src[newPos] == '-' || src[newPos+1] == '-' {
+			// reach close-delimiter
+			return newPos, nil
+		}
+
+		// skip transport-padding CRLF
+		_, newPos, ok = FindCrlfRFC3261(src, newPos)
+		if !ok {
+			return newPos, &AbnfError{"SipMsg ParseMultiBody: no CRLF after dash-bounday", src, newPos}
+		}
+
+		body, addr := NewSipMsgBody(context)
+		if body == nil {
+			return newPos, &AbnfError{"SipMsg ParseMultiBody: out of memory for body", src, newPos}
+		}
+
+		newPos, err = body.headers.Parse(context, src, newPos)
+		if err != nil {
+			return newPos, &AbnfError{"SipMsg ParseMultiBody: parse headers failed", src, newPos}
+		}
+
+		begin := newPos
+		end := bytes.Index(src[newPos:], delimiter)
+		if end == -1 {
+			return newPos, &AbnfError{"SipMsg ParseMultiBody: no delimiter", src, newPos}
+		}
+
+		end += newPos
+		newPos = end + len(delimiter)
+
+		body.body.SetByteSlice(context, src[begin:end])
+		this.bodies.AddBody(context, addr)
+	}
+
+	return newPos, &AbnfError{"SipMsg ParseMultiBody: no close-delimiter", src, newPos}
 }
 
 func (this *SipMsg) FindOrCreateBoundary(context *ParseContext) (boundary []byte) {
@@ -86,7 +166,7 @@ func (this *SipMsg) FindOrCreateBoundary(context *ParseContext) (boundary []byte
 		}
 
 	} else {
-		// create Conten-Type
+		// create Content-Type header
 		contentType, addr := this.headers.CreateSingleHeader(context, ABNF_NAME_SIP_HDR_CONTENT_TYPE)
 		if contentType == nil {
 			return nil
@@ -102,7 +182,7 @@ func (this *SipMsg) FindOrCreateBoundary(context *ParseContext) (boundary []byte
 	}
 
 	/* create boundary */
-	boundary = StringToByteSlice("sip-unique-boundary-aasdasdewfd")
+	boundary = StringToByteSlice(ABNF_SIP_DEFAULT_BOUNDARY)
 	parsedContentType.AddBoundary(context, boundary)
 
 	return boundary
@@ -116,25 +196,36 @@ func (this *SipMsg) Encode(context *ParseContext, buf *bytes.Buffer) error {
 	}
 
 	this.startLine.Encode(context, buf)
+
+	var boundary []byte
+
+	if this.bodies.Size() > 1 {
+		// remove Content-* headers from sip message except Content-Length and Content-Type*/
+		this.headers.RemoveContentHeaders(context)
+
+		_, ok := this.headers.GetSingleHeader(context, "MIME-Version")
+		if !ok {
+			addr, _ := this.headers.GenerateAndAddSingleHeader(context, "MIME-Version", "1.0")
+			if addr == nil {
+				return &AbnfError{"SipMsg encode: out of memory for adding MIME-Version", nil, 0}
+			}
+		}
+
+		boundary = this.FindOrCreateBoundary(context)
+	}
+
 	this.headers.Encode(context, buf)
 	buf.WriteString("\r\n")
 
-	bodyStart := len(buf.Bytes())
 	if this.bodies.Empty() {
 		return nil
 	}
 
+	bodyStart := len(buf.Bytes())
+
 	if this.bodies.Size() == 1 {
 		this.bodies.EncodeSingle(context, buf)
 	} else {
-		_, ok := this.headers.GetSingleHeader(context, "MIME-Version")
-		if !ok {
-			this.headers.GenerateAndAddSingleHeader(context, "MIME-Version", "1.0")
-		}
-		// remove Content-* headers from sip message except Content-Length and Content-Type*/
-		this.headers.RemoveContentHeaders(context)
-
-		boundary := this.FindOrCreateBoundary(context)
 		this.bodies.EncodeMulti(context, buf, boundary)
 	}
 

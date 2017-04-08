@@ -8,7 +8,7 @@ import (
 )
 
 const SLICE_HEADER_LEN = int32(unsafe.Sizeof(reflect.SliceHeader{}))
-const SIP_MEM_ALIGN = int32(4)
+const SIP_MEM_ALIGN = int32(8)
 const SIP_MEM_LIGN_MASK = ^(SIP_MEM_ALIGN - 1)
 const SIP_MEM_LIGN_MASK2 = (SIP_MEM_ALIGN - 1)
 
@@ -21,6 +21,13 @@ type MemAllocatorStat struct {
 	allocNumOk  int
 	freeAllNum  int
 	freePartNum int
+}
+
+func (this *MemAllocatorStat) Init() {
+	this.allocNum = 0
+	this.allocNumOk = 0
+	this.freeAllNum = 0
+	this.freePartNum = 0
 }
 
 func (this *MemAllocatorStat) String() string {
@@ -60,6 +67,7 @@ func NewMemAllocator(capacity int32) *MemAllocator {
 func (this *MemAllocator) Init(capacity int32) *MemAllocator {
 	this.used = 0
 	this.mem = make([]byte, int(capacity))
+	this.stat.Init()
 	return this
 }
 
@@ -116,9 +124,15 @@ func (this *MemAllocator) Alloc(size int32) (mem *byte, addr AbnfPtr) {
 	if size <= 0 {
 		return nil, ABNF_PTR_NIL
 	}
+
+	if this.used&0x3 != 0 {
+		fmt.Printf("mem.used = %x\n", this.used)
+	}
 	newSize := RoundToAlign(this.used+size, SIP_MEM_ALIGN)
 	//newSize := (this.used + size + SIP_MEM_LIGN_MASK2) & SIP_MEM_LIGN_MASK
-	if newSize > this.Left() {
+	if newSize > this.Capacity() {
+		//fmt.Println("newSize =", newSize)
+		//fmt.Println("alloc_size =", size)
 		//panic("ERROR: out of memory")
 		return nil, ABNF_PTR_NIL
 	}
@@ -127,6 +141,10 @@ func (this *MemAllocator) Alloc(size int32) (mem *byte, addr AbnfPtr) {
 	mem = (*byte)(unsafe.Pointer(&this.mem[this.used]))
 	addr = AbnfPtr(this.used)
 	this.used = newSize
+
+	if this.used&0x3 != 0 {
+		fmt.Printf("mem.used = %x\n", this.used)
+	}
 	return mem, addr
 }
 
@@ -149,8 +167,12 @@ func (this *MemAllocator) FreePart(remain int32) {
 func (this *MemAllocator) String(memBegin, memEnd int) string {
 	str := "-------------------------- MemAllocator show begin --------------------------\r\n"
 	str += PrintByteSliceHex(memBegin, memEnd, this.mem)
+	str += "-----------------------------------------------------------------------------\r\n"
 	str += "MemAllocator stat:\r\n"
 	str += this.stat.String()
+	str += fmt.Sprintf("Used     = %d\n", this.Used())
+	str += fmt.Sprintf("Left     = %d\n", this.Left())
+	str += fmt.Sprintf("Capacity = %d\n", this.Capacity())
 	str += "-------------------------- MemAllocator show end   --------------------------\r\n"
 	return str
 }

@@ -160,6 +160,18 @@ func (this *SipMultiHeaders) GetHeaderByByteSlice(context *ParseContext, name []
 	return nil, false
 }
 
+func (this *SipMultiHeaders) RemoveHeaderByNameString(context *ParseContext, name string) {
+	name1 := StringToByteSlice(name)
+	for e := this.Front(context); e != nil; {
+		v := e.Value.GetSipSingleHeader(context)
+		if v.EqualNameByteSlice(context, name1) {
+			e = this.Remove(context, e)
+			continue
+		}
+		e = e.Next(context)
+	}
+}
+
 func (this *SipMultiHeaders) GetHeaderByString(context *ParseContext, name string) (val *SipMultiHeader, ok bool) {
 	return this.GetHeaderByByteSlice(context, StringToByteSlice(name))
 }
@@ -182,6 +194,17 @@ func (this *SipMultiHeaders) RemoveContentHeaders(context *ParseContext) {
 		}
 
 		e = this.Remove(context, e)
+	}
+}
+
+func (this *SipMultiHeaders) CopyContentHeaders(context *ParseContext, rhs *SipMultiHeaders) {
+	prefix := StringToByteSlice("Content-")
+
+	for e := this.Front(context); e != nil; e = e.Next(context) {
+		v := e.Value.GetSipSingleHeader(context)
+		if v.NameHasPrefixBytes(context, prefix) {
+			rhs.AddHeader(context, e.Value)
+		}
 	}
 }
 

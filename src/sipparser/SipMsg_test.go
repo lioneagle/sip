@@ -32,7 +32,7 @@ func TestSipMsgParse(t *testing.T) {
 		newPos, err := sipmsg.Parse(context, []byte(v.src), 0)
 
 		if v.ok && err != nil {
-			t.Errorf("%s[%d] failed: err = %s\n", prefix, i, err)
+			t.Errorf("%s[%d] failed: parse sip-msg err = %s\n", prefix, i, err)
 			continue
 		}
 
@@ -51,6 +51,206 @@ func TestSipMsgParse(t *testing.T) {
 		}
 	}
 
+} //*/
+
+func TestSipMsgParseWithOneBody(t *testing.T) {
+
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 100)
+	prefix := FuncName()
+
+	src := "INVITE sip:6135000@24.15.255.4 SIP/2.0\r\n" +
+		"Content-Length: 10\r\n" +
+		"Via: SIP/2.0/UDP 24.15.255.101:5060\r\n" +
+		"From: \"User ID\" <sip:6140000@24.15.255.4>;tag=dab70900252036d7134be-4ec05abe\r\n" +
+		"To: <sip:6135000@24.15.255.4>\r\n" +
+		"Call-ID: 0009b7da-0352000f-30a69b83-0e7b53d6@24.15.255.101\r\n" +
+		"CSeq: 101 INVITE\r\n" +
+		"Content-Disposition: render\r\n" +
+		"Content-XYZ: abc, def\r\n" +
+		"Content-XYZ: 123\r\n" +
+		"Content-Encoding: gzip, tar\r\n" +
+		"Contact: sip:6140000@24.15.255.101:5060\r\n" +
+		"Content-Type: application/sdp\r\n" +
+		"\r\n" +
+		"1234567890"
+
+	dst := "INVITE sip:6135000@24.15.255.4 SIP/2.0\r\n" +
+		"Content-Length:         10\r\n" +
+		"From: \"User ID\"<sip:6140000@24.15.255.4>;tag=dab70900252036d7134be-4ec05abe\r\n" +
+		"To: <sip:6135000@24.15.255.4>\r\n" +
+		"Call-ID: 0009b7da-0352000f-30a69b83-0e7b53d6@24.15.255.101\r\n" +
+		"CSeq: 101 INVITE\r\n" +
+		"Content-Disposition: render\r\n" +
+		"Content-Type: application/sdp\r\n" +
+		"Via: SIP/2.0/UDP 24.15.255.101:5060\r\n" +
+		"Content-Encoding: gzip, tar\r\n" +
+		"Contact: <sip:6140000@24.15.255.101:5060>\r\n" +
+		"Content-XYZ: abc, def\r\n" +
+		"Content-XYZ: 123\r\n" +
+		"\r\n" +
+		"1234567890"
+
+	sipmsg, _ := NewSipMsg(context)
+	_, err := sipmsg.Parse(context, []byte(src), 0)
+
+	if err != nil {
+		t.Errorf("%s failed: parse sip-msg err = %s\n", prefix, err)
+		return
+	}
+
+	encoded := sipmsg.String(context)
+
+	if encoded != dst {
+		t.Errorf("%s failed: \nencode = \n%s \n\nwanted = \n%s\n", prefix, encoded, dst)
+		return
+	}
+} //*/
+
+func TestSipMsgParseWithMultiBody(t *testing.T) {
+
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 50)
+	prefix := FuncName()
+
+	boundary := "simple-boundary"
+	src := "INVITE sip:6135000@24.15.255.4 SIP/2.0\r\n" +
+		"Content-Length: 10\r\n" +
+		"Via: SIP/2.0/UDP 24.15.255.101:5060\r\n" +
+		"From: \"User ID\" <sip:6140000@24.15.255.4>;tag=dab70900252036d7134be-4ec05abe\r\n" +
+		"To: <sip:6135000@24.15.255.4>\r\n" +
+		"Call-ID: 0009b7da-0352000f-30a69b83-0e7b53d6@24.15.255.101\r\n" +
+		"CSeq: 101 INVITE\r\n" +
+		"Contact: sip:6140000@24.15.255.101:5060\r\n" +
+		"Content-Type: multipart/mixed;boundary=" + boundary + "\r\n" +
+		"\r\n" +
+		"--" + boundary + "padding\r\n" +
+		"Content-Encoding: gzip, tar\r\n" +
+		"\r\n" +
+		"1234567890" +
+		"\r\n" +
+		"--" + boundary + "padding\r\n" +
+		"Content-XYZ: abc, def\r\n" +
+		"\r\n" +
+		"abcsdfsdfsf" +
+		"\r\n" +
+		"--" + boundary + "--"
+
+	dst := "INVITE sip:6135000@24.15.255.4 SIP/2.0\r\n" +
+		"Content-Length:        138\r\n" +
+		"From: \"User ID\"<sip:6140000@24.15.255.4>;tag=dab70900252036d7134be-4ec05abe\r\n" +
+		"To: <sip:6135000@24.15.255.4>\r\n" +
+		"Call-ID: 0009b7da-0352000f-30a69b83-0e7b53d6@24.15.255.101\r\n" +
+		"CSeq: 101 INVITE\r\n" +
+		"Content-Type: multipart/mixed;boundary=" + boundary + "\r\n" +
+		"MIME-Version: 1.0\r\n" +
+		"Via: SIP/2.0/UDP 24.15.255.101:5060\r\n" +
+		"Contact: <sip:6140000@24.15.255.101:5060>\r\n" +
+		"\r\n" +
+		"--" + boundary + "\r\n" +
+		"Content-Encoding: gzip, tar\r\n" +
+		"\r\n" +
+		"1234567890" +
+		"\r\n" +
+		"--" + boundary + "\r\n" +
+		"Content-XYZ: abc, def\r\n" +
+		"\r\n" +
+		"abcsdfsdfsf" +
+		"\r\n" +
+		"--" + boundary + "--"
+
+	//fmt.Println(context.allocator.String(0, 10))
+
+	sipmsg, _ := NewSipMsg(context)
+	_, err := sipmsg.Parse(context, []byte(src), 0)
+
+	if err != nil {
+		t.Errorf("%s failed: parse sip-msg err = %s\n", prefix, err)
+		return
+	}
+
+	//fmt.Println(context.allocator.String(0, 10))
+
+	//fmt.Println("src len =", len(src))
+
+	encoded := sipmsg.String(context)
+
+	if encoded != dst {
+		t.Errorf("%s failed: \nencode = \n%s \n\nwanted = \n%s\n", prefix, encoded, dst)
+		return
+	}
+} //*/
+
+func TestSipMsgParseWithMultiBody2(t *testing.T) {
+
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 50)
+	prefix := FuncName()
+
+	boundary := "simple-boundary"
+	src := "INVITE sip:6135000@24.15.255.4 SIP/2.0\r\n" +
+		"Content-Length: 10\r\n" +
+		"Via: SIP/2.0/UDP 24.15.255.101:5060\r\n" +
+		"From: \"User ID\" <sip:6140000@24.15.255.4>;tag=dab70900252036d7134be-4ec05abe\r\n" +
+		"To: <sip:6135000@24.15.255.4>\r\n" +
+		"Call-ID: 0009b7da-0352000f-30a69b83-0e7b53d6@24.15.255.101\r\n" +
+		"CSeq: 101 INVITE\r\n" +
+		"Contact: sip:6140000@24.15.255.101:5060\r\n" +
+		"Content-Type: multipart/mixed;boundary=" + boundary + "\r\n" +
+		"\r\n" +
+		"--" + boundary + "padding\r\n" +
+		"Content-Encoding: gzip, tar\r\n" +
+		"\r\n" +
+		"1234567890" +
+		"\r\n" +
+		"--" + boundary + "padding\r\n" +
+		"Content-XYZ: abc, def\r\n" +
+		"\r\n" +
+		"abcsdfsdfsf" +
+		"\r\n" +
+		"--" + boundary + "--"
+
+	dst := "INVITE sip:6135000@24.15.255.4 SIP/2.0\r\n" +
+		"Content-Length:        186\r\n" +
+		"From: \"User ID\"<sip:6140000@24.15.255.4>;tag=dab70900252036d7134be-4ec05abe\r\n" +
+		"To: <sip:6135000@24.15.255.4>\r\n" +
+		"Call-ID: 0009b7da-0352000f-30a69b83-0e7b53d6@24.15.255.101\r\n" +
+		"CSeq: 101 INVITE\r\n" +
+		"MIME-Version: 1.0\r\n" +
+		"Content-Type: multipart/mixed;boundary=\"" + ABNF_SIP_DEFAULT_BOUNDARY + "\"\r\n" +
+		"Via: SIP/2.0/UDP 24.15.255.101:5060\r\n" +
+		"Contact: <sip:6140000@24.15.255.101:5060>\r\n" +
+		"\r\n" +
+		"--" + ABNF_SIP_DEFAULT_BOUNDARY + "\r\n" +
+		"Content-Encoding: gzip, tar\r\n" +
+		"\r\n" +
+		"1234567890" +
+		"\r\n" +
+		"--" + ABNF_SIP_DEFAULT_BOUNDARY + "\r\n" +
+		"Content-XYZ: abc, def\r\n" +
+		"\r\n" +
+		"abcsdfsdfsf" +
+		"\r\n" +
+		"--" + ABNF_SIP_DEFAULT_BOUNDARY + "--"
+
+	//fmt.Println(context.allocator.String(0, 10))
+
+	sipmsg, _ := NewSipMsg(context)
+	_, err := sipmsg.Parse(context, []byte(src), 0)
+
+	if err != nil {
+		t.Errorf("%s failed: parse sip-msg err = %s\n", prefix, err)
+		return
+	}
+
+	sipmsg.headers.singleHeaders.RemoveHeaderByNameString(context, "content-type")
+
+	encoded := sipmsg.String(context)
+
+	if encoded != dst {
+		t.Errorf("%s failed: \nencode = \n%s \n\nwanted = \n%s\n", prefix, encoded, dst)
+		return
+	}
 } //*/
 
 var msg string = "INVITE sip:6135000@24.15.255.4 SIP/2.0\r\n" +
@@ -111,6 +311,8 @@ func BenchmarkSipMsgEncode(b *testing.B) {
 	sipmsg.Parse(context, msg1, 0)
 	remain := context.allocator.Used()
 	buf := bytes.NewBuffer(make([]byte, 1024*1024))
+	//fmt.Println("BenchmarkSipMsgEncode: bodies.Size() =", sipmsg.bodies.Size())
+
 	b.SetBytes(2)
 	b.ReportAllocs()
 	b.StartTimer()

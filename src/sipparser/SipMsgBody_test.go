@@ -65,6 +65,23 @@ func TestSipMsgBodies(t *testing.T) {
 	body.body.SetString(context, "v=0\r\ns=call\r\n")
 	bodies.AddBody(context, addr)
 
+	boundary := "simple-boundary"
+	encode := "--" + boundary + "\r\n"
+	encode += "Content-Length:         13\r\n"
+	encode += "Content-Type: application/sdp\r\n"
+	encode += "Content-Disposition: render\r\n"
+	encode += "Content-Encoding: gzip, tar\r\n"
+	encode += "Content-ABC: xx1\r\n"
+	encode += "Content-ABC: xx2\r\n"
+	encode += "\r\n"
+	encode += "v=0\r\ns=call\r\n"
+	encode += "\r\n"
+	encode += "--" + boundary + "--"
+
+	if bodies.StringMulti(context, []byte(boundary)) != encode {
+		t.Errorf("%s failed: encode = \n%s \nwanted = \n%s\n", prefix, bodies.StringMulti(context, []byte(boundary)), encode)
+	}
+
 	body, addr = NewSipMsgBody(context)
 	body.headers.GenerateAndAddSingleHeader(context, "Content-Length", "123")
 	body.headers.GenerateAndAddSingleHeader(context, "Content-Type", "application/text")
@@ -78,8 +95,8 @@ func TestSipMsgBodies(t *testing.T) {
 	body.body.SetString(context, "v=0\r\ns=call-2\r\n")
 	bodies.AddBody(context, addr)
 
-	boundary := "simple-boundary"
-	encode := "--" + boundary + "\r\n"
+	boundary = "simple-boundary"
+	encode = "--" + boundary + "\r\n"
 	encode += "Content-Length:         13\r\n"
 	encode += "Content-Type: application/sdp\r\n"
 	encode += "Content-Disposition: render\r\n"
