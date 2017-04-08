@@ -66,8 +66,9 @@ func TestSipQuotedStringParseNOK(t *testing.T) {
 		quotedString, _ := NewSipQuotedString(context)
 
 		newPos, err := quotedString.Parse(context, []byte(v.src), 0)
+
 		if err == nil {
-			t.Errorf("%s[%d] failed", prefix, i)
+			t.Errorf("%s[%d] failed: err should not be nil", prefix, i)
 			continue
 		}
 

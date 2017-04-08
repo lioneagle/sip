@@ -77,6 +77,45 @@ func (this *SipMultiHeader) GenerateAndAddHeader(context *ParseContext, name, va
 	return header, addr
 }
 
+func (this *SipMultiHeader) Parse(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (newPos int, err error) {
+	if info.parseFunc != nil && info.needParse {
+		return this.parseParsableHeader(context, src, pos, info)
+
+	}
+	return this.parseUnparsableHeader(context, src, pos, info)
+}
+
+func (this *SipMultiHeader) parseParsableHeader(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (newPos int, err error) {
+	newPos = pos
+	for newPos < len(src) {
+		addr, newPos, err := parseOneParsableSingleHeader(context, src, newPos, info)
+		if err != nil {
+			return newPos, err
+		}
+		this.AddHeader(context, addr)
+
+		// now should be COMMA or CRLF
+		newPos1, err := ParseSWSMark(src, newPos, ',')
+		if err != nil {
+			// should be CRLF
+			return ParseCRLF(src, newPos)
+		}
+		newPos = newPos1
+
+	}
+	return newPos, nil
+}
+
+func (this *SipMultiHeader) parseUnparsableHeader(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (newPos int, err error) {
+	addr, newPos, err := parseOneUnparsableSingleHeader(context, AbnfRef{0, int32(len(info.name))}, src, pos, info)
+	if err != nil {
+		return newPos, err
+	}
+	this.AddHeader(context, addr)
+
+	return newPos, nil
+}
+
 func (this *SipMultiHeader) Encode(context *ParseContext, buf *bytes.Buffer) {
 	if this.info != nil {
 		buf.Write(this.info.name)

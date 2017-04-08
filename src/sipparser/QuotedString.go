@@ -61,8 +61,25 @@ func (this *SipQuotedString) Parse(context *ParseContext, src []byte, pos int) (
 		return newPos, &AbnfError{"quoted-string parse: no DQUOTE for quoted-string begin", src, newPos}
 	}
 
-	newPos++
-	tokenBegin := newPos
+	newPos, err = this.parseValue(context, src, newPos+1)
+	if err != nil {
+		return newPos, err
+	}
+
+	if newPos >= len(src) {
+		return newPos, &AbnfError{"quoted-string parse: reach end before DQUOTE", src, newPos}
+	}
+
+	if src[newPos] != '"' {
+		return newPos, &AbnfError{"quoted-string parse: no DQUOTE for quoted-string end", src, newPos}
+	}
+
+	return newPos + 1, nil
+}
+
+func (this *SipQuotedString) parseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	tokenBegin := pos
+	newPos = pos
 	for (newPos < len(src)) && (src[newPos] != '"') {
 		if IsLwsChar(src[newPos]) {
 			newPos, err = ParseLWS(src, newPos)
@@ -82,14 +99,5 @@ func (this *SipQuotedString) Parse(context *ParseContext, src []byte, pos int) (
 	}
 
 	this.value.SetByteSlice(context, src[tokenBegin:newPos])
-
-	if newPos >= len(src) {
-		return newPos, &AbnfError{"quoted-string parse: reach end before DQUOTE", src, newPos}
-	}
-
-	if src[newPos] != '"' {
-		return newPos, &AbnfError{"quoted-string parse: no DQUOTE for quoted-string end", src, newPos}
-	}
-
-	return newPos + 1, nil
+	return newPos, nil
 }

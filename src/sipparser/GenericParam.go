@@ -57,38 +57,52 @@ func (this *SipGenericParam) Parse(context *ParseContext, src []byte, pos int) (
 		return newPos, err
 	}
 
+	return this.ParseValue(context, src, newPos)
+}
+
+func (this *SipGenericParam) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	newPos = pos
 	if newPos >= len(src) {
-		return newPos, &AbnfError{"generic-param parse: parse value failed: empty gen-value", src, newPos}
+		return newPos, &AbnfError{"generic-param ParseValue: empty gen-value", src, newPos}
 	}
 
 	/* @@TODO: 目前解gen-value时，暂不考虑解析出host，因为一般没有必要解析出来，以后再考虑添加这个功能 */
-
 	if IsSipToken(src[newPos]) {
-		token, addr := NewAbnfBuf(context)
-		if token == nil {
-			return newPos, &AbnfError{"generic-param  parse: out of memory for token value", src, newPos}
-		}
-		newPos, err = token.Parse(context, src, newPos, IsSipToken)
-		if err != nil {
-			return newPos, err
-		}
-		this.valueType = SIP_GENERIC_VALUE_TYPE_TOKEN
-		this.value = addr
+		return this.parseValueToken(context, src, newPos)
 	} else if (src[newPos] == '"') || IsLwsChar(src[newPos]) {
-		quotedString, addr := NewSipQuotedString(context)
-		if quotedString == nil {
-			return newPos, &AbnfError{"generic-param  parse: out of memory for quoted-string value", src, newPos}
-		}
-		newPos, err = quotedString.Parse(context, src, newPos)
-		if err != nil {
-			return newPos, err
-		}
-		this.valueType = SIP_GENERIC_VALUE_TYPE_QUOTED_STRING
-		this.value = addr
-	} else {
-		return newPos, &AbnfError{"generic-param parse: parse value failed: not token nor quoted-string", src, newPos}
+		return this.parseValueQuotedString(context, src, newPos)
 	}
 
+	return newPos, &AbnfError{"generic-param ParseValue: not token nor quoted-string", src, newPos}
+}
+
+func (this *SipGenericParam) parseValueToken(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	newPos = pos
+	token, addr := NewAbnfBuf(context)
+	if token == nil {
+		return newPos, &AbnfError{"generic-param  ParseValue: out of memory for token value", src, newPos}
+	}
+	newPos, err = token.Parse(context, src, newPos, IsSipToken)
+	if err != nil {
+		return newPos, err
+	}
+	this.valueType = SIP_GENERIC_VALUE_TYPE_TOKEN
+	this.value = addr
+	return newPos, nil
+}
+
+func (this *SipGenericParam) parseValueQuotedString(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	newPos = pos
+	quotedString, addr := NewSipQuotedString(context)
+	if quotedString == nil {
+		return newPos, &AbnfError{"generic-param  ParseValue: out of memory for quoted-string value", src, newPos}
+	}
+	newPos, err = quotedString.Parse(context, src, newPos)
+	if err != nil {
+		return newPos, err
+	}
+	this.valueType = SIP_GENERIC_VALUE_TYPE_QUOTED_STRING
+	this.value = addr
 	return newPos, nil
 }
 

@@ -223,7 +223,7 @@ func (this *SipHeaders) Parse(context *ParseContext, src []byte, pos int) (newPo
 	newPos = pos
 
 	for newPos < len(src) {
-		if src[newPos] == '\r' && ((newPos + 1) < len(src)) && (src[newPos+1] == '\n') {
+		if IsCRLF(src, newPos) {
 			/* reach message-body */
 			return newPos + 2, nil
 		}
@@ -241,34 +241,29 @@ func (this *SipHeaders) Parse(context *ParseContext, src []byte, pos int) (newPo
 		info, ok := GetSipHeaderInfo(fullName)
 		//ok = false
 		if ok {
-			if !info.allowMulti {
-				newPos, err = this.ParseSingleKnownHeader(context, src, newPos, info)
-			} else {
-				newPos, err = this.ParseMultiKnownHeader(context, src, newPos, info)
-			}
-			if err != nil {
-				return newPos, nil
-			}
+			newPos, err = this.parseKnownHeader(context, src, newPos, info)
 		} else {
-			/* unknown or unporecessed header */
-			newPos, err = this.ParseUnprocessedHeader(context, name, src, newPos, info)
-			if err != nil {
-				return newPos, nil
-			}
+			/* unknown header */
+			newPos, err = this.parseUnknownHeader(context, name, src, newPos, info)
+		}
+
+		if err != nil {
+			return newPos, nil
 		}
 
 	}
 	return newPos, nil
 }
 
-func (this *SipHeaders) ParseUnprocessedHeader(context *ParseContext, name AbnfRef, src []byte, pos int, info *SipHeaderInfo) (newPos int, err error) {
-	newPos = pos
-	header, addr := NewSipSingleHeader(context)
-	if header == nil {
-		return newPos, &AbnfError{"SipHeaders  parse: out of memory for unknown headers", src, newPos}
+func (this *SipHeaders) parseKnownHeader(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (newPos int, err error) {
+	if !info.allowMulti {
+		return this.parseSingleKnownHeader(context, src, pos, info)
 	}
-	header.name.SetValue(context, src[name.Begin:name.End])
-	header.value, newPos, err = ParseHeaderValue(context, src, newPos)
+	return this.parseMultiKnownHeader(context, src, pos, info)
+}
+
+func (this *SipHeaders) parseUnknownHeader(context *ParseContext, name AbnfRef, src []byte, pos int, info *SipHeaderInfo) (newPos int, err error) {
+	addr, newPos, err := parseOneUnparsableSingleHeader(context, name, src, pos, info)
 	if err != nil {
 		return newPos, err
 	}
@@ -276,44 +271,26 @@ func (this *SipHeaders) ParseUnprocessedHeader(context *ParseContext, name AbnfR
 	return newPos, nil
 }
 
-func (this *SipHeaders) ParseSingleKnownHeader(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (newPos int, err error) {
+func (this *SipHeaders) parseSingleKnownHeader(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (newPos int, err error) {
+	var addr AbnfPtr
+
 	newPos = pos
-	//*
 	_, ok := this.singleHeaders.GetHeaderByByteSlice(context, info.name)
 	if ok {
 		// discard this header
 		_, newPos, err = ParseHeaderValue(context, src, newPos)
 		return newPos, err
-	} //*/
+	}
 
 	if info.parseFunc != nil && info.needParse {
-		begin := newPos
-		newPos, parsed, err := info.parseFunc(context, src, newPos)
-		//newPos, parsed, err := ParseSipContentLength(context, src, newPos)
+		addr, newPos, err = parseOneParsableSingleHeader(context, src, newPos, info)
 		if err != nil {
 			return newPos, err
-		}
-
-		newHeader, addr := NewSipSingleHeader(context)
-		if newHeader == nil {
-			return newPos, &AbnfError{"SipHeaders  parse: out of memory for known single headers", src, newPos}
-		}
-		newHeader.info = info
-		newHeader.parsed = parsed
-		newHeader.name.SetValue(context, info.name)
-		if newPos > begin {
-			newHeader.value.SetValue(context, src[begin:newPos])
 		}
 		this.singleHeaders.AddHeader(context, addr)
 		return ParseCRLF(src, newPos)
 	} else {
-		newHeader, addr := NewSipSingleHeader(context)
-		if newHeader == nil {
-			return newPos, &AbnfError{"SipHeaders  parse: out of memory for known unprocessed single headers", src, newPos}
-		}
-		newHeader.info = info
-		newHeader.name.SetValue(context, info.name)
-		newHeader.value, newPos, err = ParseHeaderValue(context, src, newPos)
+		addr, newPos, err = parseOneUnparsableSingleHeader(context, AbnfRef{0, int32(len(info.name))}, src, newPos, info)
 		if err != nil {
 			return newPos, err
 		}
@@ -323,8 +300,9 @@ func (this *SipHeaders) ParseSingleKnownHeader(context *ParseContext, src []byte
 	return newPos, nil
 }
 
-func (this *SipHeaders) ParseMultiKnownHeader(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (newPos int, err error) {
+func (this *SipHeaders) parseMultiKnownHeader(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (newPos int, err error) {
 	var multiHeader *SipMultiHeader
+	//var addr AbnfPtr
 
 	newPos = pos
 	multiHeader, ok := this.multiHeaders.GetHeaderByByteSlice(context, info.name)
@@ -339,53 +317,7 @@ func (this *SipHeaders) ParseMultiKnownHeader(context *ParseContext, src []byte,
 		this.multiHeaders.AddHeader(context, addr)
 	}
 
-	//*
-	if info.parseFunc != nil && info.needParse {
-		for newPos < len(src) {
-
-			begin := newPos
-			newPos, parsed, err := info.parseFunc(context, src, newPos)
-			if err != nil {
-				return newPos, err
-			}
-
-			newHeader, addr := NewSipSingleHeader(context)
-			if newHeader == nil {
-				return newPos, &AbnfError{"SipHeaders  parse: out of memory for known multi headers", src, newPos}
-			}
-			newHeader.info = info
-			newHeader.parsed = parsed
-			newHeader.SetNameByteSlice(context, info.name)
-			if newPos > begin {
-				newHeader.SetValueByteSlice(context, src[begin:newPos])
-			}
-			multiHeader.AddHeader(context, addr)
-
-			// now should be COMMA or CRLF
-			newPos1, err := ParseSWSMark(src, newPos, ',')
-			if err != nil {
-				// should be CRLF
-				return ParseCRLF(src, newPos)
-			}
-			newPos = newPos1
-
-		}
-	} else {
-		// here one SipMultiHeader main contain some headers of same type seperated by COMMA
-		newHeader, addr := NewSipSingleHeader(context)
-		if newHeader == nil {
-			return newPos, &AbnfError{"SipHeaders  parse: out of memory for known unprocessed multi headers", src, newPos}
-		}
-		newHeader.info = info
-		newHeader.SetNameByteSlice(context, info.name)
-		newHeader.value, newPos, err = ParseHeaderValue(context, src, newPos)
-		if err != nil {
-			return newPos, err
-		}
-		multiHeader.AddHeader(context, addr)
-	}
-
-	return newPos, nil
+	return multiHeader.Parse(context, src, newPos, info)
 }
 
 func ParseHeaderName(context *ParseContext, src []byte, pos int) (name AbnfRef, newPos int, err error) {

@@ -46,45 +46,54 @@ func (this *SipDisplayName) Parse(context *ParseContext, src []byte, pos int) (n
 	}
 
 	if newPos < len(src) && src[newPos] == '"' {
-		this.isQuotedString = true
-		quotedString, addr := NewSipQuotedString(context)
-		if quotedString == nil {
-			return newPos, &AbnfError{"DisplayName parse: out of memory after first\"", src, newPos}
+		return this.parseQuotedString(context, src, newPos)
+	}
+
+	return this.parseTokens(context, src, newPos)
+}
+
+func (this *SipDisplayName) parseQuotedString(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	newPos = pos
+	this.isQuotedString = true
+	quotedString, addr := NewSipQuotedString(context)
+	if quotedString == nil {
+		return newPos, &AbnfError{"DisplayName parse: out of memory after first\"", src, newPos}
+	}
+	newPos, err = quotedString.Parse(context, src, newPos)
+	if err != nil {
+		return newPos, err
+	}
+	this.value = addr
+	return newPos, nil
+}
+
+func (this *SipDisplayName) parseTokens(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	newPos = pos
+	this.isQuotedString = false
+	newPos = pos
+	if !IsSipToken(src[newPos]) {
+		return newPos, &AbnfError{"DisplayName parse: no token or quoted-string", src, newPos}
+	}
+
+	nameBegin := newPos
+	for newPos < len(src) {
+		if !IsSipToken(src[newPos]) {
+			break
 		}
-		newPos, err = quotedString.Parse(context, src, newPos)
+
+		ref := AbnfRef{}
+		newPos = ref.Parse(src, newPos, IsSipToken)
+		newPos, err = ParseLWS(src, newPos)
 		if err != nil {
 			return newPos, err
 		}
-		this.value = addr
-
-	} else {
-		this.isQuotedString = false
-		newPos = pos
-		if !IsSipToken(src[newPos]) {
-			return newPos, &AbnfError{"DisplayName parse: no token or quoted-string", src, newPos}
-		}
-
-		nameBegin := newPos
-		for newPos < len(src) {
-			if !IsSipToken(src[newPos]) {
-				break
-			}
-
-			ref := AbnfRef{}
-			newPos = ref.Parse(src, newPos, IsSipToken)
-			newPos, err = ParseLWS(src, newPos)
-			if err != nil {
-				return newPos, err
-			}
-		}
-		name, addr := NewAbnfBuf(context)
-		if name == nil {
-			return newPos, &AbnfError{"DisplayName parse: out of memory after tokens", src, newPos}
-		}
-		name.SetValue(context, src[nameBegin:newPos])
-		this.value = addr
 	}
-
+	name, addr := NewAbnfBuf(context)
+	if name == nil {
+		return newPos, &AbnfError{"DisplayName parse: out of memory after tokens", src, newPos}
+	}
+	name.SetValue(context, src[nameBegin:newPos])
+	this.value = addr
 	return newPos, nil
 }
 

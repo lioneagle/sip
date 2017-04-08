@@ -71,11 +71,7 @@ func (this *TelUri) Equal(context *ParseContext, uri URI) bool {
 		return false
 	}
 
-	if (this.isGlobalNumber && !rhs.isGlobalNumber) || (!this.isGlobalNumber && rhs.isGlobalNumber) {
-		return false
-	}
-
-	if !this.number.Equal(context, &rhs.number) {
+	if !this.equalNumber(context, rhs) {
 		return false
 	}
 
@@ -88,6 +84,13 @@ func (this *TelUri) Equal(context *ParseContext, uri URI) bool {
 	}
 
 	return true
+}
+
+func (this *TelUri) equalNumber(context *ParseContext, rhs *TelUri) bool {
+	if (this.isGlobalNumber && !rhs.isGlobalNumber) || (!this.isGlobalNumber && rhs.isGlobalNumber) {
+		return false
+	}
+	return this.number.Equal(context, &rhs.number)
 }
 
 func (this *TelUri) ParseScheme(context *ParseContext, src []byte, pos int) (newPos int, err error) {

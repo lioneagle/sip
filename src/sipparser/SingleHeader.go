@@ -28,7 +28,7 @@ func GenerateSingleHeader(context *ParseContext, name, value string) (*SipSingle
 	if header == nil {
 		return nil, ABNF_PTR_NIL
 	}
-
+	header.SetInfo(name)
 	header.SetNameByteSlice(context, StringToByteSlice(name))
 	header.SetValueByteSlice(context, StringToByteSlice(value))
 	return header, addr
@@ -169,9 +169,9 @@ func (this *SipSingleHeaders) GetHeaderParsedByString(context *ParseContext, nam
 		return header.GetParsed(), true
 	}
 
-	if header.info == nil {
+	/*if header.info == nil {
 		header.SetInfo(name)
-	}
+	}*/
 
 	if header.info == nil || header.info.parseFunc == nil || !header.value.Exist() {
 		return ABNF_PTR_NIL, false
@@ -223,4 +223,39 @@ func (this *SipSingleHeaders) EncodeSameValues(context *ParseContext, buf *bytes
 
 func (this *SipSingleHeaders) String(context *ParseContext) string {
 	return AbnfEncoderToString(context, this)
+}
+
+func parseOneParsableSingleHeader(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (addr AbnfPtr, newPos int, err error) {
+	begin := pos
+	newPos, parsed, err := info.parseFunc(context, src, pos)
+	if err != nil {
+		return ABNF_PTR_NIL, newPos, err
+	}
+
+	newHeader, addr := NewSipSingleHeader(context)
+	if newHeader == nil {
+		return ABNF_PTR_NIL, newPos, &AbnfError{"SipHeaders  parse: out of memory for one known single header", src, newPos}
+	}
+	newHeader.info = info
+	newHeader.parsed = parsed
+	newHeader.SetNameByteSlice(context, info.name)
+	if newPos > begin {
+		newHeader.SetValueByteSlice(context, src[begin:newPos])
+	}
+	return addr, newPos, nil
+}
+
+func parseOneUnparsableSingleHeader(context *ParseContext, name AbnfRef, src []byte, pos int, info *SipHeaderInfo) (addr AbnfPtr, newPos int, err error) {
+	newPos = pos
+	header, addr := NewSipSingleHeader(context)
+	if header == nil {
+		return ABNF_PTR_NIL, newPos, &AbnfError{"SipHeaders  parse: out of memory for one unparsed headers", src, newPos}
+	}
+	header.SetNameByteSlice(context, src[name.Begin:name.End])
+	header.info = info
+	header.value, newPos, err = ParseHeaderValue(context, src, newPos)
+	if err != nil {
+		return ABNF_PTR_NIL, newPos, err
+	}
+	return addr, newPos, nil
 }

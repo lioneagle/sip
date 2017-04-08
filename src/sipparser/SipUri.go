@@ -59,11 +59,10 @@ func (this *SipUri) ParseAfterScheme(context *ParseContext, src []byte, pos int)
 	newPos = pos
 	this.Init()
 
-	newPos, err = this.ParseUserinfo(context, src, newPos)
+	newPos, err = this.parseUserinfo(context, src, newPos)
 	if err != nil {
 		return newPos, err
 	}
-	//return newPos, nil
 
 	newPos, err = this.hostport.Parse(context, src, newPos)
 	if err != nil {
@@ -99,7 +98,7 @@ func (this *SipUri) ParseAfterSchemeWithoutParam(context *ParseContext, src []by
 	newPos = pos
 	this.Init()
 
-	newPos, err = this.ParseUserinfo(context, src, newPos)
+	newPos, err = this.parseUserinfo(context, src, newPos)
 	if err != nil {
 		return newPos, err
 	}
@@ -148,7 +147,7 @@ func (this *SipUri) EqualRFC3261(context *ParseContext, uri URI) bool {
 		return false
 	}
 
-	if (this.isSecure && !rhs.isSecure) || (!this.isSecure && rhs.isSecure) {
+	if !this.equalScheme(context, rhs) {
 		return false
 	}
 
@@ -171,16 +170,24 @@ func (this *SipUri) EqualRFC3261(context *ParseContext, uri URI) bool {
 	return true
 }
 
-func (this *SipUri) EqualUserinfo(context *ParseContext, rhs *SipUri) bool {
+func (this *SipUri) equalScheme(context *ParseContext, rhs *SipUri) bool {
+	return (this.isSecure && rhs.isSecure) || (!this.isSecure && !rhs.isSecure)
+}
+
+func (this *SipUri) equalUser(context *ParseContext, rhs *SipUri) bool {
 	if (this.user.Exist() && !rhs.user.Exist()) || (!this.user.Exist() && rhs.user.Exist()) {
 		return false
 	}
 
-	if (this.password.Exist() && !rhs.password.Exist()) || (!this.password.Exist() && rhs.password.Exist()) {
+	if this.user.Exist() && !this.user.Equal(context, &rhs.user) {
 		return false
 	}
 
-	if this.user.Exist() && !this.user.Equal(context, &rhs.user) {
+	return true
+}
+
+func (this *SipUri) equalPassword(context *ParseContext, rhs *SipUri) bool {
+	if (this.password.Exist() && !rhs.password.Exist()) || (!this.password.Exist() && rhs.password.Exist()) {
 		return false
 	}
 
@@ -191,15 +198,31 @@ func (this *SipUri) EqualUserinfo(context *ParseContext, rhs *SipUri) bool {
 	return true
 }
 
+func (this *SipUri) EqualUserinfo(context *ParseContext, rhs *SipUri) bool {
+	if !this.equalUser(context, rhs) {
+		return false
+	}
+
+	return this.equalPassword(context, rhs)
+}
+
+func hasSipPrefixNoCase(src []byte) bool {
+	return len(src) >= 4 && ((src[0] | 0x20) == 's') && ((src[1] | 0x20) == 'i') && ((src[2] | 0x20) == 'p') && ((src[3] | 0x20) == ':')
+}
+
+func hasSipsPrefixNoCase(src []byte) bool {
+	return len(src) >= 5 && ((src[0] | 0x20) == 's') && ((src[1] | 0x20) == 'i') && ((src[2] | 0x20) == 'p') &&
+		((src[3] | 0x20) == 's') && ((src[4] | 0x20) == ':')
+}
+
 func (this *SipUri) ParseScheme(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	src1 := src[pos:]
-	if len(src) >= 4 && ((src1[0] | 0x20) == 's') && ((src1[1] | 0x20) == 'i') && ((src1[2] | 0x20) == 'p') && ((src1[3] | 0x20) == ':') {
+	if hasSipPrefixNoCase(src1) {
 		this.SetSipUri()
 		return pos + 4, nil
 	}
 
-	if len(src) >= 5 && ((src1[0] | 0x20) == 's') && ((src1[1] | 0x20) == 'i') && ((src1[2] | 0x20) == 'p') &&
-		((src1[3] | 0x20) == 's') && ((src1[4] | 0x20) == ':') {
+	if hasSipsPrefixNoCase(src1) {
 		this.SetSipsUri()
 		return pos + 5, nil
 	}
@@ -224,7 +247,7 @@ func (this *SipUri) ParseScheme(context *ParseContext, src []byte, pos int) (new
 	*/
 }
 
-func (this *SipUri) ParseUserinfo(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+func (this *SipUri) parseUserinfo(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
 	hasUserinfo := findUserinfo(src, newPos)
 	if hasUserinfo {
@@ -237,19 +260,9 @@ func (this *SipUri) ParseUserinfo(context *ParseContext, src []byte, pos int) (n
 			return newPos, &AbnfError{"sip-uri parse: parse user-info failed: reach end after user", src, newPos}
 		}
 
-		if src[newPos] == ':' {
-			newPos++
-			if newPos >= len(src) {
-				return newPos, &AbnfError{"sip-uri parse: parse user-info failed: reach end after password :", src, newPos}
-			}
-
-			if IsSipPassword(src[newPos]) {
-				newPos, err = this.password.ParseEscapable(context, src, newPos, IsSipPassword)
-				if err != nil {
-					return newPos, err
-				}
-			}
-			this.password.SetExist()
+		newPos, err = this.parsePassword(context, src, newPos)
+		if err != nil {
+			return newPos, err
 		}
 
 		if newPos >= len(src) {
@@ -261,6 +274,26 @@ func (this *SipUri) ParseUserinfo(context *ParseContext, src []byte, pos int) (n
 		}
 
 		newPos++
+	}
+
+	return newPos, nil
+}
+
+func (this *SipUri) parsePassword(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	newPos = pos
+	if src[newPos] == ':' {
+		newPos++
+		if newPos >= len(src) {
+			return newPos, &AbnfError{"sip-uri parse: parse user-info failed: reach end after password :", src, newPos}
+		}
+
+		if IsSipPassword(src[newPos]) {
+			newPos, err = this.password.ParseEscapable(context, src, newPos, IsSipPassword)
+			if err != nil {
+				return newPos, err
+			}
+		}
+		this.password.SetExist()
 	}
 
 	return newPos, nil

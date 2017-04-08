@@ -256,17 +256,13 @@ func ParseLWS(src []byte, pos int) (newPos int, err error) {
 	 * 2. WSP's defination is from RFC2234 Section 6.1, page 12
 	 *
 	 */
-	for newPos = pos; newPos < len(src); newPos++ {
-		if !IsWspChar(src[newPos]) {
-			break
-		}
-	}
+	newPos = eatWsp(src, pos)
 
 	if newPos >= len(src) {
 		return newPos, nil
 	}
 
-	if (newPos+1 < len(src)) && (src[newPos] == '\r') && (src[newPos+1] == '\n') {
+	if IsCRLF(src, newPos) {
 		newPos += 2
 
 		if newPos >= len(src) {
@@ -277,14 +273,19 @@ func ParseLWS(src []byte, pos int) (newPos int, err error) {
 			return newPos, &AbnfError{"LWS parse: no WSP after CRLF in LWS", src, newPos}
 		}
 
-		for ; newPos < len(src); newPos++ {
-			if !IsWspChar(src[newPos]) {
-				break
-			}
-		}
+		newPos = eatWsp(src, newPos)
 	}
 
 	return newPos, nil
+}
+
+func eatWsp(src []byte, pos int) (newPos int) {
+	for newPos = pos; newPos < len(src); newPos++ {
+		if !IsWspChar(src[newPos]) {
+			break
+		}
+	}
+	return newPos
 }
 
 func ParseLeftAngleQuote(src []byte, pos int) (newPos int, err error) {
@@ -333,8 +334,12 @@ func ParseRightAngleQuote(src []byte, pos int) (newPos int, err error) {
 	return ParseSWS(src, newPos+1)
 }
 
+func IsCRLF(src []byte, pos int) bool {
+	return ((pos + 1) < len(src)) && (src[pos] == '\r') && (src[pos+1] == '\n')
+}
+
 func ParseCRLF(src []byte, pos int) (newPos int, err error) {
-	if ((pos + 1) >= len(src)) || (src[pos] != '\r') || (src[pos+1] != '\n') {
+	if !IsCRLF(src, pos) {
 		return pos, &AbnfError{"CRLF parse: wrong CRLF", src, pos}
 	}
 	return pos + 2, nil
