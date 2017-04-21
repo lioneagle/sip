@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"logger"
 	"sync/atomic"
 	"time"
 	"vos"
@@ -105,6 +106,21 @@ func (this *eventStat) Print() {
 }
 
 func main() {
+	logger.SetLevel(logger.DEBUG)
+	logger.Emergency("test EMERGENCY")
+	logger.Alert("test ALERT")
+	logger.Critical("test CRITICAL")
+
+	logger.Error("test ERROR")
+	logger.Warning("test WARNING")
+	logger.Notice("test NOTICE")
+	logger.Info("test INFO")
+	logger.Debug("test DEBUG")
+
+	logger.Print("test Print")
+	logger.Print("test PrintStack")
+	logger.PrintStack()
+	return
 
 	stat.Clear()
 

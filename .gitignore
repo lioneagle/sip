@@ -19,6 +19,10 @@ bin
 log_file
 *.svg
 *.csv
+*.std
+*.log
+sipp_gui_client
+sipp_gui_server
 test_temp
 
 # C extensions
