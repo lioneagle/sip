@@ -33,7 +33,7 @@ func (this *SipMultiHeader) HasShortName() bool { return this.HasInfo() && this.
 func (this *SipMultiHeader) ShortName() []byte  { return this.info.ShortName() }
 
 func (this *SipMultiHeader) SetInfo(name string) {
-	this.info, _ = GetSipHeaderInfo(name)
+	this.info, _ = GetSipHeaderInfo(StringToByteSlice(name))
 }
 
 func (this *SipMultiHeader) Size() int32 { return this.headers.Size() }
@@ -174,6 +174,16 @@ func (this *SipMultiHeaders) RemoveHeaderByNameString(context *ParseContext, nam
 
 func (this *SipMultiHeaders) GetHeaderByString(context *ParseContext, name string) (val *SipMultiHeader, ok bool) {
 	return this.GetHeaderByByteSlice(context, StringToByteSlice(name))
+}
+
+func (this *SipMultiHeaders) GetHeaderByIndex(context *ParseContext, headerIndex uint32) (val *SipMultiHeader, ok bool) {
+	for e := this.Front(context); e != nil; e = e.Next(context) {
+		v := e.Value.GetSipMultiHeader(context)
+		if v.info != nil && v.info.index == headerIndex {
+			return v, true
+		}
+	}
+	return nil, false
 }
 
 // remove Content-* headers from sip message except Content-Length and Content-Type*/

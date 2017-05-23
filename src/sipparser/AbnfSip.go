@@ -1,6 +1,7 @@
 package sipparser
 
 import (
+	//"fmt"
 	"unsafe"
 )
 
@@ -104,6 +105,97 @@ const (
 	ABNF_SIP_ADDR_SPEC = int32(0)
 	ABNF_SIP_NAME_ADDR = int32(1)
 )
+
+const (
+	ABNF_SIP_HDR_UNKNOWN             uint32 = 0
+	ABNF_SIP_HDR_FROM                uint32 = 1
+	ABNF_SIP_HDR_TO                  uint32 = 2
+	ABNF_SIP_HDR_VIA                 uint32 = 3
+	ABNF_SIP_HDR_CALL_ID             uint32 = 4
+	ABNF_SIP_HDR_CSEQ                uint32 = 5
+	ABNF_SIP_HDR_CONTENT_LENGTH      uint32 = 6
+	ABNF_SIP_HDR_CONTENT_TYPE        uint32 = 7
+	ABNF_SIP_HDR_CONTACT             uint32 = 8
+	ABNF_SIP_HDR_MAX_FORWARDS        uint32 = 9
+	ABNF_SIP_HDR_ROUTE               uint32 = 10
+	ABNF_SIP_HDR_RECORD_ROUTE        uint32 = 11
+	ABNF_SIP_HDR_CONTENT_DISPOSITION uint32 = 12
+	ABNF_SIP_HDR_ALLOW               uint32 = 13
+	ABNF_SIP_HDR_CONTENT_ENCODING    uint32 = 14
+	ABNF_SIP_HDR_DATE                uint32 = 15
+	ABNF_SIP_HDR_SUBJECT             uint32 = 16
+	ABNF_SIP_HDR_SUPPORTED           uint32 = 17
+	ABNF_SIP_HDR_ALLOW_EVENT         uint32 = 18
+	ABNF_SIP_HDR_EVENT               uint32 = 19
+	ABNF_SIP_HDR_REFER_TO            uint32 = 20
+	ABNF_SIP_HDR_ACCEPT_CONTACT      uint32 = 21
+	ABNF_SIP_HDR_REJECT_CONTACT      uint32 = 22
+	ABNF_SIP_HDR_REQUEST_DISPOSITION uint32 = 23
+	ABNF_SIP_HDR_REFERRED_BY         uint32 = 24
+	ABNF_SIP_HDR_SESSION_EXPIRES     uint32 = 25
+	ABNF_SIP_HDR_MIME_VERSION        uint32 = 26
+	ABNF_SIP_HDR_TOTAL_NUM           uint32 = iota
+)
+
+var g_SipHeaderInfos = []*SipHeaderInfo{
+	&SipHeaderInfo{name: []byte("unknown"), hasShortName: false, needParse: false},
+	&SipHeaderInfo{name: []byte("From"), hasShortName: true, shortName: []byte("f"), needParse: true, parseFunc: ParseSipFrom, encodeFunc: EncodeSipFromValue},
+	&SipHeaderInfo{name: []byte("To"), hasShortName: true, shortName: []byte("t"), needParse: true, parseFunc: ParseSipTo, encodeFunc: EncodeSipToValue},
+	&SipHeaderInfo{name: []byte("Via"), hasShortName: true, shortName: []byte("v"), allowMulti: true, needParse: true, parseFunc: ParseSipVia, encodeFunc: EncodeSipViaValue},
+	&SipHeaderInfo{name: []byte("Call-ID"), hasShortName: true, shortName: []byte("i"), needParse: true, parseFunc: ParseSipCallId, encodeFunc: EncodeSipCallIdValue},
+	&SipHeaderInfo{name: []byte("CSeq"), needParse: true, parseFunc: ParseSipCseq, encodeFunc: EncodeSipCseqValue},
+	&SipHeaderInfo{name: []byte("Content-Length"), hasShortName: true, shortName: []byte("l"), needParse: true, parseFunc: ParseSipContentLength, encodeFunc: EncodeSipContentLengthValue},
+	&SipHeaderInfo{name: []byte("Content-Type"), hasShortName: true, shortName: []byte("c"), needParse: true, parseFunc: ParseSipContentType, encodeFunc: EncodeSipContentTypeValue},
+	&SipHeaderInfo{name: []byte("Contact"), hasShortName: true, shortName: []byte("m"), allowMulti: true, needParse: true, parseFunc: ParseSipContact, encodeFunc: EncodeSipContactValue},
+	&SipHeaderInfo{name: []byte("Max-Forwards"), needParse: true, parseFunc: ParseSipMaxForwards, encodeFunc: EncodeSipMaxForwardsValue},
+	&SipHeaderInfo{name: []byte("Route"), allowMulti: true, needParse: true, parseFunc: ParseSipRoute, encodeFunc: EncodeSipRouteValue},
+	&SipHeaderInfo{name: []byte("Record-Route"), allowMulti: true, needParse: true, parseFunc: ParseSipRecordRoute, encodeFunc: EncodeSipRecordRouteValue},
+	&SipHeaderInfo{name: []byte("Content-Disposition"), needParse: true, parseFunc: ParseSipContentDisposition, encodeFunc: EncodeSipContentDispositionValue},
+	&SipHeaderInfo{name: []byte("Allow"), allowMulti: true},
+	&SipHeaderInfo{name: []byte("Content-Encoding"), hasShortName: true, shortName: []byte("e"), allowMulti: true},
+	&SipHeaderInfo{name: []byte("Date")},
+	&SipHeaderInfo{name: []byte("Subject"), hasShortName: true, shortName: []byte("s")},
+	&SipHeaderInfo{name: []byte("Supported"), hasShortName: true, shortName: []byte("k"), allowMulti: true},
+	&SipHeaderInfo{name: []byte("Allow-Events"), hasShortName: true, shortName: []byte("u")},
+	&SipHeaderInfo{name: []byte("Event"), hasShortName: true, shortName: []byte("o")},
+	&SipHeaderInfo{name: []byte("Refer-To"), hasShortName: true, shortName: []byte("r")},
+	&SipHeaderInfo{name: []byte("Accept-Contact"), hasShortName: true, shortName: []byte("a"), allowMulti: true},
+	&SipHeaderInfo{name: []byte("Reject-Contact"), hasShortName: true, shortName: []byte("j"), allowMulti: true},
+	&SipHeaderInfo{name: []byte("Request-Disposition"), hasShortName: true, shortName: []byte("d"), allowMulti: true},
+	&SipHeaderInfo{name: []byte("Referred-By"), hasShortName: true, shortName: []byte("b")},
+	&SipHeaderInfo{name: []byte("Session-Expires"), hasShortName: true, shortName: []byte("x")},
+	&SipHeaderInfo{name: []byte("MIME-Version")},
+}
+
+func init() {
+	//fmt.Println("sipparser init")
+	for i, v := range g_SipHeaderInfos {
+		v.index = uint32(i)
+	}
+}
+
+func GetSipHeaderIndex(name []byte) uint32 {
+	var i uint32
+	for i = 1; i < ABNF_SIP_HDR_TOTAL_NUM; i++ {
+		info := g_SipHeaderInfos[i]
+		if EqualNoCase(name, info.name) {
+			return i
+		}
+		if info.hasShortName && EqualNoCase(name, info.shortName) {
+			return i
+		}
+	}
+	return 0
+}
+
+func GetSipHeaderInfo(name []byte) (info *SipHeaderInfo, ok bool) {
+	index := GetSipHeaderIndex(name)
+
+	if index == ABNF_SIP_HDR_UNKNOWN {
+		return nil, false
+	}
+	return g_SipHeaderInfos[index], true
+}
 
 func (this AbnfPtr) GetSipSingleHeader(context *ParseContext) *SipSingleHeader {
 	return (*SipSingleHeader)(unsafe.Pointer(&context.allocator.mem[this]))

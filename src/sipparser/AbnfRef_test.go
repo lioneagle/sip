@@ -27,17 +27,17 @@ func TestAbnfRefParse(t *testing.T) {
 		newPos := ref.Parse([]byte(v.src), 0, v.isInCharset)
 
 		if ref.Begin != v.begin {
-			t.Errorf("%s[%d]: begin = %d, wanted = %d\n", prefix, i, v.name, ref.Begin, v.begin)
+			t.Errorf("%s[%d]: %s, begin = %d, wanted = %d\n", prefix, i, v.name, ref.Begin, v.begin)
 			continue
 		}
 
 		if ref.End != v.end {
-			t.Errorf("%s[%d]: end = %d, wanted = %d\n", prefix, i, v.name, ref.End, v.end)
+			t.Errorf("%s[%d]: %s, end = %d, wanted = %d\n", prefix, i, v.name, ref.End, v.end)
 			continue
 		}
 
 		if newPos != v.newPos {
-			t.Errorf("%s[%d]: newPos = %d, wanted = %d\n", prefix, i, v.name, newPos, v.newPos)
+			t.Errorf("%s[%d]: %s, newPos = %d, wanted = %d\n", prefix, i, v.name, newPos, v.newPos)
 			continue
 		}
 	}

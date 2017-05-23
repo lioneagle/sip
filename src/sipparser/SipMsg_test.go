@@ -51,7 +51,7 @@ func TestSipMsgParse(t *testing.T) {
 		}
 	}
 
-} //*/
+}
 
 func TestSipMsgParseWithOneBody(t *testing.T) {
 
@@ -105,7 +105,7 @@ func TestSipMsgParseWithOneBody(t *testing.T) {
 		t.Errorf("%s failed: \nencode = \n%s \n\nwanted = \n%s\n", prefix, encoded, dst)
 		return
 	}
-} //*/
+}
 
 func TestSipMsgParseWithMultiBody(t *testing.T) {
 
@@ -179,7 +179,7 @@ func TestSipMsgParseWithMultiBody(t *testing.T) {
 		t.Errorf("%s failed: \nencode = \n%s \n\nwanted = \n%s\n", prefix, encoded, dst)
 		return
 	}
-} //*/
+}
 
 func TestSipMsgParseWithMultiBody2(t *testing.T) {
 

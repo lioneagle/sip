@@ -71,8 +71,9 @@ func (this *AbnfBuf) SetValue(context *ParseContext, value []byte) {
 
 func (this *AbnfBuf) allocMem(context *ParseContext, size int32) bool {
 	if size == 0 {
-		this.SetNonExist()
-		this.setSize(0)
+		//this.SetNonExist()
+		//this.setSize(0)
+		this.size = 0
 		return true
 	}
 
@@ -84,8 +85,11 @@ func (this *AbnfBuf) allocMem(context *ParseContext, size int32) bool {
 		}
 		this.addr = addr
 	}
-	this.SetExist()
-	this.setSize(size)
+
+	this.size = uint32(size) | ABNF_BUF_EXIST_BIT
+
+	//this.SetExist()
+	//this.setSize(size)
 	return true
 }
 

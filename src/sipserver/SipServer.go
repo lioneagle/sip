@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"logger"
+	//"logger"
+	"sipparser"
 	"sync/atomic"
-	"time"
+	//"time"
 	"vos"
 )
 
@@ -105,40 +106,79 @@ func (this *eventStat) Print() {
 
 }
 
+var msg string = "INVITE sip:6135000@24.15.255.4 SIP/2.0\r\n" +
+	"Content-Length: 226\r\n" +
+	"Via: SIP/2.0/UDP 24.15.255.101:5060\r\n" +
+	"From: \"User ID\" <sip:6140000@24.15.255.4>;tag=dab70900252036d7134be-4ec05abe\r\n" +
+	"To: <sip:6135000@24.15.255.4>\r\n" +
+	"Call-ID: 0009b7da-0352000f-30a69b83-0e7b53d6@24.15.255.101\r\n" +
+	"CSeq: 101 INVITE\r\n" +
+	"Expires: 180\r\n" +
+	"User-Agent: Cisco-SIP-IP-Phone/2\r\n" +
+	"Accept: application/sdp\r\n" +
+	"Contact: sip:6140000@24.15.255.101:5060\r\n" +
+	"Content-Type: application/sdp\r\n" +
+	"\r\n"
+
 func main() {
-	logger.SetLevel(logger.DEBUG)
-	logger.Emergency("test EMERGENCY")
-	logger.Alert("test ALERT")
-	logger.Critical("test CRITICAL")
+	//fmt.Println("ABNF_SIP_HDR_TOTAL_NUM =", sipparser.ABNF_SIP_HDR_TOTAL_NUM)
+	context := sipparser.NewParseContext()
+	context.SetAllocator(sipparser.NewMemAllocator(1024 * 30))
+	sipmsg, _ := sipparser.NewSipMsg(context)
+	remain := context.Used()
+	msg1 := []byte(msg)
 
-	logger.Error("test ERROR")
-	logger.Warning("test WARNING")
-	logger.Notice("test NOTICE")
-	logger.Info("test INFO")
-	logger.Debug("test DEBUG")
+	for i := 0; i < 100000; i++ {
+		context.ClearAllocNum()
+		context.FreePart(remain)
+		_, err := sipmsg.Parse(context, msg1, 0)
+		if err != nil {
+			fmt.Println("parse sip msg failed, err =", err.Error())
+			fmt.Println("msg1 = ", string(msg1))
+			break
+		} //*/
+	}
 
-	logger.Print("test Print")
-	logger.Print("test PrintStack")
-	logger.PrintStack()
-	return
+	/*fmt.Println("Count1 =", sipparser.Count1)
+	fmt.Println("Count2 =", sipparser.Count2)
+	fmt.Println("Count3 =", sipparser.Count3)
+	fmt.Println("Count4 =", sipparser.Count4)*/
 
-	stat.Clear()
+	/*
+		logger.SetLevel(logger.DEBUG)
+		logger.Emergency("test EMERGENCY")
+		logger.Alert("test ALERT")
+		logger.Critical("test CRITICAL")
 
-	clientTask := &taskClient{}
-	serverTask := &taskServer{}
+		logger.Error("test ERROR")
+		logger.Warning("test WARNING")
+		logger.Notice("test NOTICE")
+		logger.Info("test INFO")
+		logger.Debug("test DEBUG")
 
-	client, _ := vos.CreateSyncTask("client", clientTask, 1)
-	defer vos.DestroyTask(client)
+		logger.Print("test Print")
+		logger.Print("test PrintStack")
+		logger.PrintStack()
+		return
 
-	server, _ := vos.CreateAsyncTask("server", serverTask, 1)
-	defer vos.DestroyTask(server)
+		stat.Clear()
 
-	vos.StartTask(server)
-	vos.StartTask(client)
+		clientTask := &taskClient{}
+		serverTask := &taskServer{}
 
-	var seconds uint64 = 3
+		client, _ := vos.CreateSyncTask("client", clientTask, 1)
+		defer vos.DestroyTask(client)
 
-	time.Sleep(time.Second * time.Duration(seconds))
+		server, _ := vos.CreateAsyncTask("server", serverTask, 1)
+		defer vos.DestroyTask(server)
 
-	stat.Print()
+		vos.StartTask(server)
+		vos.StartTask(client)
+
+		var seconds uint64 = 3
+
+		time.Sleep(time.Second * time.Duration(seconds))
+
+		stat.Print()
+	*/
 }

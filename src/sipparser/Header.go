@@ -49,6 +49,7 @@ type SipPaseOneHeaderValue func(context *ParseContext, src []byte, pos int) (new
 type SipEncodeOneHeaderValue func(parsed AbnfPtr, context *ParseContext, buf *bytes.Buffer)
 
 type SipHeaderInfo struct {
+	index        uint32
 	name         []byte
 	hasShortName bool
 	shortName    []byte
@@ -62,42 +63,34 @@ func (this *SipHeaderInfo) AllowMulti() bool   { return this.allowMulti }
 func (this *SipHeaderInfo) HasShortName() bool { return this.hasShortName }
 func (this *SipHeaderInfo) ShortName() []byte  { return this.shortName }
 
-var g_SipHeaderInfoMaps = map[string]SipHeaderInfo{
-	"from":    {name: []byte("From"), hasShortName: true, shortName: []byte("f"), needParse: true, parseFunc: ParseSipFrom, encodeFunc: EncodeSipFromValue},
-	"to":      {name: []byte("To"), hasShortName: true, shortName: []byte("t"), needParse: true, parseFunc: ParseSipTo, encodeFunc: EncodeSipToValue},
-	"via":     {name: []byte("Via"), hasShortName: true, shortName: []byte("v"), allowMulti: true, needParse: true, parseFunc: ParseSipVia, encodeFunc: EncodeSipViaValue},
-	"call-id": {name: []byte("Call-ID"), hasShortName: true, shortName: []byte("i"), needParse: true, parseFunc: ParseSipCallId, encodeFunc: EncodeSipCallIdValue},
-	"cseq":    {name: []byte("CSeq"), needParse: true, parseFunc: ParseSipCseq, encodeFunc: EncodeSipCseqValue},
-
-	"allow":               {name: []byte("Allow"), allowMulti: true},
-	"contact":             {name: []byte("Contact"), hasShortName: true, shortName: []byte("m"), allowMulti: true, needParse: true, parseFunc: ParseSipContact, encodeFunc: EncodeSipContactValue},
-	"content-disposition": {name: []byte("Content-Disposition"), needParse: true, parseFunc: ParseSipContentDisposition, encodeFunc: EncodeSipContentDispositionValue},
-	"content-encoding":    {name: []byte("Content-Encoding"), hasShortName: true, shortName: []byte("e"), allowMulti: true},
-	"content-length":      {name: []byte("Content-Length"), hasShortName: true, shortName: []byte("l"), needParse: true, parseFunc: ParseSipContentLength, encodeFunc: EncodeSipContentLengthValue},
-	"content-type":        {name: []byte("Content-Type"), hasShortName: true, shortName: []byte("c"), needParse: true, parseFunc: ParseSipContentType, encodeFunc: EncodeSipContentTypeValue},
-
-	"date": {name: []byte("Date")},
-
-	"max-forwards": {name: []byte("Max-Forwards"), needParse: true, parseFunc: ParseSipMaxForwards, encodeFunc: EncodeSipMaxForwardsValue},
-
-	"record-route": {name: []byte("Record-Route"), allowMulti: true, needParse: true, parseFunc: ParseSipRecordRoute, encodeFunc: EncodeSipRecordRouteValue},
-	"route":        {name: []byte("Route"), allowMulti: true, needParse: true, parseFunc: ParseSipRoute, encodeFunc: EncodeSipRouteValue},
-
-	"subject":   {name: []byte("Subject"), hasShortName: true, shortName: []byte("s")},
-	"supported": {name: []byte("Supported"), hasShortName: true, shortName: []byte("k"), allowMulti: true},
-
-	"allow-events": {name: []byte("Allow-Events"), hasShortName: true, shortName: []byte("u")},
-	"event":        {name: []byte("Event"), hasShortName: true, shortName: []byte("o")},
-
-	"refer-to":            {name: []byte("Refer-To"), hasShortName: true, shortName: []byte("r")},
-	"accept-contact":      {name: []byte("Accept-Contact"), hasShortName: true, shortName: []byte("a"), allowMulti: true},
-	"reject-contact":      {name: []byte("Reject-Contact"), hasShortName: true, shortName: []byte("j"), allowMulti: true},
-	"request-disposition": {name: []byte("Request-Disposition"), hasShortName: true, shortName: []byte("d"), allowMulti: true},
-
-	"referred-by":     {name: []byte("Referred-By"), hasShortName: true, shortName: []byte("b")},
-	"session-expires": {name: []byte("Session-Expires"), hasShortName: true, shortName: []byte("x")},
-
-	"mime-version": {name: []byte("MIME-Version")},
+/*
+var g_SipHeaderInfoMaps = map[string]*SipHeaderInfo{
+	"from":                &SipHeaderInfo{name: []byte("From"), hasShortName: true, shortName: []byte("f"), needParse: true, parseFunc: ParseSipFrom, encodeFunc: EncodeSipFromValue},
+	"to":                  &SipHeaderInfo{name: []byte("To"), hasShortName: true, shortName: []byte("t"), needParse: true, parseFunc: ParseSipTo, encodeFunc: EncodeSipToValue},
+	"via":                 &SipHeaderInfo{name: []byte("Via"), hasShortName: true, shortName: []byte("v"), allowMulti: true, needParse: true, parseFunc: ParseSipVia, encodeFunc: EncodeSipViaValue},
+	"call-id":             &SipHeaderInfo{name: []byte("Call-ID"), hasShortName: true, shortName: []byte("i"), needParse: true, parseFunc: ParseSipCallId, encodeFunc: EncodeSipCallIdValue},
+	"cseq":                &SipHeaderInfo{name: []byte("CSeq"), needParse: true, parseFunc: ParseSipCseq, encodeFunc: EncodeSipCseqValue},
+	"allow":               &SipHeaderInfo{name: []byte("Allow"), allowMulti: true},
+	"contact":             &SipHeaderInfo{name: []byte("Contact"), hasShortName: true, shortName: []byte("m"), allowMulti: true, needParse: true, parseFunc: ParseSipContact, encodeFunc: EncodeSipContactValue},
+	"content-disposition": &SipHeaderInfo{name: []byte("Content-Disposition"), needParse: true, parseFunc: ParseSipContentDisposition, encodeFunc: EncodeSipContentDispositionValue},
+	"content-encoding":    &SipHeaderInfo{name: []byte("Content-Encoding"), hasShortName: true, shortName: []byte("e"), allowMulti: true},
+	"content-length":      &SipHeaderInfo{name: []byte("Content-Length"), hasShortName: true, shortName: []byte("l"), needParse: true, parseFunc: ParseSipContentLength, encodeFunc: EncodeSipContentLengthValue},
+	"content-type":        &SipHeaderInfo{name: []byte("Content-Type"), hasShortName: true, shortName: []byte("c"), needParse: true, parseFunc: ParseSipContentType, encodeFunc: EncodeSipContentTypeValue},
+	"date":                &SipHeaderInfo{name: []byte("Date")},
+	"max-forwards":        &SipHeaderInfo{name: []byte("Max-Forwards"), needParse: true, parseFunc: ParseSipMaxForwards, encodeFunc: EncodeSipMaxForwardsValue},
+	"record-route":        &SipHeaderInfo{name: []byte("Record-Route"), allowMulti: true, needParse: true, parseFunc: ParseSipRecordRoute, encodeFunc: EncodeSipRecordRouteValue},
+	"route":               &SipHeaderInfo{name: []byte("Route"), allowMulti: true, needParse: true, parseFunc: ParseSipRoute, encodeFunc: EncodeSipRouteValue},
+	"subject":             &SipHeaderInfo{name: []byte("Subject"), hasShortName: true, shortName: []byte("s")},
+	"supported":           &SipHeaderInfo{name: []byte("Supported"), hasShortName: true, shortName: []byte("k"), allowMulti: true},
+	"allow-events":        &SipHeaderInfo{name: []byte("Allow-Events"), hasShortName: true, shortName: []byte("u")},
+	"event":               &SipHeaderInfo{name: []byte("Event"), hasShortName: true, shortName: []byte("o")},
+	"refer-to":            &SipHeaderInfo{name: []byte("Refer-To"), hasShortName: true, shortName: []byte("r")},
+	"accept-contact":      &SipHeaderInfo{name: []byte("Accept-Contact"), hasShortName: true, shortName: []byte("a"), allowMulti: true},
+	"reject-contact":      &SipHeaderInfo{name: []byte("Reject-Contact"), hasShortName: true, shortName: []byte("j"), allowMulti: true},
+	"request-disposition": &SipHeaderInfo{name: []byte("Request-Disposition"), hasShortName: true, shortName: []byte("d"), allowMulti: true},
+	"referred-by":         &SipHeaderInfo{name: []byte("Referred-By"), hasShortName: true, shortName: []byte("b")},
+	"session-expires":     &SipHeaderInfo{name: []byte("Session-Expires"), hasShortName: true, shortName: []byte("x")},
+	"mime-version":        &SipHeaderInfo{name: []byte("MIME-Version")},
 }
 
 func GetSipHeaderInfo(name string) (info *SipHeaderInfo, ok bool) {
@@ -106,8 +99,8 @@ func GetSipHeaderInfo(name string) (info *SipHeaderInfo, ok bool) {
 	if !ok {
 		return nil, false
 	}
-	return &info1, true
-}
+	return info1, true
+}*
 
 /*
 type SipHeaderType interface {
@@ -187,8 +180,18 @@ func (this *SipHeaders) CreateSingleHeader(context *ParseContext, name string) (
 	if header == nil {
 		return nil, ABNF_PTR_NIL
 	}
-	info, _ := GetSipHeaderInfo(name)
+	info, _ := GetSipHeaderInfo(StringToByteSlice(name))
 	header.info = info
+	return header, addr
+}
+
+func (this *SipHeaders) CreateSingleHeaderEx(context *ParseContext, headerIndex uint32) (*SipSingleHeader, AbnfPtr) {
+	header, addr := NewSipSingleHeader(context)
+	if header == nil {
+		return nil, ABNF_PTR_NIL
+	}
+
+	header.info = g_SipHeaderInfos[headerIndex]
 	return header, addr
 }
 
@@ -212,7 +215,7 @@ func (this *SipHeaders) CreateContentLength(context *ParseContext, size uint32) 
 		return nil
 	}
 
-	contentLength, addr := this.CreateSingleHeader(context, ABNF_NAME_SIP_HDR_CONTENT_LENGTH)
+	contentLength, addr := this.CreateSingleHeaderEx(context, ABNF_SIP_HDR_CONTENT_LENGTH)
 	if contentLength == nil {
 		return &AbnfError{"SipHeaders: out of memory for creating Content-Length", nil, 0}
 	}
@@ -244,9 +247,9 @@ func (this *SipHeaders) Parse(context *ParseContext, src []byte, pos int) (newPo
 
 		total_headers++
 
-		fullName := GetSipHeaderFullName(ByteSliceToString(src[name.Begin:name.End]))
-
-		info, ok := GetSipHeaderInfo(fullName)
+		//fullName := GetSipHeaderFullName(ByteSliceToString(src[name.Begin:name.End]))
+		//info, ok := GetSipHeaderInfo(fullName)
+		info, ok := GetSipHeaderInfo(src[name.Begin:name.End])
 		//ok = false
 		if ok {
 			newPos, err = this.parseKnownHeader(context, src, newPos, info)
@@ -283,7 +286,8 @@ func (this *SipHeaders) parseSingleKnownHeader(context *ParseContext, src []byte
 	var addr AbnfPtr
 
 	newPos = pos
-	_, ok := this.singleHeaders.GetHeaderByByteSlice(context, info.name)
+	//_, ok := this.singleHeaders.GetHeaderByByteSlice(context, info.name)
+	_, ok := this.singleHeaders.GetHeaderByIndex(context, info.index)
 	if ok {
 		// discard this header
 		_, newPos, err = ParseHeaderValue(context, src, newPos)
@@ -310,10 +314,10 @@ func (this *SipHeaders) parseSingleKnownHeader(context *ParseContext, src []byte
 
 func (this *SipHeaders) parseMultiKnownHeader(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (newPos int, err error) {
 	var multiHeader *SipMultiHeader
-	//var addr AbnfPtr
 
 	newPos = pos
-	multiHeader, ok := this.multiHeaders.GetHeaderByByteSlice(context, info.name)
+	//multiHeader, ok := this.multiHeaders.GetHeaderByByteSlice(context, info.name)
+	multiHeader, ok := this.multiHeaders.GetHeaderByIndex(context, info.index)
 	if !ok {
 		var addr AbnfPtr
 		multiHeader, addr = NewSipMultiHeader(context)

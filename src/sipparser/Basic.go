@@ -55,8 +55,29 @@ func CompareNoCase(s1, s2 []byte) int {
 	return 0
 }
 
+var Count1 int = 0
+var Count2 int = 0
+var Count3 int = 0
+var Count4 int = 0
+
 func EqualNoCase(s1, s2 []byte) bool {
-	return CompareNoCase(s1, s2) == 0
+	if len(s1) != len(s2) {
+		return false
+	}
+
+	if ToLower(s1[0]) != ToLower(s2[0]) {
+		return false
+	}
+
+	for i, v := range s1 {
+		if v != s2[i] {
+			if ToLower(v) != ToLower(s2[i]) {
+				return false
+			}
+		}
+	}
+
+	return true
 }
 
 func Unescape(src []byte) (dst []byte) {

@@ -50,7 +50,7 @@ func (this *SipSingleHeader) GetParsed() AbnfPtr       { return this.parsed }
 func (this *SipSingleHeader) SetParsed(parsed AbnfPtr) { this.parsed = parsed }
 
 func (this *SipSingleHeader) SetInfo(name string) {
-	this.info, _ = GetSipHeaderInfo(name)
+	this.info, _ = GetSipHeaderInfo(StringToByteSlice(name))
 }
 
 func (this *SipSingleHeader) NameHasPrefixBytes(context *ParseContext, prefix []byte) bool {
@@ -149,6 +149,17 @@ func (this *SipSingleHeaders) RemoveHeaderByNameString(context *ParseContext, na
 
 func (this *SipSingleHeaders) GetHeaderByString(context *ParseContext, name string) (val *SipSingleHeader, ok bool) {
 	return this.GetHeaderByByteSlice(context, StringToByteSlice(name))
+}
+
+func (this *SipSingleHeaders) GetHeaderByIndex(context *ParseContext, headerIndex uint32) (val *SipSingleHeader, ok bool) {
+	for e := this.Front(context); e != nil; e = e.Next(context) {
+		v := e.Value.GetSipSingleHeader(context)
+		if v.info != nil && v.info.index == headerIndex {
+			return v, true
+		}
+	}
+
+	return nil, false
 }
 
 // remove Content-* headers from sip message except Content-Length and Content-Type*/

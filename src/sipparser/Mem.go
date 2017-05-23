@@ -118,16 +118,16 @@ func (this *MemAllocator) GetMem(addr int32) *byte {
 
 func (this *MemAllocator) Alloc(size int32) (mem *byte, addr AbnfPtr) {
 	this.stat.allocNum++
-	if print_mem {
+	/*if print_mem {
 		fmt.Printf("MEM: alloc_request = %d\n", size)
-	}
+	}*/
 	if size <= 0 {
 		return nil, ABNF_PTR_NIL
 	}
 
-	if this.used&0x3 != 0 {
+	/*if this.used&0x3 != 0 {
 		fmt.Printf("mem.used = %x\n", this.used)
-	}
+	}*/
 	newSize := RoundToAlign(this.used+size, SIP_MEM_ALIGN)
 	//newSize := (this.used + size + SIP_MEM_LIGN_MASK2) & SIP_MEM_LIGN_MASK
 	if newSize > this.Capacity() {
@@ -142,9 +142,9 @@ func (this *MemAllocator) Alloc(size int32) (mem *byte, addr AbnfPtr) {
 	addr = AbnfPtr(this.used)
 	this.used = newSize
 
-	if this.used&0x3 != 0 {
+	/*if this.used&0x3 != 0 {
 		fmt.Printf("mem.used = %x\n", this.used)
-	}
+	}*/
 	return mem, addr
 }
 
