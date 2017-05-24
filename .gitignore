@@ -11,6 +11,7 @@ sina.html
 #golang
 pkg
 bin
+*.out
 *_cover.out
 *.exe
 *_coverage.html
