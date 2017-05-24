@@ -17,10 +17,12 @@ func RoundToAlign(x, align int32) int32 {
 }
 
 type MemAllocatorStat struct {
-	allocNum    int
-	allocNumOk  int
-	freeAllNum  int
-	freePartNum int
+	allocNum      int32
+	allocNumOk    int32
+	freeAllNum    int32
+	freePartNum   int32
+	allocReqBytes int32
+	allocBytes    int32
 }
 
 func (this *MemAllocatorStat) Init() {
@@ -28,17 +30,20 @@ func (this *MemAllocatorStat) Init() {
 	this.allocNumOk = 0
 	this.freeAllNum = 0
 	this.freePartNum = 0
+	this.allocReqBytes = 0
+
 }
 
 func (this *MemAllocatorStat) String() string {
 	stat := []struct {
 		name string
-		num  int
+		num  int32
 	}{
 		{"alloc num", this.allocNum},
 		{"alloc num ok", this.allocNumOk},
 		{"free all num", this.freeAllNum},
 		{"free part num", this.freePartNum},
+		{"alloc request bytes", this.allocReqBytes},
 	}
 
 	str := ""
@@ -83,19 +88,27 @@ func (this *MemAllocator) ClearAllocNum() {
 	this.stat.allocNum = 0
 }
 
-func (this *MemAllocator) AllocNum() int {
+func (this *MemAllocator) AllocReqBytes() int32 {
+	return this.stat.allocReqBytes
+}
+
+func (this *MemAllocator) AllocBytes() int32 {
+	return this.stat.allocBytes
+}
+
+func (this *MemAllocator) AllocNum() int32 {
 	return this.stat.allocNum
 }
 
-func (this *MemAllocator) AllocNumOk() int {
+func (this *MemAllocator) AllocNumOk() int32 {
 	return this.stat.allocNumOk
 }
 
-func (this *MemAllocator) FreeAllNum() int {
+func (this *MemAllocator) FreeAllNum() int32 {
 	return this.stat.freeAllNum
 }
 
-func (this *MemAllocator) FreePartNum() int {
+func (this *MemAllocator) FreePartNum() int32 {
 	return this.stat.freePartNum
 }
 
@@ -118,9 +131,12 @@ func (this *MemAllocator) GetMem(addr int32) *byte {
 
 func (this *MemAllocator) Alloc(size int32) (mem *byte, addr AbnfPtr) {
 	this.stat.allocNum++
-	/*if print_mem {
-		fmt.Printf("MEM: alloc_request = %d\n", size)
-	}*/
+	this.stat.allocReqBytes += size
+	/*
+		if print_mem {
+			fmt.Printf("MEM: alloc_request = %d\n", size)
+			fmt.Println(FuncNameN(2))
+		} //*/
 	if size <= 0 {
 		return nil, ABNF_PTR_NIL
 	}
@@ -130,22 +146,31 @@ func (this *MemAllocator) Alloc(size int32) (mem *byte, addr AbnfPtr) {
 	}*/
 	newSize := RoundToAlign(this.used+size, SIP_MEM_ALIGN)
 	//newSize := (this.used + size + SIP_MEM_LIGN_MASK2) & SIP_MEM_LIGN_MASK
-	if newSize > this.Capacity() {
+	//if newSize > this.Capacity() {
+	if newSize > int32(cap(this.mem)) {
+
 		//fmt.Println("newSize =", newSize)
 		//fmt.Println("alloc_size =", size)
 		//panic("ERROR: out of memory")
 		return nil, ABNF_PTR_NIL
 	}
+	used := this.used
 	this.stat.allocNumOk++
 
-	mem = (*byte)(unsafe.Pointer(&this.mem[this.used]))
-	addr = AbnfPtr(this.used)
+	mem = (*byte)(unsafe.Pointer(&this.mem[used]))
+	addr = AbnfPtr(used)
 	this.used = newSize
+
+	/*
+		if print_mem {
+			fmt.Printf("MEM: used = %d\n", this.used)
+		} //*/
 
 	/*if this.used&0x3 != 0 {
 		fmt.Printf("mem.used = %x\n", this.used)
 	}*/
 	return mem, addr
+
 }
 
 func (this *MemAllocator) FreeAll() {

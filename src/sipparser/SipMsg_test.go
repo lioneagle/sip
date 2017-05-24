@@ -273,6 +273,9 @@ func BenchmarkSipMsgParse(b *testing.B) {
 	context.allocator = NewMemAllocator(1024 * 30)
 	sipmsg, _ := NewSipMsg(context)
 	remain := context.allocator.Used()
+	//remainAllocReqBytes := context.allocator.AllocReqBytes()
+	//fmt.Printf("allocator.Used = %d\n", context.allocator.Used())
+	//context.ParseSipHeaderAsRaw = true
 	msg1 := []byte(msg)
 	total_headers = 0
 
@@ -284,7 +287,7 @@ func BenchmarkSipMsgParse(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		context.allocator.ClearAllocNum()
 		context.allocator.FreePart(remain)
-		print_mem = false
+		print_mem = true
 		_, err := sipmsg.Parse(context, msg1, 0)
 		print_mem = false
 		if err != nil {
@@ -294,11 +297,19 @@ func BenchmarkSipMsgParse(b *testing.B) {
 		} //*/
 	}
 	//fmt.Printf("msg = %s\n", sipmsg.String())
-	//fmt.Printf("total_headers = %d\n", total_headers)
-	//fmt.Printf("allocator.AllocNum = %d\n", context.allocator.AllocNum())
-	//fmt.Printf("allocator.Used = %d\n", context.allocator.Used())
-	//fmt.Printf("len(msg) = %d\n", len(msg))
-	//fmt.Printf("sizeof(SipMsg) =%d\n", unsafe.Sizeof(AbnfBuf{}))
+
+	/*
+		fmt.Printf("total_headers = %d\n", total_headers)
+		fmt.Printf("allocator.AllocNum = %d\n", context.allocator.AllocNum())
+		fmt.Printf("allocator.Used = %d\n", context.allocator.Used()-remain)
+		fmt.Printf("allocator.AllocReqBytes = %d\n", context.allocator.AllocReqBytes()-remainAllocReqBytes)
+		fmt.Printf("len(msg) = %d\n", len(msg))
+		fmt.Printf("sizeof(SipMsg) =%d\n", unsafe.Sizeof(AbnfBuf{}))
+		fmt.Printf("sizeof(SipAddrSpec) =%d\n", unsafe.Sizeof(SipAddrSpec{}))
+		fmt.Printf("sizeof(SipAddr) =%d\n", unsafe.Sizeof(SipAddr{}))
+		fmt.Printf("sizeof(SipNameAddr) =%d\n", unsafe.Sizeof(SipNameAddr{}))
+		fmt.Printf("sizeof(SipUri) =%d\n", unsafe.Sizeof(SipUri{}))
+		//*/
 
 }
 

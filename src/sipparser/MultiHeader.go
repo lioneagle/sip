@@ -78,17 +78,18 @@ func (this *SipMultiHeader) GenerateAndAddHeader(context *ParseContext, name, va
 }
 
 func (this *SipMultiHeader) Parse(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (newPos int, err error) {
-	if info.parseFunc != nil && info.needParse {
-		return this.parseParsableHeader(context, src, pos, info)
+	if info.parseFunc != nil && info.needParse && !context.ParseSipHeaderAsRaw {
+		return this.parseHeader(context, src, pos, info)
 
 	}
-	return this.parseUnparsableHeader(context, src, pos, info)
+	/* 此时可能存在多个用逗号隔开的同类型头部 */
+	return this.parseAsRawHeader(context, src, pos, info)
 }
 
-func (this *SipMultiHeader) parseParsableHeader(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (newPos int, err error) {
+func (this *SipMultiHeader) parseHeader(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (newPos int, err error) {
 	newPos = pos
 	for newPos < len(src) {
-		addr, newPos, err := parseOneParsableSingleHeader(context, src, newPos, info)
+		addr, newPos, err := parseOneSingleHeader(context, src, newPos, info)
 		if err != nil {
 			return newPos, err
 		}
@@ -106,8 +107,8 @@ func (this *SipMultiHeader) parseParsableHeader(context *ParseContext, src []byt
 	return newPos, nil
 }
 
-func (this *SipMultiHeader) parseUnparsableHeader(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (newPos int, err error) {
-	addr, newPos, err := parseOneUnparsableSingleHeader(context, AbnfRef{0, int32(len(info.name))}, src, pos, info)
+func (this *SipMultiHeader) parseAsRawHeader(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (newPos int, err error) {
+	addr, newPos, err := parseRawHeader(context, AbnfRef{0, int32(len(info.name))}, src, pos, info)
 	if err != nil {
 		return newPos, err
 	}

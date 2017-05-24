@@ -261,7 +261,7 @@ func (this *SipSingleHeaders) String(context *ParseContext) string {
 	return AbnfEncoderToString(context, this)
 }
 
-func parseOneParsableSingleHeader(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (addr AbnfPtr, newPos int, err error) {
+func parseOneSingleHeader(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (addr AbnfPtr, newPos int, err error) {
 	begin := pos
 	newPos, parsed, err := info.parseFunc(context, src, pos)
 	if err != nil {
@@ -281,7 +281,7 @@ func parseOneParsableSingleHeader(context *ParseContext, src []byte, pos int, in
 	return addr, newPos, nil
 }
 
-func parseOneUnparsableSingleHeader(context *ParseContext, name AbnfRef, src []byte, pos int, info *SipHeaderInfo) (addr AbnfPtr, newPos int, err error) {
+func parseRawHeader(context *ParseContext, name AbnfRef, src []byte, pos int, info *SipHeaderInfo) (addr AbnfPtr, newPos int, err error) {
 	newPos = pos
 	header, addr := NewSipSingleHeader(context)
 	if header == nil {

@@ -9,7 +9,7 @@ gofmt -w src
 if not exist test_temp mkdir test_temp
 if exist .\test_temp\%1.test.exe  del .\test_temp\%1.test.exe
 
-go test %1 -bench=%2 -cpuprofile=.\test_temp\%1_cpu.prof %3
+go test %1 -bench=%2 -cpuprofile=.\test_temp\%1_cpu.prof -memprofile=.\test_temp\%1_mem.prof %3
 if not exist ./test_temp/%1_cpu.prof goto end
 
 go test %1 -bench=. -c

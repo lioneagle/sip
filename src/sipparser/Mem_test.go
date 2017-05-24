@@ -83,8 +83,8 @@ func TestMemAllocatorUsed(t *testing.T) {
 	allocator := NewMemAllocator(1000)
 	prefix := FuncName()
 	used := int32(0)
-	allocNum := 0
-	allocNumOk := 0
+	allocNum := int32(0)
+	allocNumOk := int32(0)
 
 	for i, v := range testdata {
 		allocNum++

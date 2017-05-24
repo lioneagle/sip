@@ -139,12 +139,12 @@ const (
 
 var g_SipHeaderInfos = []*SipHeaderInfo{
 	&SipHeaderInfo{name: []byte("unknown"), hasShortName: false, needParse: false},
-	&SipHeaderInfo{name: []byte("From"), hasShortName: true, shortName: []byte("f"), needParse: true, parseFunc: ParseSipFrom, encodeFunc: EncodeSipFromValue},
-	&SipHeaderInfo{name: []byte("To"), hasShortName: true, shortName: []byte("t"), needParse: true, parseFunc: ParseSipTo, encodeFunc: EncodeSipToValue},
-	&SipHeaderInfo{name: []byte("Via"), hasShortName: true, shortName: []byte("v"), allowMulti: true, needParse: true, parseFunc: ParseSipVia, encodeFunc: EncodeSipViaValue},
-	&SipHeaderInfo{name: []byte("Call-ID"), hasShortName: true, shortName: []byte("i"), needParse: true, parseFunc: ParseSipCallId, encodeFunc: EncodeSipCallIdValue},
-	&SipHeaderInfo{name: []byte("CSeq"), needParse: true, parseFunc: ParseSipCseq, encodeFunc: EncodeSipCseqValue},
-	&SipHeaderInfo{name: []byte("Content-Length"), hasShortName: true, shortName: []byte("l"), needParse: true, parseFunc: ParseSipContentLength, encodeFunc: EncodeSipContentLengthValue},
+	&SipHeaderInfo{name: []byte("From"), isKeyheader: true, hasShortName: true, shortName: []byte("f"), needParse: true, parseFunc: ParseSipFrom, encodeFunc: EncodeSipFromValue},
+	&SipHeaderInfo{name: []byte("To"), isKeyheader: true, hasShortName: true, shortName: []byte("t"), needParse: true, parseFunc: ParseSipTo, encodeFunc: EncodeSipToValue},
+	&SipHeaderInfo{name: []byte("Via"), isKeyheader: true, hasShortName: true, shortName: []byte("v"), allowMulti: true, needParse: true, parseFunc: ParseSipVia, encodeFunc: EncodeSipViaValue},
+	&SipHeaderInfo{name: []byte("Call-ID"), isKeyheader: true, hasShortName: true, shortName: []byte("i"), needParse: true, parseFunc: ParseSipCallId, encodeFunc: EncodeSipCallIdValue},
+	&SipHeaderInfo{name: []byte("CSeq"), isKeyheader: true, needParse: true, parseFunc: ParseSipCseq, encodeFunc: EncodeSipCseqValue},
+	&SipHeaderInfo{name: []byte("Content-Length"), isKeyheader: true, hasShortName: true, shortName: []byte("l"), needParse: true, parseFunc: ParseSipContentLength, encodeFunc: EncodeSipContentLengthValue},
 	&SipHeaderInfo{name: []byte("Content-Type"), hasShortName: true, shortName: []byte("c"), needParse: true, parseFunc: ParseSipContentType, encodeFunc: EncodeSipContentTypeValue},
 	&SipHeaderInfo{name: []byte("Contact"), hasShortName: true, shortName: []byte("m"), allowMulti: true, needParse: true, parseFunc: ParseSipContact, encodeFunc: EncodeSipContactValue},
 	&SipHeaderInfo{name: []byte("Max-Forwards"), needParse: true, parseFunc: ParseSipMaxForwards, encodeFunc: EncodeSipMaxForwardsValue},

@@ -51,8 +51,9 @@ type SipEncodeOneHeaderValue func(parsed AbnfPtr, context *ParseContext, buf *by
 type SipHeaderInfo struct {
 	index        uint32
 	name         []byte
-	hasShortName bool
 	shortName    []byte
+	hasShortName bool
+	isKeyheader  bool
 	allowMulti   bool
 	needParse    bool
 	parseFunc    SipPaseOneHeaderValue
@@ -274,7 +275,7 @@ func (this *SipHeaders) parseKnownHeader(context *ParseContext, src []byte, pos 
 }
 
 func (this *SipHeaders) parseUnknownHeader(context *ParseContext, name AbnfRef, src []byte, pos int, info *SipHeaderInfo) (newPos int, err error) {
-	addr, newPos, err := parseOneUnparsableSingleHeader(context, name, src, pos, info)
+	addr, newPos, err := parseRawHeader(context, name, src, pos, info)
 	if err != nil {
 		return newPos, err
 	}
@@ -294,15 +295,15 @@ func (this *SipHeaders) parseSingleKnownHeader(context *ParseContext, src []byte
 		return newPos, err
 	}
 
-	if info.parseFunc != nil && info.needParse {
-		addr, newPos, err = parseOneParsableSingleHeader(context, src, newPos, info)
+	if info.parseFunc != nil && info.needParse && !context.ParseSipHeaderAsRaw {
+		addr, newPos, err = parseOneSingleHeader(context, src, newPos, info)
 		if err != nil {
 			return newPos, err
 		}
 		this.singleHeaders.AddHeader(context, addr)
 		return ParseCRLF(src, newPos)
 	} else {
-		addr, newPos, err = parseOneUnparsableSingleHeader(context, AbnfRef{0, int32(len(info.name))}, src, newPos, info)
+		addr, newPos, err = parseRawHeader(context, AbnfRef{0, int32(len(info.name))}, src, newPos, info)
 		if err != nil {
 			return newPos, err
 		}

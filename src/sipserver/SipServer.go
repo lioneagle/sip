@@ -113,9 +113,9 @@ var msg string = "INVITE sip:6135000@24.15.255.4 SIP/2.0\r\n" +
 	"To: <sip:6135000@24.15.255.4>\r\n" +
 	"Call-ID: 0009b7da-0352000f-30a69b83-0e7b53d6@24.15.255.101\r\n" +
 	"CSeq: 101 INVITE\r\n" +
-	"Expires: 180\r\n" +
-	"User-Agent: Cisco-SIP-IP-Phone/2\r\n" +
-	"Accept: application/sdp\r\n" +
+	//"Expires: 180\r\n" +
+	//"User-Agent: Cisco-SIP-IP-Phone/2\r\n" +
+	//"Accept: application/sdp\r\n" +
 	"Contact: sip:6140000@24.15.255.101:5060\r\n" +
 	"Content-Type: application/sdp\r\n" +
 	"\r\n"
@@ -139,10 +139,12 @@ func main() {
 		} //*/
 	}
 
-	/*fmt.Println("Count1 =", sipparser.Count1)
-	fmt.Println("Count2 =", sipparser.Count2)
-	fmt.Println("Count3 =", sipparser.Count3)
-	fmt.Println("Count4 =", sipparser.Count4)*/
+	/*
+		fmt.Println("Count1 =", sipparser.Count1)
+		fmt.Println("Count2 =", sipparser.Count2)
+		fmt.Println("Count3 =", sipparser.Count3)
+		fmt.Println("Count4 =", sipparser.Count4)
+		//*/
 
 	/*
 		logger.SetLevel(logger.DEBUG)

@@ -59,3 +59,11 @@ func FuncName() string {
 	}
 	return runtime.FuncForPC(pc).Name()
 }
+
+func FuncNameN(n int) string {
+	pc, _, _, ok := runtime.Caller(n)
+	if !ok {
+		return ""
+	}
+	return runtime.FuncForPC(pc).Name()
+}

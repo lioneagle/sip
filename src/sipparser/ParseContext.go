@@ -5,6 +5,8 @@ type ParseContext struct {
 	allocator            *MemAllocator
 	parseSrc             []byte
 	parsePos             uint32
+	ParseSipHeaderAsRaw  bool
+	//ParseSipKeyHeader    bool
 }
 
 func NewParseContext() *ParseContext {
