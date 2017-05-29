@@ -37,15 +37,15 @@ func (level Level) String() string {
 }
 
 type Logger struct {
-	showShorFile      bool
-	shorFileNameDepth int
-	showPackage       bool
-	showFuncName      bool
-	out               io.Writer  // destination for output
-	mu                sync.Mutex // ensures atomic writes; protects the following fields
-	level             Level
-	stackTraceLevel   Level
-	modules           map[int]string
+	showShortFile      bool
+	shortFileNameDepth int
+	showPackage        bool
+	showFuncName       bool
+	out                io.Writer  // destination for output
+	mu                 sync.Mutex // ensures atomic writes; protects the following fields
+	level              Level
+	stackTraceLevel    Level
+	modules            map[int]string
 }
 
 func NewLogger(out io.Writer) *Logger {
@@ -57,8 +57,8 @@ func NewLogger(out io.Writer) *Logger {
 func (this *Logger) init() {
 	this.level = WARNING
 	this.stackTraceLevel = EMERGENCY
-	this.showShorFile = true
-	this.shorFileNameDepth = 1
+	this.showShortFile = true
+	this.shortFileNameDepth = 1
 	this.showPackage = true
 	this.showFuncName = false
 }
@@ -116,8 +116,8 @@ func (this *Logger) fileInfo(depth int) string {
 	stackInfo := "[???]"
 	if pc, fileName, line, ok := runtime.Caller(depth); ok {
 
-		if this.showShorFile {
-			fileName = extractFileName(fileName, this.shorFileNameDepth)
+		if this.showShortFile {
+			fileName = extractFileName(fileName, this.shortFileNameDepth)
 		}
 
 		if this.showFuncName {
@@ -140,9 +140,9 @@ func stackTrace() []byte {
 	return trace[:count]
 }
 
-func extractFileName(fileName string, shorFileNameDepth int) string {
-	if shorFileNameDepth < 1 {
-		shorFileNameDepth = 1
+func extractFileName(fileName string, shortFileNameDepth int) string {
+	if shortFileNameDepth < 1 {
+		shortFileNameDepth = 1
 	}
 
 	i := 0
@@ -150,7 +150,7 @@ func extractFileName(fileName string, shorFileNameDepth int) string {
 	for i = len(fileName) - 1; i >= 0; i-- {
 		if fileName[i] == '/' {
 			depth++
-			if depth >= shorFileNameDepth {
+			if depth >= shortFileNameDepth {
 				break
 			}
 		}
