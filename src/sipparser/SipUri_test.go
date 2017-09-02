@@ -3,6 +3,7 @@ package sipparser
 import (
 	"bytes"
 	"fmt"
+	"regexp"
 	"testing"
 )
 
@@ -320,7 +321,8 @@ func BenchmarkSipUriParse(b *testing.B) {
 	//v := []byte("sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com")
 	//v := []byte("sip:biloxi.com")
 	//v := []byte("sip:abc@biloxi.com;transport=tcp")
-	v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
+	v := []byte("sip:abc@biloxi.com")
+	//v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
 	uri, _ := NewSipUri(context)
@@ -339,11 +341,39 @@ func BenchmarkSipUriParse(b *testing.B) {
 	fmt.Printf("")
 }
 
+func BenchmarkSipUriReg(b *testing.B) {
+	b.StopTimer()
+	reg := regexp.MustCompile(`(?i:sip:)([[:alnum:]-_\.!~\*'\(\)&=\+\$,;\?/%]+(:[:alnum:]-_\.!~\*'\(\)]*)?@)?[[:alnum:]\.]+`)
+	//reg := regexp.MustCompile(`(?i:sip:)`)
+
+	//v := []byte("sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com")
+	//v := []byte("sip:biloxi.com")
+	//v := []byte("sip:abc@biloxi.com;transport=tcp")
+	//v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
+	v := []byte("sip:abc@biloxi.com")
+	//v := "sip:"
+
+	b.ReportAllocs()
+	b.SetBytes(2)
+	b.StartTimer()
+
+	//fmt.Printf("%q\n", reg.FindAllString(v, -1))
+
+	for i := 0; i < b.N; i++ {
+		//reg := regexp.MustCompile(`(?i:sip:)([[:alnum:]-_\.!~\*'\(\)&=\+\$,;\?/%]+(:[:alnum:]-_\.!~\*'\(\)]*)?@)?[[:alnum:]\.]+`)
+		//reg.FindAllString(v, -1)
+		reg.Match(v)
+	}
+	//fmt.Printf("uri = %s\n", uri.String())
+	fmt.Printf("")
+}
+
 //*
 func BenchmarkSipUriString(b *testing.B) {
 	b.StopTimer()
 	//v := "sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com"
-	v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
+	//v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
+	v := []byte("sip:abc@biloxi.com")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
 	uri, _ := NewSipUri(context)

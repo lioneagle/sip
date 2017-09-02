@@ -174,7 +174,7 @@ func ParseUriScheme(context *ParseContext, src []byte, pos int) (newPos int, sch
 
 	scheme = &AbnfBuf{}
 
-	newPos, err = scheme.Parse(context, src, newPos, IsUriScheme)
+	newPos, err = scheme.ParseUriScheme(context, src, newPos)
 	if err != nil {
 		return newPos, nil, err
 	}
@@ -198,7 +198,7 @@ func ParseHcolon(src []byte, pos int) (newPos int, err error) {
 	 * HCOLON  =  *( SP / HTAB ) ":" SWS
 	 */
 	ref := AbnfRef{}
-	newPos = ref.Parse(src, pos, IsWspChar)
+	newPos = ref.ParseWspChar(src, pos)
 
 	if newPos >= len(src) {
 		return newPos, &AbnfError{"HCOLON parse: reach end before ':'", src, newPos}
@@ -254,14 +254,14 @@ func ParseSWS(src []byte, pos int) (newPos int, err error) {
 		return newPos, nil
 	}
 
-	newPos1, err := ParseLWS(src, newPos)
-	if err == nil {
+	newPos1, ok := ParseLWS(src, newPos)
+	if ok {
 		newPos = newPos1
 	}
 	return newPos, nil
 }
 
-func ParseLWS(src []byte, pos int) (newPos int, err error) {
+func ParseLWS(src []byte, pos int) (newPos int, ok bool) {
 	/* RFC3261 Section 25.1, page 220
 	 *
 	 * LWS  =  [*WSP CRLF] 1*WSP ; linear whitespace
@@ -280,24 +280,26 @@ func ParseLWS(src []byte, pos int) (newPos int, err error) {
 	newPos = eatWsp(src, pos)
 
 	if newPos >= len(src) {
-		return newPos, nil
+		return newPos, true
 	}
 
 	if IsCRLF(src, newPos) {
 		newPos += 2
 
 		if newPos >= len(src) {
-			return newPos, &AbnfError{"LWS parse: no char after CRLF in LWS", src, newPos}
+			//return newPos, &AbnfError{"LWS parse: no char after CRLF in LWS", src, newPos}
+			return newPos, false
 		}
 
 		if !IsWspChar(src[newPos]) {
-			return newPos, &AbnfError{"LWS parse: no WSP after CRLF in LWS", src, newPos}
+			//return newPos, &AbnfError{"LWS parse: no WSP after CRLF in LWS", src, newPos}
+			return newPos, false
 		}
 
 		newPos = eatWsp(src, newPos)
 	}
 
-	return newPos, nil
+	return newPos, true
 }
 
 func eatWsp(src []byte, pos int) (newPos int) {

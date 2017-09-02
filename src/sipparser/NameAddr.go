@@ -82,10 +82,11 @@ func (this *SipDisplayName) parseTokens(context *ParseContext, src []byte, pos i
 		}
 
 		ref := AbnfRef{}
-		newPos = ref.Parse(src, newPos, IsSipToken)
-		newPos, err = ParseLWS(src, newPos)
-		if err != nil {
-			return newPos, err
+		newPos = ref.ParseSipToken(src, newPos)
+		var ok bool
+		newPos, ok = ParseLWS(src, newPos)
+		if !ok {
+			return newPos, &AbnfError{"DisplayName parse: wrong LWS", src, newPos}
 		}
 	}
 	name, addr := NewAbnfBuf(context)

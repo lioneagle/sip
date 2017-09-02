@@ -106,7 +106,7 @@ func (this *SipStartLine) ParseStatusLineAfterSipVersion(context *ParseContext, 
 
 func (this *SipStartLine) ParseRequestLine(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
-	newPos, err = this.method.Parse(context, src, newPos, IsSipToken)
+	newPos, err = this.method.ParseSipToken(context, src, newPos)
 	if err != nil {
 		return newPos, &AbnfError{"RequestLine parse: wrong METHOD", src, newPos}
 	}

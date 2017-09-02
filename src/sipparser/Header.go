@@ -334,7 +334,7 @@ func (this *SipHeaders) parseMultiKnownHeader(context *ParseContext, src []byte,
 }
 
 func ParseHeaderName(context *ParseContext, src []byte, pos int) (name AbnfRef, newPos int, err error) {
-	newPos = name.Parse(src, pos, IsSipToken)
+	newPos = name.ParseSipToken(src, pos)
 	if name.End <= name.Begin {
 		return name, newPos, &AbnfError{"SipHeaders parse: no header-name", src, newPos}
 	}

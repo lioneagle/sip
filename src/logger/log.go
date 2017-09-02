@@ -38,11 +38,11 @@ func (level Level) String() string {
 
 type Logger struct {
 	showShortFile      bool
-	shortFileNameDepth int
 	showPackage        bool
 	showFuncName       bool
+	shortFileNameDepth int
 	out                io.Writer  // destination for output
-	mu                 sync.Mutex // ensures atomic writes; protects the following fields
+	mu                 sync.Mutex // ensures atomic writes
 	level              Level
 	stackTraceLevel    Level
 	modules            map[int]string

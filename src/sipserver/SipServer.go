@@ -107,7 +107,8 @@ func (this *eventStat) Print() {
 }
 
 var msg string = "INVITE sip:6135000@24.15.255.4 SIP/2.0\r\n" +
-	"Content-Length: 226\r\n" +
+	//"Content-Length: 226\r\n" +
+	"Content-Length: 0\r\n" +
 	"Via: SIP/2.0/UDP 24.15.255.101:5060\r\n" +
 	"From: \"User ID\" <sip:6140000@24.15.255.4>;tag=dab70900252036d7134be-4ec05abe\r\n" +
 	"To: <sip:6135000@24.15.255.4>\r\n" +

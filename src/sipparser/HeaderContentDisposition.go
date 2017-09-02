@@ -58,7 +58,7 @@ func (this *SipHeaderContentDisposition) Parse(context *ParseContext, src []byte
 
 func (this *SipHeaderContentDisposition) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	this.Init()
-	newPos, err = this.dispType.Parse(context, src, pos, IsSipToken)
+	newPos, err = this.dispType.ParseSipToken(context, src, pos)
 	if err != nil {
 		return newPos, err
 	}

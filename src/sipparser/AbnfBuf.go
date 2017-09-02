@@ -62,7 +62,7 @@ func (this *AbnfBuf) SetNonExist() {
 }
 
 func (this *AbnfBuf) setSize(size int32) {
-	this.size = uint32(size) & ABNF_BUF_EXIST_MASK
+	this.size = uint32(size) | ABNF_BUF_EXIST_BIT
 }
 
 func (this *AbnfBuf) SetValue(context *ParseContext, value []byte) {
@@ -71,9 +71,7 @@ func (this *AbnfBuf) SetValue(context *ParseContext, value []byte) {
 
 func (this *AbnfBuf) allocMem(context *ParseContext, size int32) bool {
 	if size == 0 {
-		//this.SetNonExist()
-		//this.setSize(0)
-		this.size = 0
+		this.SetNonExist()
 		return true
 	}
 
@@ -86,10 +84,7 @@ func (this *AbnfBuf) allocMem(context *ParseContext, size int32) bool {
 		this.addr = addr
 	}
 
-	this.size = uint32(size) | ABNF_BUF_EXIST_BIT
-
-	//this.SetExist()
-	//this.setSize(size)
+	this.setSize(size)
 	return true
 }
 
@@ -176,6 +171,50 @@ func (this *AbnfBuf) Parse(context *ParseContext, src []byte, pos int, inCharset
 	return newPos, nil
 }
 
+func (this *AbnfBuf) ParseSipToken(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	ref := AbnfRef{}
+	newPos = ref.ParseSipToken(src, pos)
+
+	if ref.Begin >= ref.End {
+		return newPos, &AbnfError{"AbnfBuf ParseSipToken: value is empty", src, newPos}
+	}
+	this.SetByteSlice(context, src[ref.Begin:ref.End])
+	return newPos, nil
+}
+
+func (this *AbnfBuf) ParseSipWord(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	ref := AbnfRef{}
+	newPos = ref.ParseSipWord(src, pos)
+
+	if ref.Begin >= ref.End {
+		return newPos, &AbnfError{"AbnfBuf ParseSipWord: value is empty", src, newPos}
+	}
+	this.SetByteSlice(context, src[ref.Begin:ref.End])
+	return newPos, nil
+}
+
+func (this *AbnfBuf) ParseUriScheme(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	ref := AbnfRef{}
+	newPos = ref.ParseUriScheme(src, pos)
+
+	if ref.Begin >= ref.End {
+		return newPos, &AbnfError{"AbnfBuf ParseUriScheme: value is empty", src, newPos}
+	}
+	this.SetByteSlice(context, src[ref.Begin:ref.End])
+	return newPos, nil
+}
+
+func (this *AbnfBuf) ParseWspChar(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	ref := AbnfRef{}
+	newPos = ref.ParseWspChar(src, pos)
+
+	if ref.Begin >= ref.End {
+		return newPos, &AbnfError{"AbnfBuf ParseWspChar: value is empty", src, newPos}
+	}
+	this.SetByteSlice(context, src[ref.Begin:ref.End])
+	return newPos, nil
+}
+
 func (this *AbnfBuf) ParseEscapableEnableEmpty(context *ParseContext, src []byte, pos int, inCharset AbnfIsInCharset) (newPos int, err error) {
 	ref := AbnfRef{}
 	escapeNum, newPos, err := ref.ParseEscapable(src, pos, inCharset)
@@ -206,6 +245,26 @@ func (this *AbnfBuf) ParseEscapable(context *ParseContext, src []byte, pos int, 
 
 	if ref.Begin >= ref.End {
 		return newPos, &AbnfError{"AbnfBuf ParseEscapable: value is empty", src, newPos}
+	}
+
+	if escapeNum == 0 {
+		this.SetByteSlice(context, src[ref.Begin:ref.End])
+
+	} else {
+		this.SetByteSliceWithUnescape(context, src[ref.Begin:ref.End], escapeNum)
+	}
+	return newPos, nil
+}
+
+func (this *AbnfBuf) ParseEscapableSipUser(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	ref := AbnfRef{}
+	escapeNum, newPos, err := ref.ParseEscapableSipUser(src, pos)
+	if err != nil {
+		return newPos, err
+	}
+
+	if ref.Begin >= ref.End {
+		return newPos, &AbnfError{"AbnfBuf ParseEscapableSipUser: value is empty", src, newPos}
 	}
 
 	if escapeNum == 0 {

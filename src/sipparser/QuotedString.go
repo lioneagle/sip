@@ -82,9 +82,10 @@ func (this *SipQuotedString) parseValue(context *ParseContext, src []byte, pos i
 	newPos = pos
 	for (newPos < len(src)) && (src[newPos] != '"') {
 		if IsLwsChar(src[newPos]) {
-			newPos, err = ParseLWS(src, newPos)
-			if err != nil {
-				return newPos, err
+			var ok bool
+			newPos, ok = ParseLWS(src, newPos)
+			if !ok {
+				return newPos, &AbnfError{"quoted-string parse: wrong LWS", src, newPos}
 			}
 		} else if IsSipQuotedText(src[newPos]) {
 			newPos++

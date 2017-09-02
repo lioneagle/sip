@@ -82,7 +82,7 @@ func (this *SipGenericParam) parseValueToken(context *ParseContext, src []byte, 
 	if token == nil {
 		return newPos, &AbnfError{"generic-param  ParseValue: out of memory for token value", src, newPos}
 	}
-	newPos, err = token.Parse(context, src, newPos, IsSipToken)
+	newPos, err = token.ParseSipToken(context, src, newPos)
 	if err != nil {
 		return newPos, err
 	}

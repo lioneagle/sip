@@ -57,12 +57,12 @@ func (this *SipHeaderCseq) ParseValue(context *ParseContext, src []byte, pos int
 
 	this.id = uint32(digit)
 
-	newPos, err = ParseLWS(src, newPos)
-	if err != nil {
-		return newPos, err
+	newPos, ok = ParseLWS(src, newPos)
+	if !ok {
+		return newPos, &AbnfError{"CSeq parse: wong LWS", src, newPos}
 	}
 
-	return this.method.Parse(context, src, newPos, IsSipToken)
+	return this.method.ParseSipToken(context, src, newPos)
 }
 
 func (this *SipHeaderCseq) Encode(context *ParseContext, buf *bytes.Buffer) {

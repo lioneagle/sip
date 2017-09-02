@@ -64,7 +64,7 @@ func (this *SipHeaderContentType) Parse(context *ParseContext, src []byte, pos i
 
 func (this *SipHeaderContentType) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	this.Init()
-	newPos, err = this.mainType.Parse(context, src, pos, IsSipToken)
+	newPos, err = this.mainType.ParseSipToken(context, src, pos)
 	if err != nil {
 		return newPos, err
 	}
@@ -74,7 +74,7 @@ func (this *SipHeaderContentType) ParseValue(context *ParseContext, src []byte, 
 		return newPos, err
 	}
 
-	newPos, err = this.subType.Parse(context, src, newPos, IsSipToken)
+	newPos, err = this.subType.ParseSipToken(context, src, newPos)
 	if err != nil {
 		return newPos, err
 	}

@@ -89,14 +89,15 @@ func (this *SipHeaderVia) ParseValue(context *ParseContext, src []byte, pos int)
 	}
 
 	newPos++
-	newPos, err = this.transport.Parse(context, src, newPos, IsSipToken)
+	newPos, err = this.transport.ParseSipToken(context, src, newPos)
 	if err != nil {
 		return newPos, err
 	}
 
-	newPos, err = ParseLWS(src, newPos)
-	if err != nil {
-		return newPos, err
+	var ok bool
+	newPos, ok = ParseLWS(src, newPos)
+	if !ok {
+		return newPos, &AbnfError{"Via parse: wrong LWS", src, newPos}
 	}
 
 	newPos, err = this.sentBy.Parse(context, src, newPos)

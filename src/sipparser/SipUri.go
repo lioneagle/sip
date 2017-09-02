@@ -251,7 +251,7 @@ func (this *SipUri) parseUserinfo(context *ParseContext, src []byte, pos int) (n
 	newPos = pos
 	hasUserinfo := findUserinfo(src, newPos)
 	if hasUserinfo {
-		newPos, err = this.user.ParseEscapable(context, src, newPos, IsSipUser)
+		newPos, err = this.user.ParseEscapableSipUser(context, src, newPos)
 		if err != nil {
 			return newPos, err
 		}

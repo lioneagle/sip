@@ -51,7 +51,7 @@ func (this *SipHeaderCallId) Parse(context *ParseContext, src []byte, pos int) (
 func (this *SipHeaderCallId) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	this.Init()
 	newPos = pos
-	newPos, err = this.id1.Parse(context, src, newPos, IsSipWord)
+	newPos, err = this.id1.ParseSipWord(context, src, newPos)
 	if err != nil {
 		return newPos, err
 	}
@@ -61,7 +61,7 @@ func (this *SipHeaderCallId) ParseValue(context *ParseContext, src []byte, pos i
 	}
 
 	if src[newPos] == '@' {
-		return this.id2.Parse(context, src, newPos+1, IsSipWord)
+		return this.id2.ParseSipWord(context, src, newPos+1)
 	}
 
 	return newPos, nil
