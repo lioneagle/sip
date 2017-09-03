@@ -66,9 +66,9 @@ func EqualNoCase(s1, s2 []byte) bool {
 		return false
 	}
 
-	if ToLower(s1[0]) != ToLower(s2[0]) {
+	/*if ToLower(s1[0]) != ToLower(s2[0]) {
 		return false
-	}
+	}*/
 
 	for i := 0; i < len1; i++ {
 		if s1[i] != s2[i] {
