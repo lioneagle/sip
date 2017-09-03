@@ -9,8 +9,9 @@ import (
 
 type AbnfBuf struct {
 	// using highest bit of size as exist flag
-	addr AbnfPtr
-	size uint32
+	addr  AbnfPtr
+	size  uint32
+	alloc uint32
 }
 
 const (
@@ -35,6 +36,7 @@ func NewAbnfBuf(context *ParseContext) (*AbnfBuf, AbnfPtr) {
 func (this *AbnfBuf) Init() {
 	this.addr = ABNF_PTR_NIL
 	this.size = 0
+	this.alloc = 0
 }
 
 func (this *AbnfBuf) Empty() bool {
@@ -75,13 +77,15 @@ func (this *AbnfBuf) allocMem(context *ParseContext, size int32) bool {
 		return true
 	}
 
-	if this.Size() < size {
+	//if this.Size() < size {
+	if int32(this.alloc) < size {
 		mem, addr := context.allocator.Alloc(size)
 		if mem == nil {
 			// keep unchanged
 			return false
 		}
 		this.addr = addr
+		this.alloc = uint32(size)
 	}
 
 	this.setSize(size)
@@ -89,18 +93,37 @@ func (this *AbnfBuf) allocMem(context *ParseContext, size int32) bool {
 }
 
 func (this *AbnfBuf) SetByteSlice(context *ParseContext, buf []byte) {
-	if len(buf) == 0 {
+	size := int32(len(buf))
+	if size == 0 {
 		this.SetNonExist()
 		return
 	}
 
-	if this.allocMem(context, int32(len(buf))) {
-		this.SetExist()
-		copy(this.GetAsByteSlice(context), buf)
-	}
+	/*
+		if this.allocMem(context, int32(len(buf))) {
+			//this.SetExist()
+			copy(this.GetAsByteSlice(context), buf)
+		}
 
-	// remain unchanged
-	return
+		// remain unchanged
+		return
+		//*/
+
+	//*
+	if int32(this.alloc) < size {
+		mem, addr := context.allocator.Alloc(size)
+		if mem == nil {
+			// keep unchanged
+			return
+		}
+		this.addr = addr
+		this.alloc = uint32(size)
+	}
+	this.setSize(size)
+
+	copy(this.GetAsByteSlice(context), buf)
+	//*/
+
 }
 
 func (this *AbnfBuf) SetByteSliceWithUnescape(context *ParseContext, buf []byte, escapeNum int) {

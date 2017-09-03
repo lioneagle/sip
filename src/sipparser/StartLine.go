@@ -45,14 +45,30 @@ func (this *SipStartLine) HasValue() bool   { return true }
 func (this *SipStartLine) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	//fmt.Println("enter Start-Line Parse")
 	this.Init()
-	newPos, err = this.version.Parse(context, src, pos)
-	if err == nil {
+
+	newPos = pos
+
+	if EqualNoCase(src[newPos:newPos+4], []byte{'s', 'i', 'p', '/'}) {
 		this.isRequest = false
+		newPos, err = this.version.Parse(context, src, pos)
+		if err != nil {
+			return newPos, err
+		}
 		newPos, err = this.ParseStatusLineAfterSipVersion(context, src, newPos)
 	} else {
 		this.isRequest = true
 		newPos, err = this.ParseRequestLine(context, src, pos)
 	}
+
+	/*
+		newPos, err = this.version.Parse(context, src, pos)
+		if err == nil {
+			this.isRequest = false
+			newPos, err = this.ParseStatusLineAfterSipVersion(context, src, newPos)
+		} else {
+			this.isRequest = true
+			newPos, err = this.ParseRequestLine(context, src, pos)
+		}*/
 
 	if err != nil {
 		return newPos, err

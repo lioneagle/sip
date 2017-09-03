@@ -69,6 +69,14 @@ func (this *SipHeaderContentType) ParseValue(context *ParseContext, src []byte, 
 		return newPos, err
 	}
 
+	if newPos >= len(src) {
+		return newPos, &AbnfError{"Content-Type parse: no slash", src, newPos}
+	}
+
+	if src[newPos] != '/' && !IsLwsChar(src[newPos]) {
+		return newPos, &AbnfError{"Content-Type parse: no slash", src, newPos}
+	}
+
 	newPos, err = ParseSWSMark(src, newPos, '/')
 	if err != nil {
 		return newPos, err

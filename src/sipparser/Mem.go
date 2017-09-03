@@ -148,7 +148,6 @@ func (this *MemAllocator) Alloc(size int32) (mem *byte, addr AbnfPtr) {
 	//newSize := (this.used + size + SIP_MEM_LIGN_MASK2) & SIP_MEM_LIGN_MASK
 	//if newSize > this.Capacity() {
 	if newSize > int32(cap(this.mem)) {
-
 		//fmt.Println("newSize =", newSize)
 		//fmt.Println("alloc_size =", size)
 		//panic("ERROR: out of memory")

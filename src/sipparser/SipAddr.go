@@ -51,7 +51,9 @@ func (this *SipAddr) Parse(context *ParseContext, src []byte, pos int) (newPos i
 		return this.addr.Parse(context, src, newPos)
 	}
 
-	_, _, err = ParseUriScheme(context, src, newPos)
+	var scheme AbnfBuf
+
+	_, err = ParseUriScheme(context, src, newPos, &scheme)
 	if err == nil {
 		this.addrType = ABNF_SIP_ADDR_SPEC
 		return this.addr.addrsepc.ParseWithoutParam(context, src, newPos)

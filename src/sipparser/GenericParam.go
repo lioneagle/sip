@@ -52,6 +52,10 @@ func (this *SipGenericParam) Parse(context *ParseContext, src []byte, pos int) (
 		return newPos, nil
 	}
 
+	if src[newPos] != '=' && !IsLwsChar(src[newPos]) {
+		return newPos, nil
+	}
+
 	newPos, err = ParseSWSMark(src, newPos, '=')
 	if err != nil {
 		return newPos, err
@@ -205,6 +209,14 @@ func (this *SipGenericParams) Parse(context *ParseContext, src []byte, pos int, 
 	}
 
 	for newPos < len(src) {
+
+		if IsOnlyCRLF(src, newPos) {
+			return newPos, nil
+		}
+
+		if src[newPos] != seperator && !IsLwsChar(src[newPos]) {
+			return newPos, nil
+		}
 
 		newPos, err = ParseSWSMark(src, newPos, seperator)
 		if err != nil {

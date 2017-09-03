@@ -12,7 +12,7 @@ func TestAbnfBufNew(t *testing.T) {
 		ok            bool
 	}{
 		{100, true},
-		{SizeofAbnfBuf(), true},
+		{SizeofAbnfBuf() + 4, true},
 		{SizeofAbnfBuf() - 1, false},
 		{0, false},
 		{1, false},
@@ -80,8 +80,8 @@ func TestAbnfBufSetByteSlice(t *testing.T) {
 		{100, "asaad", true, 5},
 
 		{100, "", false, 0},
-		{8, "123", false, 0},
-		{10, "123", false, 0},
+		{16, "123", false, 0},
+		{18, "123", false, 0},
 	}
 
 	context := NewParseContext()
@@ -137,8 +137,8 @@ func TestAbnfBufSetByteSliceWithUnescape(t *testing.T) {
 		{100, "%31asa%33ad", 2, "1asa3ad", true, 7},
 
 		{100, "", 0, "", false, 0},
-		{8, "123", 0, "123", false, 0},
-		{10, "123", 0, "123", false, 0},
+		{16, "123", 0, "123", false, 0},
+		{18, "123", 0, "123", false, 0},
 	}
 
 	context := NewParseContext()

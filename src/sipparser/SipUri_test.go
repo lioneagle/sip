@@ -341,7 +341,7 @@ func BenchmarkSipUriParse(b *testing.B) {
 	fmt.Printf("")
 }
 
-func BenchmarkSipUriReg(b *testing.B) {
+func BenchmarkSipUriRegexp(b *testing.B) {
 	b.StopTimer()
 	reg := regexp.MustCompile(`(?i:sip:)([[:alnum:]-_\.!~\*'\(\)&=\+\$,;\?/%]+(:[:alnum:]-_\.!~\*'\(\)]*)?@)?[[:alnum:]\.]+`)
 	//reg := regexp.MustCompile(`(?i:sip:)`)

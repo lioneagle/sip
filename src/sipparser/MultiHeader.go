@@ -96,10 +96,13 @@ func (this *SipMultiHeader) parseHeader(context *ParseContext, src []byte, pos i
 		this.AddHeader(context, addr)
 
 		// now should be COMMA or CRLF
+		if IsOnlyCRLF(src, newPos) {
+			return newPos + 2, nil
+		}
+
 		newPos1, err := ParseSWSMark(src, newPos, ',')
 		if err != nil {
-			// should be CRLF
-			return ParseCRLF(src, newPos)
+			return newPos + 2, nil
 		}
 		newPos = newPos1
 

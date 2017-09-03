@@ -157,7 +157,7 @@ func ParseUInt(src []byte, pos int) (digit, num, newPos int, ok bool) {
 
 }
 
-func ParseUriScheme(context *ParseContext, src []byte, pos int) (newPos int, scheme *AbnfBuf, err error) {
+func ParseUriScheme(context *ParseContext, src []byte, pos int, scheme *AbnfBuf) (newPos int, err error) {
 	/* RFC3261 Section 25.1, page 223
 	 *
 	 * scheme         =  ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
@@ -165,31 +165,29 @@ func ParseUriScheme(context *ParseContext, src []byte, pos int) (newPos int, sch
 	newPos = pos
 
 	if newPos >= len(src) {
-		return newPos, nil, &AbnfError{"uri-scheme parse: parse scheme failed: reach end", src, newPos}
+		return newPos, &AbnfError{"uri-scheme parse: parse scheme failed: reach end", src, newPos}
 	}
 
 	if !IsAlpha(src[newPos]) {
-		return newPos, nil, &AbnfError{"uri-scheme parse: parse scheme failed: fisrt char is not alpha", src, newPos}
+		return newPos, &AbnfError{"uri-scheme parse: parse scheme failed: fisrt char is not alpha", src, newPos}
 	}
-
-	scheme = &AbnfBuf{}
 
 	newPos, err = scheme.ParseUriScheme(context, src, newPos)
 	if err != nil {
-		return newPos, nil, err
+		return newPos, err
 	}
 
 	if newPos >= len(src) {
-		return newPos, nil, &AbnfError{"uri-scheme parse: parse scheme failed: no ':' and reach end", src, newPos}
+		return newPos, &AbnfError{"uri-scheme parse: parse scheme failed: no ':' and reach end", src, newPos}
 	}
 
 	if src[newPos] != ':' {
-		return newPos, nil, &AbnfError{"uri-scheme parse: parse scheme failed: no ':'", src, newPos}
+		return newPos, &AbnfError{"uri-scheme parse: parse scheme failed: no ':'", src, newPos}
 	}
 
 	newPos++
 
-	return newPos, scheme, nil
+	return newPos, nil
 }
 
 func ParseHcolon(src []byte, pos int) (newPos int, err error) {
@@ -359,6 +357,13 @@ func ParseRightAngleQuote(src []byte, pos int) (newPos int, err error) {
 
 func IsCRLF(src []byte, pos int) bool {
 	return ((pos + 1) < len(src)) && (src[pos] == '\r') && (src[pos+1] == '\n')
+}
+
+func IsOnlyCRLF(src []byte, pos int) bool {
+	if (pos + 2) < len(src) {
+		return (src[pos] == '\r') && (src[pos+1] == '\n') && !IsWspChar(src[pos+2])
+	}
+	return (pos+2) == len(src) && (src[pos] == '\r') && (src[pos+1] == '\n')
 }
 
 func ParseCRLF(src []byte, pos int) (newPos int, err error) {

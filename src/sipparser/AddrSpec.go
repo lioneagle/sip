@@ -48,7 +48,9 @@ func (this *SipAddrSpec) Equal(context *ParseContext, rhs *SipAddrSpec) bool {
 func (this *SipAddrSpec) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	this.Init()
 
-	newPos, scheme, err := ParseUriScheme(context, src, pos)
+	var scheme AbnfBuf
+
+	newPos, err = ParseUriScheme(context, src, pos, &scheme)
 	if err != nil {
 		return newPos, err
 	}
@@ -91,7 +93,9 @@ func (this *SipAddrSpec) Parse(context *ParseContext, src []byte, pos int) (newP
 func (this *SipAddrSpec) ParseWithoutParam(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	this.Init()
 
-	newPos, scheme, err := ParseUriScheme(context, src, pos)
+	var scheme AbnfBuf
+
+	newPos, err = ParseUriScheme(context, src, pos, &scheme)
 	if err != nil {
 		return newPos, err
 	}
