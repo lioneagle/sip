@@ -67,6 +67,59 @@ func TestMemAllocatorAlloc(t *testing.T) {
 	}
 }
 
+func TestMemAllocatorAllocEx(t *testing.T) {
+
+	testdata := []struct {
+		memSize      int32
+		allocSize    int32
+		memAllocSize int32
+		ok           bool
+	}{
+
+		{200, 1, SIP_MEM_ALIGN, true},
+		{200, SIP_MEM_ALIGN + 1, 2 * SIP_MEM_ALIGN, true},
+	}
+
+	prefix := FuncName()
+	used := int32(0)
+
+	for i, v := range testdata {
+
+		allocator := NewMemAllocator(v.memSize)
+		if allocator == nil {
+			t.Errorf("%s[%d] failed: NewMemAllocator failed\n", prefix, i)
+			break
+		}
+
+		if allocator.Capacity() != v.memSize {
+			t.Errorf("%s[%d] failed: wrong capacity =%d, wanted = %d\n", prefix, i, allocator.Capacity(), v.memSize)
+			break
+		}
+
+		addr, alloc := allocator.AllocEx(v.allocSize)
+
+		if v.ok {
+			used += v.allocSize
+			used = RoundToAlign(used, SIP_MEM_ALIGN)
+		}
+
+		if addr == ABNF_PTR_NIL && v.ok {
+			t.Errorf("%s[%d] failed: addr should not be nil\n", prefix, i)
+			continue
+		}
+
+		if addr != ABNF_PTR_NIL && !v.ok {
+			t.Errorf("%s[%d] failed: addr should be nil\n", prefix, i)
+			continue
+		}
+
+		if alloc != v.memAllocSize {
+			t.Errorf("%s[%d] failed: wong mem alloc size = %d, wanted = %d\n", prefix, i, alloc, v.memAllocSize)
+			continue
+		}
+	}
+}
+
 func TestMemAllocatorUsed(t *testing.T) {
 	testdata := []struct {
 		allocSize int32
@@ -172,6 +225,20 @@ func BenchmarkMemAlloc(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		allocator.FreeAll()
 		_, _ = allocator.Alloc(1000)
+	}
+	//fmt.Printf("uri = %s\n", uri.String())
+	//fmt.Printf("")
+}
+func BenchmarkMemAllocEx(b *testing.B) {
+	b.StopTimer()
+	allocator := NewMemAllocator(1024 * 128)
+	b.ReportAllocs()
+	b.SetBytes(2)
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		allocator.FreeAll()
+		_, _ = allocator.AllocEx(1000)
 	}
 	//fmt.Printf("uri = %s\n", uri.String())
 	//fmt.Printf("")

@@ -30,6 +30,7 @@ func NewAbnfBuf(context *ParseContext) (*AbnfBuf, AbnfPtr) {
 	}
 
 	(*AbnfBuf)(unsafe.Pointer(mem)).Init()
+	//addr.GetAbnfBuf(context).Init()
 	return (*AbnfBuf)(unsafe.Pointer(mem)), addr
 }
 
@@ -79,13 +80,13 @@ func (this *AbnfBuf) allocMem(context *ParseContext, size int32) bool {
 
 	//if this.Size() < size {
 	if int32(this.alloc) < size {
-		mem, addr := context.allocator.Alloc(size)
-		if mem == nil {
+		addr, alloc := context.allocator.AllocEx(size)
+		if addr == ABNF_PTR_NIL {
 			// keep unchanged
 			return false
 		}
 		this.addr = addr
-		this.alloc = uint32(size)
+		this.alloc = uint32(alloc)
 	}
 
 	this.setSize(size)
@@ -111,13 +112,13 @@ func (this *AbnfBuf) SetByteSlice(context *ParseContext, buf []byte) {
 
 	//*
 	if int32(this.alloc) < size {
-		mem, addr := context.allocator.Alloc(size)
-		if mem == nil {
+		addr, alloc := context.allocator.AllocEx(size)
+		if addr == ABNF_PTR_NIL {
 			// keep unchanged
 			return
 		}
 		this.addr = addr
-		this.alloc = uint32(size)
+		this.alloc = uint32(alloc)
 	}
 	this.setSize(size)
 

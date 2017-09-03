@@ -161,8 +161,8 @@ func (this *MemAllocator) Alloc(size int32) (mem *byte, addr AbnfPtr) {
 
 	//fmt.Printf("========================== [%d] size = %d, more = %d  ==========================\n", this.stat.allocNum, size, newSize-size-used)
 
-	mem = (*byte)(unsafe.Pointer(&this.mem[used]))
-	addr = AbnfPtr(used)
+	//mem = (*byte)(unsafe.Pointer(&this.mem[used]))
+	//addr = AbnfPtr(used)
 	this.used = newSize
 
 	/*
@@ -173,8 +173,32 @@ func (this *MemAllocator) Alloc(size int32) (mem *byte, addr AbnfPtr) {
 	/*if this.used&0x3 != 0 {
 		fmt.Printf("mem.used = %x\n", this.used)
 	}*/
-	return mem, addr
 
+	return (*byte)(unsafe.Pointer(&this.mem[used])), AbnfPtr(used)
+}
+
+func (this *MemAllocator) AllocEx(size int32) (addr AbnfPtr, alloc int32) {
+	this.stat.allocNum++
+	this.stat.allocReqBytes += size
+
+	if size <= 0 {
+		return ABNF_PTR_NIL, 0
+	}
+
+	used := this.used
+
+	newSize := RoundToAlign(used+size, SIP_MEM_ALIGN)
+	if newSize > int32(cap(this.mem)) {
+		return ABNF_PTR_NIL, 0
+	}
+
+	//alloc = newSize - used
+	this.stat.allocNumOk++
+	//mem = (*byte)(unsafe.Pointer(&this.mem[used]))
+	//addr = AbnfPtr(used)
+	this.used = newSize
+
+	return AbnfPtr(used), newSize - used
 }
 
 func (this *MemAllocator) FreeAll() {
