@@ -23,7 +23,8 @@ func TestSipQuotedStringParseOK(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		quotedString, _ := NewSipQuotedString(context)
+		addr := NewSipQuotedString(context)
+		quotedString := addr.GetSipQuotedString(context)
 
 		_, err := quotedString.Parse(context, []byte(v.src), 0)
 		if err != nil && v.parseOk {
@@ -63,7 +64,8 @@ func TestSipQuotedStringParseNOK(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		quotedString, _ := NewSipQuotedString(context)
+		addr := NewSipQuotedString(context)
+		quotedString := addr.GetSipQuotedString(context)
 
 		newPos, err := quotedString.Parse(context, []byte(v.src), 0)
 

@@ -12,14 +12,13 @@ type SipMultiHeader struct {
 	headers SipSingleHeaders
 }
 
-func NewSipMultiHeader(context *ParseContext) (*SipMultiHeader, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipMultiHeader{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipMultiHeader(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipMultiHeader{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*SipMultiHeader)(unsafe.Pointer(mem)).Init()
-	return (*SipMultiHeader)(unsafe.Pointer(mem)), addr
+	addr.GetSipMultiHeader(context).Init()
+	return addr
 }
 
 func (this *SipMultiHeader) Init() {
@@ -67,14 +66,14 @@ func (this *SipMultiHeader) AddHeader(context *ParseContext, header AbnfPtr) {
 	this.headers.AddHeader(context, header)
 }
 
-func (this *SipMultiHeader) GenerateAndAddHeader(context *ParseContext, name, value string) (*SipSingleHeader, AbnfPtr) {
-	header, addr := GenerateSingleHeader(context, name, value)
-	if header == nil {
-		return nil, ABNF_PTR_NIL
+func (this *SipMultiHeader) GenerateAndAddHeader(context *ParseContext, name, value string) AbnfPtr {
+	addr := GenerateSingleHeader(context, name, value)
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
 
 	this.AddHeader(context, addr)
-	return header, addr
+	return addr
 }
 
 func (this *SipMultiHeader) Parse(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (newPos int, err error) {
@@ -138,14 +137,13 @@ type SipMultiHeaders struct {
 	AbnfList
 }
 
-func NewSipMultiHeaders(context *ParseContext) (*SipMultiHeaders, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipMultiHeaders{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipMultiHeaders(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipMultiHeaders{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*SipMultiHeaders)(unsafe.Pointer(mem)).Init()
-	return (*SipMultiHeaders)(unsafe.Pointer(mem)), addr
+	addr.GetSipMultiHeaders(context).Init()
+	return addr
 }
 
 func (this *SipMultiHeaders) Init() {
@@ -226,14 +224,15 @@ func (this *SipMultiHeaders) AddHeader(context *ParseContext, header AbnfPtr) {
 	this.PushBack(context, header)
 }
 
-func (this *SipMultiHeaders) GenerateAndAddHeader(context *ParseContext, name, value string) (*SipSingleHeader, AbnfPtr) {
+func (this *SipMultiHeaders) GenerateAndAddHeader(context *ParseContext, name, value string) AbnfPtr {
 	multiHeader, ok := this.GetHeaderByByteSlice(context, StringToByteSlice(name))
 	if multiHeader == nil || !ok {
 		var addr AbnfPtr
-		multiHeader, addr = NewSipMultiHeader(context)
-		if multiHeader == nil {
-			return nil, ABNF_PTR_NIL
+		addr = NewSipMultiHeader(context)
+		if addr == ABNF_PTR_NIL {
+			return ABNF_PTR_NIL
 		}
+		multiHeader = addr.GetSipMultiHeader(context)
 		multiHeader.SetNameByteSlice(context, StringToByteSlice(name))
 		this.AddHeader(context, addr)
 	}

@@ -29,7 +29,8 @@ func TestSipHeaderFromParse(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		header, _ := NewSipHeaderFrom(context)
+		addr := NewSipHeaderFrom(context)
+		header := addr.GetSipHeaderFrom(context)
 		newPos, err := header.Parse(context, []byte(v.src), 0)
 
 		if v.ok && err != nil {
@@ -63,7 +64,8 @@ func BenchmarkSipHeaderFromParse(b *testing.B) {
 	v := []byte("From: \"User ID\" <sip:6140000@24.15.255.4>;tag=dab70900252036d7134be-4ec05abe")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	header, _ := NewSipHeaderFrom(context)
+	addr := NewSipHeaderFrom(context)
+	header := addr.GetSipHeaderFrom(context)
 	remain := context.allocator.Used()
 	b.ReportAllocs()
 	b.SetBytes(2)
@@ -85,7 +87,8 @@ func BenchmarkSipHeaderFromEncode(b *testing.B) {
 	v := []byte("From: \"User ID\" <sip:6140000@24.15.255.4>;tag=dab70900252036d7134be-4ec05abe")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	header, _ := NewSipHeaderFrom(context)
+	addr := NewSipHeaderFrom(context)
+	header := addr.GetSipHeaderFrom(context)
 	header.Parse(context, v, 0)
 	remain := context.allocator.Used()
 	buf := bytes.NewBuffer(make([]byte, 1024*1024))
@@ -108,7 +111,8 @@ func BenchmarkSipHeaderFromString(b *testing.B) {
 	v := []byte("From: <sip:abc@biloxi.com;transport=tcp;method=REGISTER>")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	header, _ := NewSipHeaderFrom(context)
+	addr := NewSipHeaderFrom(context)
+	header := addr.GetSipHeaderFrom(context)
 	header.Parse(context, v, 0)
 	remain := context.allocator.Used()
 	b.SetBytes(2)

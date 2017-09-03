@@ -11,14 +11,13 @@ type SipHeaderTo struct {
 	params SipGenericParams
 }
 
-func NewSipHeaderTo(context *ParseContext) (*SipHeaderTo, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipHeaderTo{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipHeaderTo(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipHeaderTo{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*SipHeaderTo)(unsafe.Pointer(mem)).Init()
-	return (*SipHeaderTo)(unsafe.Pointer(mem)), addr
+	addr.GetSipHeaderTo(context).Init()
+	return addr
 }
 
 func (this *SipHeaderTo) Init() {
@@ -75,11 +74,11 @@ func (this *SipHeaderTo) String(context *ParseContext) string {
 }
 
 func ParseSipTo(context *ParseContext, src []byte, pos int) (newPos int, parsed AbnfPtr, err error) {
-	header, addr := NewSipHeaderTo(context)
-	if header == nil || addr == ABNF_PTR_NIL {
+	addr := NewSipHeaderTo(context)
+	if addr == ABNF_PTR_NIL {
 		return newPos, ABNF_PTR_NIL, &AbnfError{"To parse: out of memory for new header", src, newPos}
 	}
-	newPos, err = header.ParseValue(context, src, pos)
+	newPos, err = addr.GetSipHeaderTo(context).ParseValue(context, src, pos)
 	return newPos, addr, err
 }
 

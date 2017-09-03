@@ -76,8 +76,8 @@ func TestAbnfListNew(t *testing.T) {
 	context.allocator = NewMemAllocator(1000)
 	prefix := FuncName()
 
-	list, addr := NewAbnfList(context)
-	if list == nil {
+	addr := NewAbnfList(context)
+	if addr == ABNF_PTR_NIL {
 		t.Errorf("%s failed: should be ok\n", prefix)
 		return
 	}
@@ -87,13 +87,15 @@ func TestAbnfListNew(t *testing.T) {
 		return
 	}
 
+	list := addr.GetAbnfList(context)
+
 	if !checkEmptyList(t, prefix, list) {
 		return
 	}
 
 	context.allocator = NewMemAllocator(1)
-	list, _ = NewAbnfList(context)
-	if list != nil {
+	addr = NewAbnfList(context)
+	if addr != ABNF_PTR_NIL {
 		t.Errorf("%s failed: should not be ok\n", prefix)
 		return
 	}
@@ -102,7 +104,8 @@ func TestAbnfListNew(t *testing.T) {
 func TestAbnfListAdd(t *testing.T) {
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1000)
-	list, _ := NewAbnfList(context)
+	addr := NewAbnfList(context)
+	list := addr.GetAbnfList(context)
 	prefix := FuncName()
 
 	if list.Front(context) != nil {
@@ -146,7 +149,8 @@ func TestAbnfListAdd(t *testing.T) {
 func TestAbnfListPushBack(t *testing.T) {
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1000)
-	list, _ := NewAbnfList(context)
+	addr := NewAbnfList(context)
+	list := addr.GetAbnfList(context)
 	prefix := FuncName()
 
 	if list.PopBack(context) != nil {
@@ -168,7 +172,8 @@ func TestAbnfListPushBack(t *testing.T) {
 func TestAbnfListPushFront(t *testing.T) {
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1000)
-	list, _ := NewAbnfList(context)
+	addr := NewAbnfList(context)
+	list := addr.GetAbnfList(context)
 	prefix := FuncName()
 
 	if list.PopFront(context) != nil {
@@ -191,7 +196,8 @@ func TestAbnfListPushFront(t *testing.T) {
 func TestAbnfListRemove(t *testing.T) {
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1000)
-	list, _ := NewAbnfList(context)
+	addr := NewAbnfList(context)
+	list := addr.GetAbnfList(context)
 	prefix := FuncName()
 
 	if list.Remove(context, nil) != nil {

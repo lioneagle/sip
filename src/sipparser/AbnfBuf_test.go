@@ -26,17 +26,7 @@ func TestAbnfBufNew(t *testing.T) {
 	for i, v := range testdata {
 
 		context.allocator = NewMemAllocator(v.allocatorSize)
-		buf, addr := NewAbnfBuf(context)
-
-		if buf == nil && v.ok {
-			t.Errorf("%s[%d]: buf should not be nil\n", prefix, i)
-			continue
-		}
-
-		if buf == nil && v.ok {
-			t.Errorf("%s[%d]: buf should be nil\n", prefix, i)
-			continue
-		}
+		addr := NewAbnfBuf(context)
 
 		if addr == ABNF_PTR_NIL && v.ok {
 			t.Errorf("%s[%d]: addr should not be nil\n", prefix, i)
@@ -48,9 +38,11 @@ func TestAbnfBufNew(t *testing.T) {
 			continue
 		}
 
-		if buf == nil {
+		if addr == ABNF_PTR_NIL {
 			continue
 		}
+
+		buf := addr.GetAbnfBuf(context)
 
 		if !buf.Empty() {
 			t.Errorf("%s[%d]: buf should be empty\n", prefix, i, buf.Size())
@@ -87,17 +79,17 @@ func TestAbnfBufSetByteSlice(t *testing.T) {
 	context := NewParseContext()
 	prefix := FuncName()
 
-	var buf *AbnfBuf
-
 	for i, v := range testdata {
 
 		context.allocator = NewMemAllocator(v.allocatorSize)
 
-		buf, _ = NewAbnfBuf(context)
-		if buf == nil {
+		addr := NewAbnfBuf(context)
+		if addr == ABNF_PTR_NIL {
 			t.Errorf("%s[%d]: NewAbnfBuf failed\n", prefix, i)
 			continue
 		}
+
+		buf := addr.GetAbnfBuf(context)
 
 		buf.SetByteSlice(context, []byte(v.buf))
 
@@ -144,17 +136,17 @@ func TestAbnfBufSetByteSliceWithUnescape(t *testing.T) {
 	context := NewParseContext()
 	prefix := FuncName()
 
-	var buf *AbnfBuf
-
 	for i, v := range testdata {
 
 		context.allocator = NewMemAllocator(v.allocatorSize)
 
-		buf, _ = NewAbnfBuf(context)
-		if buf == nil {
+		addr := NewAbnfBuf(context)
+		if addr == ABNF_PTR_NIL {
 			t.Errorf("%s[%d]: NewAbnfBuf failed\n", prefix, i)
 			continue
 		}
+
+		buf := addr.GetAbnfBuf(context)
 
 		buf.SetByteSliceWithUnescape(context, []byte(v.buf), v.escapeNum)
 
@@ -200,15 +192,16 @@ func TestAbnfBufHasPrefixByteSlice(t *testing.T) {
 	context.allocator = NewMemAllocator(10000)
 	prefix := FuncName()
 
-	var buf *AbnfBuf
-
 	for i, v := range testdata {
 		context.allocator.FreeAll()
-		buf, _ = NewAbnfBuf(context)
-		if buf == nil {
+		addr := NewAbnfBuf(context)
+		if addr == ABNF_PTR_NIL {
 			t.Errorf("%s[%d]: NewAbnfBuf failed\n", prefix, i)
 			continue
 		}
+
+		buf := addr.GetAbnfBuf(context)
+
 		buf.SetString(context, v.buf)
 
 		hasPrefix := buf.HasPrefixByteSlice(context, []byte(v.prefix))
@@ -244,15 +237,16 @@ func TestAbnfBufHasPrefixByteSliceNoCase(t *testing.T) {
 	context.allocator = NewMemAllocator(10000)
 	prefix := FuncName()
 
-	var buf *AbnfBuf
-
 	for i, v := range testdata {
 		context.allocator.FreeAll()
-		buf, _ = NewAbnfBuf(context)
-		if buf == nil {
+		addr := NewAbnfBuf(context)
+		if addr == ABNF_PTR_NIL {
 			t.Errorf("%s[%d]: NewAbnfBuf failed\n", prefix, i)
 			continue
 		}
+
+		buf := addr.GetAbnfBuf(context)
+
 		buf.SetString(context, v.buf)
 
 		hasPrefix := buf.HasPrefixByteSliceNoCase(context, []byte(v.prefix))
@@ -289,11 +283,13 @@ func TestAbnfBufParseEnableEmpty(t *testing.T) {
 
 	for i, v := range testdata {
 		context.allocator.FreeAll()
-		buf, _ := NewAbnfBuf(context)
-		if buf == nil {
+		addr := NewAbnfBuf(context)
+		if addr == ABNF_PTR_NIL {
 			t.Errorf("%s[%d]: NewAbnfBuf failed\n", prefix, i)
 			continue
 		}
+
+		buf := addr.GetAbnfBuf(context)
 
 		newPos := buf.ParseEnableEmpty(context, []byte(v.src), 0, v.isInCharset)
 
@@ -346,11 +342,13 @@ func TestAbnfBufParse(t *testing.T) {
 
 	for i, v := range testdata {
 		context.allocator.FreeAll()
-		buf, _ := NewAbnfBuf(context)
-		if buf == nil {
+		addr := NewAbnfBuf(context)
+		if addr == ABNF_PTR_NIL {
 			t.Errorf("%s[%d]: NewAbnfBuf failed\n", prefix, i)
 			continue
 		}
+
+		buf := addr.GetAbnfBuf(context)
 
 		newPos, err := buf.Parse(context, []byte(v.src), 0, v.isInCharset)
 
@@ -405,11 +403,13 @@ func TestAbnfBufParseEscapableEnableEmpty(t *testing.T) {
 
 	for i, v := range testdata {
 		context.allocator.FreeAll()
-		buf, _ := NewAbnfBuf(context)
-		if buf == nil {
+		addr := NewAbnfBuf(context)
+		if addr == ABNF_PTR_NIL {
 			t.Errorf("%s[%d]: NewAbnfBuf failed\n", prefix, i)
 			continue
 		}
+
+		buf := addr.GetAbnfBuf(context)
 
 		newPos, err := buf.ParseEscapableEnableEmpty(context, []byte(v.src), 0, v.isInCharset)
 		if err != nil && v.ok {
@@ -480,11 +480,13 @@ func TestAbnfBufParseEscapable(t *testing.T) {
 
 	for i, v := range testdata {
 		context.allocator.FreeAll()
-		buf, _ := NewAbnfBuf(context)
-		if buf == nil {
+		addr := NewAbnfBuf(context)
+		if addr == ABNF_PTR_NIL {
 			t.Errorf("%s[%d]: NewAbnfBuf failed\n", prefix, i)
 			continue
 		}
+
+		buf := addr.GetAbnfBuf(context)
 
 		newPos, err := buf.ParseEscapable(context, []byte(v.src), 0, v.isInCharset)
 
@@ -520,11 +522,13 @@ func TestAbnfBufSetString(t *testing.T) {
 	context.allocator = NewMemAllocator(1000)
 	prefix := FuncName()
 
-	buf, _ := NewAbnfBuf(context)
-	if buf == nil {
+	addr := NewAbnfBuf(context)
+	if addr == ABNF_PTR_NIL {
 		t.Errorf("%s failed: should be ok\n", prefix)
 		return
 	}
+
+	buf := addr.GetAbnfBuf(context)
 
 	buf.SetString(context, "abc")
 	if buf.Size() != 3 {
@@ -548,8 +552,11 @@ func TestAbnfBufEqual(t *testing.T) {
 	context.allocator = NewMemAllocator(1000)
 	prefix := FuncName()
 
-	buf1, _ := NewAbnfBuf(context)
-	buf2, _ := NewAbnfBuf(context)
+	addr1 := NewAbnfBuf(context)
+	addr2 := NewAbnfBuf(context)
+
+	buf1 := addr1.GetAbnfBuf(context)
+	buf2 := addr2.GetAbnfBuf(context)
 
 	if !buf1.Equal(context, buf2) {
 		t.Errorf("%s failed: should be equal", prefix)
@@ -622,11 +629,13 @@ func TestAbnfBufEncode(t *testing.T) {
 	context.allocator = NewMemAllocator(1000)
 	prefix := FuncName()
 
-	buf, _ := NewAbnfBuf(context)
-	if buf == nil {
+	addr := NewAbnfBuf(context)
+	if addr == ABNF_PTR_NIL {
 		t.Errorf("%s failed: should be ok\n", prefix)
 		return
 	}
+
+	buf := addr.GetAbnfBuf(context)
 
 	if buf.String(context) != "" {
 		t.Errorf("%s failed: not empty string\n", prefix)

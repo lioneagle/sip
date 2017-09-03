@@ -20,14 +20,14 @@ type SipGenericParam struct {
 	//parsed    AbnfPtr
 }
 
-func NewSipGenericParam(context *ParseContext) (*SipGenericParam, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipGenericParam{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipGenericParam(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipGenericParam{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
 
-	(*SipGenericParam)(unsafe.Pointer(mem)).Init()
-	return (*SipGenericParam)(unsafe.Pointer(mem)), addr
+	addr.GetSipGenericParam(context).Init()
+	return addr
 }
 
 func (this *SipGenericParam) Init() {
@@ -82,11 +82,11 @@ func (this *SipGenericParam) ParseValue(context *ParseContext, src []byte, pos i
 
 func (this *SipGenericParam) parseValueToken(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
-	token, addr := NewAbnfBuf(context)
-	if token == nil {
+	addr := NewAbnfBuf(context)
+	if addr == ABNF_PTR_NIL {
 		return newPos, &AbnfError{"generic-param  ParseValue: out of memory for token value", src, newPos}
 	}
-	newPos, err = token.ParseSipToken(context, src, newPos)
+	newPos, err = addr.GetAbnfBuf(context).ParseSipToken(context, src, newPos)
 	if err != nil {
 		return newPos, err
 	}
@@ -97,11 +97,11 @@ func (this *SipGenericParam) parseValueToken(context *ParseContext, src []byte, 
 
 func (this *SipGenericParam) parseValueQuotedString(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
-	quotedString, addr := NewSipQuotedString(context)
-	if quotedString == nil {
+	addr := NewSipQuotedString(context)
+	if addr == ABNF_PTR_NIL {
 		return newPos, &AbnfError{"generic-param  ParseValue: out of memory for quoted-string value", src, newPos}
 	}
-	newPos, err = quotedString.Parse(context, src, newPos)
+	newPos, err = addr.GetSipQuotedString(context).Parse(context, src, newPos)
 	if err != nil {
 		return newPos, err
 	}
@@ -116,22 +116,22 @@ func (this *SipGenericParam) SetNameAsString(context *ParseContext, name string)
 
 func (this *SipGenericParam) SetValueToken(context *ParseContext, value []byte) {
 	this.valueType = SIP_GENERIC_VALUE_TYPE_TOKEN
-	token, addr := NewAbnfBuf(context)
-	if token == nil {
+	addr := NewAbnfBuf(context)
+	if addr == ABNF_PTR_NIL {
 		return
 	}
 
-	token.SetValue(context, value)
+	addr.GetAbnfBuf(context).SetValue(context, value)
 	this.value = addr
 }
 
 func (this *SipGenericParam) SetValueQuotedString(context *ParseContext, value []byte) {
 	this.valueType = SIP_GENERIC_VALUE_TYPE_QUOTED_STRING
-	quotedString, addr := NewSipQuotedString(context)
-	if quotedString == nil {
+	addr := NewSipQuotedString(context)
+	if addr == ABNF_PTR_NIL {
 		return
 	}
-	quotedString.SetValue(context, value)
+	addr.GetSipQuotedString(context).SetValue(context, value)
 	this.value = addr
 }
 
@@ -167,14 +167,13 @@ type SipGenericParams struct {
 	AbnfList
 }
 
-func NewSipGenericParams(context *ParseContext) (*SipGenericParams, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipGenericParams{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipGenericParams(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipGenericParams{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*SipGenericParams)(unsafe.Pointer(mem)).Init()
-	return (*SipGenericParams)(unsafe.Pointer(mem)), addr
+	addr.GetSipGenericParams(context).Init()
+	return addr
 }
 
 func (this *SipGenericParams) Init() {
@@ -223,11 +222,11 @@ func (this *SipGenericParams) Parse(context *ParseContext, src []byte, pos int, 
 			return newPos, nil
 		}
 
-		param, addr := NewSipGenericParam(context)
-		if param == nil {
+		addr := NewSipGenericParam(context)
+		if addr == ABNF_PTR_NIL {
 			return newPos, &AbnfError{"generic-param  parse: out of memory for name", src, newPos}
 		}
-		newPos, err = param.Parse(context, src, newPos)
+		newPos, err = addr.GetSipGenericParam(context).Parse(context, src, newPos)
 		if err != nil {
 			return newPos, err
 		}

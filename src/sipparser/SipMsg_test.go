@@ -28,7 +28,8 @@ func TestSipMsgParse(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		sipmsg, _ := NewSipMsg(context)
+		addr := NewSipMsg(context)
+		sipmsg := addr.GetSipMsg(context)
 		newPos, err := sipmsg.Parse(context, []byte(v.src), 0)
 
 		if v.ok && err != nil {
@@ -91,7 +92,8 @@ func TestSipMsgParseWithOneBody(t *testing.T) {
 		"\r\n" +
 		"1234567890"
 
-	sipmsg, _ := NewSipMsg(context)
+	addr := NewSipMsg(context)
+	sipmsg := addr.GetSipMsg(context)
 	_, err := sipmsg.Parse(context, []byte(src), 0)
 
 	if err != nil {
@@ -161,7 +163,8 @@ func TestSipMsgParseWithMultiBody(t *testing.T) {
 
 	//fmt.Println(context.allocator.String(0, 10))
 
-	sipmsg, _ := NewSipMsg(context)
+	addr := NewSipMsg(context)
+	sipmsg := addr.GetSipMsg(context)
 	_, err := sipmsg.Parse(context, []byte(src), 0)
 
 	if err != nil {
@@ -235,7 +238,8 @@ func TestSipMsgParseWithMultiBody2(t *testing.T) {
 
 	//fmt.Println(context.allocator.String(0, 10))
 
-	sipmsg, _ := NewSipMsg(context)
+	addr := NewSipMsg(context)
+	sipmsg := addr.GetSipMsg(context)
 	_, err := sipmsg.Parse(context, []byte(src), 0)
 
 	if err != nil {
@@ -271,7 +275,8 @@ func BenchmarkSipMsgParse(b *testing.B) {
 	b.StopTimer()
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	sipmsg, _ := NewSipMsg(context)
+	addr := NewSipMsg(context)
+	sipmsg := addr.GetSipMsg(context)
 	remain := context.allocator.Used()
 	//remainAllocReqBytes := context.allocator.AllocReqBytes()
 	//fmt.Printf("allocator.Used = %d\n", context.allocator.Used())
@@ -317,7 +322,8 @@ func BenchmarkSipMsgEncode(b *testing.B) {
 	b.StopTimer()
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	sipmsg, _ := NewSipMsg(context)
+	addr := NewSipMsg(context)
+	sipmsg := addr.GetSipMsg(context)
 	msg1 := []byte(msg)
 	sipmsg.Parse(context, msg1, 0)
 	remain := context.allocator.Used()

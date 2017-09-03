@@ -11,14 +11,14 @@ type SipAddrSpec struct {
 	uri     AbnfPtr
 }
 
-func NewSipAddrSpec(context *ParseContext) (*SipAddrSpec, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipAddrSpec{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipAddrSpec(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipAddrSpec{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
 
-	(*SipAddrSpec)(unsafe.Pointer(mem)).Init()
-	return (*SipAddrSpec)(unsafe.Pointer(mem)), addr
+	addr.GetSipAddrSpec(context).Init()
+	return addr
 }
 
 func (this *SipAddrSpec) Init() {
@@ -56,10 +56,11 @@ func (this *SipAddrSpec) Parse(context *ParseContext, src []byte, pos int) (newP
 	}
 
 	if scheme.EqualStringNoCase(context, ABNF_NAME_URI_SCHEME_SIP) {
-		sipuri, addr := NewSipUri(context)
-		if sipuri == nil {
+		addr := NewSipUri(context)
+		if addr == ABNF_PTR_NIL {
 			return newPos, &AbnfError{"addr-spec parse: out of memory before parse sip uri", src, newPos}
 		}
+		sipuri := addr.GetSipUri(context)
 		sipuri.SetSipUri()
 		this.uri = addr
 		this.uriType = ABNF_SIP_URI
@@ -67,10 +68,11 @@ func (this *SipAddrSpec) Parse(context *ParseContext, src []byte, pos int) (newP
 	}
 
 	if scheme.EqualStringNoCase(context, ABNF_NAME_URI_SCHEME_SIPS) {
-		sipuri, addr := NewSipUri(context)
-		if sipuri == nil {
+		addr := NewSipUri(context)
+		if addr == ABNF_PTR_NIL {
 			return newPos, &AbnfError{"addr-spec parse: out of memory before parse sips uri", src, newPos}
 		}
+		sipuri := addr.GetSipUri(context)
 		sipuri.SetSipsUri()
 		this.uri = addr
 		this.uriType = ABNF_SIPS_URI
@@ -78,10 +80,11 @@ func (this *SipAddrSpec) Parse(context *ParseContext, src []byte, pos int) (newP
 	}
 
 	if scheme.EqualStringNoCase(context, ABNF_NAME_URI_SCHEME_TEL) {
-		teluri, addr := NewTelUri(context)
-		if teluri == nil {
+		addr := NewTelUri(context)
+		if addr == ABNF_PTR_NIL {
 			return newPos, &AbnfError{"addr-spec parse: out of memory before parse tel uri", src, newPos}
 		}
+		teluri := addr.GetTelUri(context)
 		this.uri = addr
 		this.uriType = ABNF_TEL_URI
 		return teluri.ParseAfterScheme(context, src, newPos)
@@ -101,10 +104,11 @@ func (this *SipAddrSpec) ParseWithoutParam(context *ParseContext, src []byte, po
 	}
 
 	if scheme.EqualStringNoCase(context, "sip") {
-		sipuri, addr := NewSipUri(context)
-		if sipuri == nil {
+		addr := NewSipUri(context)
+		if addr == ABNF_PTR_NIL {
 			return newPos, &AbnfError{"addr-spec parse: out of memory before parse sip uri", src, newPos}
 		}
+		sipuri := addr.GetSipUri(context)
 		sipuri.SetSipUri()
 		this.uri = addr
 		this.uriType = ABNF_SIP_URI
@@ -112,10 +116,11 @@ func (this *SipAddrSpec) ParseWithoutParam(context *ParseContext, src []byte, po
 	}
 
 	if scheme.EqualStringNoCase(context, "sips") {
-		sipuri, addr := NewSipUri(context)
-		if sipuri == nil {
+		addr := NewSipUri(context)
+		if addr == ABNF_PTR_NIL {
 			return newPos, &AbnfError{"addr-spec parse: out of memory before parse sips uri", src, newPos}
 		}
+		sipuri := addr.GetSipUri(context)
 		sipuri.SetSipsUri()
 		this.uri = addr
 		this.uriType = ABNF_SIPS_URI
@@ -123,10 +128,11 @@ func (this *SipAddrSpec) ParseWithoutParam(context *ParseContext, src []byte, po
 	}
 
 	if scheme.EqualStringNoCase(context, "tel") {
-		teluri, addr := NewTelUri(context)
-		if teluri == nil {
+		addr := NewTelUri(context)
+		if addr == ABNF_PTR_NIL {
 			return newPos, &AbnfError{"addr-spec parse: out of memory before parse tel uri", src, newPos}
 		}
+		teluri := addr.GetTelUri(context)
 		this.uri = addr
 		this.uriType = ABNF_TEL_URI
 		return teluri.ParseAfterSchemeWithoutParam(context, src, newPos)

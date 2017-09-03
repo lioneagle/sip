@@ -12,14 +12,13 @@ type SipHeaderContentType struct {
 	params   SipGenericParams
 }
 
-func NewSipHeaderContentType(context *ParseContext) (*SipHeaderContentType, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipHeaderContentType{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipHeaderContentType(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipHeaderContentType{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*SipHeaderContentType)(unsafe.Pointer(mem)).Init()
-	return (*SipHeaderContentType)(unsafe.Pointer(mem)), addr
+	addr.GetSipHeaderContentType(context).Init()
+	return addr
 }
 
 func (this *SipHeaderContentType) Init() {
@@ -124,12 +123,13 @@ func (this *SipHeaderContentType) SetSubType(context *ParseContext, subType stri
 }
 
 func (this *SipHeaderContentType) AddBoundary(context *ParseContext, boundary []byte) error {
-	param, addr := NewSipGenericParam(context)
-	if param == nil {
+	addr := NewSipGenericParam(context)
+	if addr == ABNF_PTR_NIL {
 		return &AbnfError{"Content-Type parse: out of memory for adding boundary", nil, 0}
 	}
-	param.SetNameAsString(context, "boundary")
-	param.SetValueQuotedString(context, boundary)
+
+	addr.GetSipGenericParam(context).SetNameAsString(context, "boundary")
+	addr.GetSipGenericParam(context).SetValueQuotedString(context, boundary)
 	this.params.PushBack(context, addr)
 	return nil
 }
@@ -139,11 +139,11 @@ func (this *SipHeaderContentType) String(context *ParseContext) string {
 }
 
 func ParseSipContentType(context *ParseContext, src []byte, pos int) (newPos int, parsed AbnfPtr, err error) {
-	header, addr := NewSipHeaderContentType(context)
-	if header == nil || addr == ABNF_PTR_NIL {
+	addr := NewSipHeaderContentType(context)
+	if addr == ABNF_PTR_NIL {
 		return newPos, ABNF_PTR_NIL, &AbnfError{"Content-Type parse: out of memory for new header", nil, 0}
 	}
-	newPos, err = header.ParseValue(context, src, pos)
+	newPos, err = addr.GetSipHeaderContentType(context).ParseValue(context, src, pos)
 	return newPos, addr, err
 }
 

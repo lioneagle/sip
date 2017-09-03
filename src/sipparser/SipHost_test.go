@@ -11,7 +11,8 @@ func TestSipHostUnknownString(t *testing.T) {
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
 
-	host, _ := NewSipHost(context)
+	addr := NewSipHost(context)
+	host := addr.GetSipHost(context)
 
 	str := host.String(context)
 
@@ -24,7 +25,8 @@ func TestSipHostIpv4String(t *testing.T) {
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
 
-	host, _ := NewSipHost(context)
+	addr := NewSipHost(context)
+	host := addr.GetSipHost(context)
 
 	ipv4 := net.IPv4(10, 1, 1, 1)
 
@@ -41,7 +43,8 @@ func TestSipHostIpv6String(t *testing.T) {
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
 
-	host, _ := NewSipHost(context)
+	addr := NewSipHost(context)
+	host := addr.GetSipHost(context)
 
 	ipv4 := net.IPv4(10, 1, 1, 1)
 
@@ -58,7 +61,8 @@ func TestSipHostHostnameString(t *testing.T) {
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
 
-	host, _ := NewSipHost(context)
+	addr := NewSipHost(context)
+	host := addr.GetSipHost(context)
 
 	host.SetHostname(context, []byte("abc.com"))
 
@@ -77,7 +81,8 @@ func TestSipHostParseOk(t *testing.T) {
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
 
-	host, _ := NewSipHost(context)
+	addr := NewSipHost(context)
+	host := addr.GetSipHost(context)
 
 	testdata := []struct {
 		test     string
@@ -143,7 +148,8 @@ func TestSipHostParseNOk(t *testing.T) {
 	context.allocator = NewMemAllocator(1024 * 30)
 
 	for i, v := range testdata {
-		host, _ := NewSipHost(context)
+		addr := NewSipHost(context)
+		host := addr.GetSipHost(context)
 		_, err := host.Parse(context, []byte(v.test), 0)
 
 		if err == nil {
@@ -157,7 +163,8 @@ func TestSipHostPortParseOk(t *testing.T) {
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
 
-	host, _ := NewSipHostPort(context)
+	addr := NewSipHostPort(context)
+	host := addr.GetSipHostPort(context)
 
 	testdata := []struct {
 		test     string
@@ -234,7 +241,8 @@ func TestSipHostPortParseNOk(t *testing.T) {
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
 
-	host, _ := NewSipHostPort(context)
+	addr := NewSipHostPort(context)
+	host := addr.GetSipHostPort(context)
 
 	for i, v := range testdata {
 		host.Init()

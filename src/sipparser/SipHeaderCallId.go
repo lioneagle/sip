@@ -11,14 +11,14 @@ type SipHeaderCallId struct {
 	id2 AbnfBuf
 }
 
-func NewSipHeaderCallId(context *ParseContext) (*SipHeaderCallId, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipHeaderCallId{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipHeaderCallId(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipHeaderCallId{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
+	addr.GetSipHeaderCallId(context).Init()
 
-	(*SipHeaderCallId)(unsafe.Pointer(mem)).Init()
-	return (*SipHeaderCallId)(unsafe.Pointer(mem)), addr
+	return addr
 }
 
 func (this *SipHeaderCallId) Init() {
@@ -85,11 +85,11 @@ func (this *SipHeaderCallId) String(context *ParseContext) string {
 }
 
 func ParseSipCallId(context *ParseContext, src []byte, pos int) (newPos int, parsed AbnfPtr, err error) {
-	header, addr := NewSipHeaderCallId(context)
-	if header == nil || addr == ABNF_PTR_NIL {
+	addr := NewSipHeaderCallId(context)
+	if addr == ABNF_PTR_NIL {
 		return newPos, ABNF_PTR_NIL, &AbnfError{"Call-ID parse: out of memory for new header", src, newPos}
 	}
-	newPos, err = header.ParseValue(context, src, pos)
+	newPos, err = addr.GetSipHeaderCallId(context).ParseValue(context, src, pos)
 	return newPos, addr, err
 }
 

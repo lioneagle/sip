@@ -12,14 +12,13 @@ type SipUriParam struct {
 	value AbnfBuf
 }
 
-func NewSipUriParam(context *ParseContext) (*SipUriParam, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipUriParam{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipUriParam(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipUriParam{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*SipUriParam)(unsafe.Pointer(mem)).Init()
-	return (*SipUriParam)(unsafe.Pointer(mem)), addr
+	addr.GetSipUriParam(context).Init()
+	return addr
 }
 
 func (this *SipUriParam) Init() {
@@ -63,14 +62,13 @@ type SipUriParams struct {
 	AbnfList
 }
 
-func NewSipUriParams(context *ParseContext) (*SipUriParams, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipUriParams{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipUriParams(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipUriParams{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*SipUriParams)(unsafe.Pointer(mem)).Init()
-	return (*SipUriParams)(unsafe.Pointer(mem)), addr
+	addr.GetSipUriParams(context).Init()
+	return addr
 }
 
 func (this *SipUriParams) Init() {
@@ -96,11 +94,11 @@ func (this *SipUriParams) Parse(context *ParseContext, src []byte, pos int) (new
 	}
 
 	for newPos < len(src) {
-		param, addr := NewSipUriParam(context)
-		if param == nil {
+		addr := NewSipUriParam(context)
+		if addr == ABNF_PTR_NIL {
 			return newPos, &AbnfError{"sip-uri  parse: out of memory for sip uri params", src, newPos}
 		}
-		newPos, err = param.Parse(context, src, newPos)
+		newPos, err = addr.GetSipUriParam(context).Parse(context, src, newPos)
 		if err != nil {
 			return newPos, err
 		}

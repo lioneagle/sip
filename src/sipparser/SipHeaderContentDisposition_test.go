@@ -28,7 +28,8 @@ func TestSipHeaderContentDispositionParse(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		header, _ := NewSipHeaderContentDisposition(context)
+		addr := NewSipHeaderContentDisposition(context)
+		header := addr.GetSipHeaderContentDisposition(context)
 		newPos, err := header.Parse(context, []byte(v.src), 0)
 
 		if v.ok && err != nil {

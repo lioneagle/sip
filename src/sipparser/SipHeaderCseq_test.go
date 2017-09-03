@@ -28,7 +28,8 @@ func TestSipHeaderCseqParse(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		header, _ := NewSipHeaderCseq(context)
+		addr := NewSipHeaderCseq(context)
+		header := addr.GetSipHeaderCseq(context)
 		newPos, err := header.Parse(context, []byte(v.src), 0)
 
 		if v.ok && err != nil {
@@ -58,7 +59,8 @@ func BenchmarkSipHeaderCseqParse(b *testing.B) {
 	v := []byte("CSeq: 101 INVITE")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	header, _ := NewSipHeaderCseq(context)
+	addr := NewSipHeaderCseq(context)
+	header := addr.GetSipHeaderCseq(context)
 	remain := context.allocator.Used()
 	b.ReportAllocs()
 	b.SetBytes(2)
@@ -78,7 +80,8 @@ func BenchmarkSipHeaderCseqEncode(b *testing.B) {
 	v := []byte("CSeq: 101 INVITE")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	header, _ := NewSipHeaderCseq(context)
+	addr := NewSipHeaderCseq(context)
+	header := addr.GetSipHeaderCseq(context)
 	header.Parse(context, v, 0)
 	remain := context.allocator.Used()
 	buf := bytes.NewBuffer(make([]byte, 1024*1024))

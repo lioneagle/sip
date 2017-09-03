@@ -23,15 +23,14 @@ func SizeofAbnfBuf() int32 {
 	return int32(unsafe.Sizeof(AbnfBuf{}))
 }
 
-func NewAbnfBuf(context *ParseContext) (*AbnfBuf, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(SizeofAbnfBuf())
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewAbnfBuf(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(SizeofAbnfBuf())
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
 
-	(*AbnfBuf)(unsafe.Pointer(mem)).Init()
-	//addr.GetAbnfBuf(context).Init()
-	return (*AbnfBuf)(unsafe.Pointer(mem)), addr
+	addr.GetAbnfBuf(context).Init()
+	return addr
 }
 
 func (this *AbnfBuf) Init() {

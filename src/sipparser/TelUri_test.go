@@ -28,7 +28,8 @@ func TestTelUriParseOK(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		uri, _ := NewTelUri(context)
+		addr := NewTelUri(context)
+		uri := addr.GetTelUri(context)
 
 		newPos, err := uri.Parse(context, []byte(v.src), 0)
 		if err != nil {
@@ -78,7 +79,8 @@ func TestTelUriParamsParseOK(t *testing.T) {
 	context.allocator = NewMemAllocator(1024 * 30)
 	prefix := FuncName()
 
-	uri, _ := NewTelUri(context)
+	addr := NewTelUri(context)
+	uri := addr.GetTelUri(context)
 	src := "tel:+86123;ttl=10;user%32=phone%31;a;b;c;d;e"
 
 	_, err := uri.Parse(context, []byte(src), 0)
@@ -145,7 +147,8 @@ func TestTelUriParseNOK(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		uri, _ := NewTelUri(context)
+		addr := NewTelUri(context)
+		uri := addr.GetTelUri(context)
 
 		newPos, err := uri.Parse(context, []byte(v.src), 0)
 		if err == nil {
@@ -178,7 +181,8 @@ func TestTelUriEncode(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		uri, _ := NewTelUri(context)
+		addr := NewTelUri(context)
+		uri := addr.GetTelUri(context)
 
 		_, err := uri.Parse(context, []byte(v.src), 0)
 		if err != nil {
@@ -218,8 +222,10 @@ func TestTelUriEqual(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		uri1, _ := NewTelUri(context)
-		uri2, _ := NewTelUri(context)
+		addr1 := NewTelUri(context)
+		addr2 := NewTelUri(context)
+		uri1 := addr1.GetTelUri(context)
+		uri2 := addr2.GetTelUri(context)
 
 		_, err := uri1.Parse(context, []byte(v.uri1), 0)
 		if err != nil {
@@ -252,7 +258,8 @@ func BenchmarkTelUriParse(b *testing.B) {
 	v := []byte("tel:861234;x1=5;phone-context=abc.com")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	uri, _ := NewTelUri(context)
+	addr := NewTelUri(context)
+	uri := addr.GetTelUri(context)
 	remain := context.allocator.Used()
 	b.ReportAllocs()
 	b.SetBytes(2)
@@ -273,7 +280,8 @@ func BenchmarkTelUriString(b *testing.B) {
 	v := "tel:861234;x1=5;y;phone-context=abc.com;zz"
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	uri, _ := NewTelUri(context)
+	addr := NewTelUri(context)
+	uri := addr.GetTelUri(context)
 	uri.Parse(context, []byte(v), 0)
 	remain := context.allocator.Used()
 	b.ReportAllocs()
@@ -294,7 +302,8 @@ func BenchmarkTelUriEncode(b *testing.B) {
 	//v := []byte("tel:861234")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	uri, _ := NewTelUri(context)
+	addr := NewTelUri(context)
+	uri := addr.GetTelUri(context)
 	uri.Parse(context, v, 0)
 	remain := context.allocator.Used()
 	buf := bytes.NewBuffer(make([]byte, 1024*1024))

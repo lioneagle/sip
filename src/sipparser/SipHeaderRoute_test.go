@@ -29,7 +29,8 @@ func TestSipHeaderRouteParse(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		header, _ := NewSipHeaderRoute(context)
+		addr := NewSipHeaderRoute(context)
+		header := addr.GetSipHeaderRoute(context)
 		newPos, err := header.Parse(context, []byte(v.src), 0)
 
 		if v.ok && err != nil {
@@ -62,7 +63,8 @@ func BenchmarkSipHeaderRouteParse(b *testing.B) {
 	v := []byte("Route: <sip:abc@biloxi.com;transport=tcp;method=REGISTER>")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	header, _ := NewSipHeaderRoute(context)
+	addr := NewSipHeaderRoute(context)
+	header := addr.GetSipHeaderRoute(context)
 	remain := context.allocator.Used()
 	b.ReportAllocs()
 	b.SetBytes(2)
@@ -83,7 +85,8 @@ func BenchmarkSipHeaderRouteEncode(b *testing.B) {
 	v := []byte("Route: <sip:abc@biloxi.com;transport=tcp;method=REGISTER>")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	header, _ := NewSipHeaderRoute(context)
+	addr := NewSipHeaderRoute(context)
+	header := addr.GetSipHeaderRoute(context)
 	header.Parse(context, v, 0)
 	remain := context.allocator.Used()
 	buf := bytes.NewBuffer(make([]byte, 1024*1024))

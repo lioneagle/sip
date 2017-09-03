@@ -130,7 +130,7 @@ func (this *MemAllocator) GetMem(addr int32) *byte {
 	return (*byte)(unsafe.Pointer(&this.mem[addr]))
 }
 
-func (this *MemAllocator) Alloc(size int32) (mem *byte, addr AbnfPtr) {
+func (this *MemAllocator) Alloc(size int32) (addr AbnfPtr) {
 	this.stat.allocNum++
 	this.stat.allocReqBytes += size
 
@@ -141,7 +141,7 @@ func (this *MemAllocator) Alloc(size int32) (mem *byte, addr AbnfPtr) {
 			fmt.Println(FuncNameN(2))
 		} //*/
 	if size <= 0 {
-		return nil, ABNF_PTR_NIL
+		return ABNF_PTR_NIL
 	}
 
 	/*if this.used&0x3 != 0 {
@@ -154,7 +154,7 @@ func (this *MemAllocator) Alloc(size int32) (mem *byte, addr AbnfPtr) {
 		//fmt.Println("newSize =", newSize)
 		//fmt.Println("alloc_size =", size)
 		//panic("ERROR: out of memory")
-		return nil, ABNF_PTR_NIL
+		return ABNF_PTR_NIL
 	}
 	used := this.used
 	this.stat.allocNumOk++
@@ -174,7 +174,7 @@ func (this *MemAllocator) Alloc(size int32) (mem *byte, addr AbnfPtr) {
 		fmt.Printf("mem.used = %x\n", this.used)
 	}*/
 
-	return (*byte)(unsafe.Pointer(&this.mem[used])), AbnfPtr(used)
+	return AbnfPtr(used)
 }
 
 func (this *MemAllocator) AllocEx(size int32) (addr AbnfPtr, alloc int32) {

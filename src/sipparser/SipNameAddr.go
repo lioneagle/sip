@@ -11,14 +11,13 @@ type SipDisplayName struct {
 	value          AbnfPtr
 }
 
-func NewSipDisplayName(context *ParseContext) (*SipDisplayName, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipDisplayName{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipDisplayName(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipDisplayName{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*SipDisplayName)(unsafe.Pointer(mem)).Init()
-	return (*SipDisplayName)(unsafe.Pointer(mem)), addr
+	addr.GetSipDisplayName(context).Init()
+	return addr
 }
 
 func (this *SipDisplayName) Init() {
@@ -55,11 +54,11 @@ func (this *SipDisplayName) Parse(context *ParseContext, src []byte, pos int) (n
 func (this *SipDisplayName) parseQuotedString(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
 	this.isQuotedString = true
-	quotedString, addr := NewSipQuotedString(context)
-	if quotedString == nil {
+	addr := NewSipQuotedString(context)
+	if addr == ABNF_PTR_NIL {
 		return newPos, &AbnfError{"DisplayName parse: out of memory after first\"", src, newPos}
 	}
-	newPos, err = quotedString.Parse(context, src, newPos)
+	newPos, err = addr.GetSipQuotedString(context).Parse(context, src, newPos)
 	if err != nil {
 		return newPos, err
 	}
@@ -89,11 +88,11 @@ func (this *SipDisplayName) parseTokens(context *ParseContext, src []byte, pos i
 			return newPos, &AbnfError{"DisplayName parse: wrong LWS", src, newPos}
 		}
 	}
-	name, addr := NewAbnfBuf(context)
-	if name == nil {
+	addr := NewAbnfBuf(context)
+	if addr == ABNF_PTR_NIL {
 		return newPos, &AbnfError{"DisplayName parse: out of memory after tokens", src, newPos}
 	}
-	name.SetValue(context, src[nameBegin:newPos])
+	addr.GetAbnfBuf(context).SetValue(context, src[nameBegin:newPos])
 	this.value = addr
 	return newPos, nil
 }
@@ -117,14 +116,13 @@ type SipNameAddr struct {
 	addrsepc    SipAddrSpec
 }
 
-func NewSipNameAddr(context *ParseContext) (*SipNameAddr, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipNameAddr{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipNameAddr(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipNameAddr{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*SipNameAddr)(unsafe.Pointer(mem)).Init()
-	return (*SipNameAddr)(unsafe.Pointer(mem)), addr
+	addr.GetSipAddr(context).Init()
+	return addr
 }
 
 func (this *SipNameAddr) Init() {

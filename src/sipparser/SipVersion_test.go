@@ -30,7 +30,8 @@ func TestSipVersionParse(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		version, _ := NewSipVersion(context)
+		addr := NewSipVersion(context)
+		version := addr.GetSipVersion(context)
 
 		newPos, err := version.Parse(context, []byte(v.src), 0)
 		if v.ok && err != nil {

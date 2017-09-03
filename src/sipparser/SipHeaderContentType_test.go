@@ -29,7 +29,8 @@ func TestSipHeaderContentTypeParse(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		header, _ := NewSipHeaderContentType(context)
+		addr := NewSipHeaderContentType(context)
+		header := addr.GetSipHeaderContentType(context)
 		newPos, err := header.Parse(context, []byte(v.src), 0)
 
 		if v.ok && err != nil {
@@ -73,7 +74,8 @@ func TestSipHeaderContentTypeGetBoundary(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		header, _ := NewSipHeaderContentType(context)
+		addr := NewSipHeaderContentType(context)
+		header := addr.GetSipHeaderContentType(context)
 		header.Parse(context, []byte(v.src), 0)
 		boundary, ok := header.GetBoundary(context)
 
@@ -116,7 +118,8 @@ func TestSipHeaderContentTypeAddBoundary(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		header, _ := NewSipHeaderContentType(context)
+		addr := NewSipHeaderContentType(context)
+		header := addr.GetSipHeaderContentType(context)
 		header.Parse(context, []byte(v.src), 0)
 		err := header.AddBoundary(context, []byte(v.boundary))
 
@@ -149,7 +152,8 @@ func TestSipHeaderContentTypeSetType(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		header, _ := NewSipHeaderContentType(context)
+		addr := NewSipHeaderContentType(context)
+		header := addr.GetSipHeaderContentType(context)
 		header.Parse(context, []byte(v.src), 0)
 		header.SetMainType(context, v.mainType)
 		header.SetSubType(context, v.subType)
@@ -165,7 +169,8 @@ func BenchmarkSipHeaderContentTypeParse(b *testing.B) {
 	v := []byte("Content-Type: application/sdp")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	header, _ := NewSipHeaderContentType(context)
+	addr := NewSipHeaderContentType(context)
+	header := addr.GetSipHeaderContentType(context)
 	remain := context.allocator.Used()
 	b.ReportAllocs()
 	b.SetBytes(2)
@@ -185,7 +190,8 @@ func BenchmarkSipHeaderContentTypeEncode(b *testing.B) {
 	v := []byte("Content-Type: application/sdp")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	header, _ := NewSipHeaderContentType(context)
+	addr := NewSipHeaderContentType(context)
+	header := addr.GetSipHeaderContentType(context)
 	header.Parse(context, v, 0)
 	remain := context.allocator.Used()
 	buf := bytes.NewBuffer(make([]byte, 1024*1024))

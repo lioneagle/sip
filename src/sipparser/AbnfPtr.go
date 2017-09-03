@@ -30,6 +30,10 @@ func (this AbnfPtr) GetAbnfListNode(context *ParseContext) *AbnfListNode {
 	return (*AbnfListNode)(unsafe.Pointer(&context.allocator.mem[this]))
 }
 
+func (this AbnfPtr) GetAbnfList(context *ParseContext) *AbnfList {
+	return (*AbnfList)(unsafe.Pointer(&context.allocator.mem[this]))
+}
+
 func (this AbnfPtr) String() string {
 	if this == ABNF_PTR_NIL {
 		return "nil"

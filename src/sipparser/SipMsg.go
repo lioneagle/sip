@@ -13,14 +13,13 @@ type SipMsg struct {
 	bodies    SipMsgBodies
 }
 
-func NewSipMsg(context *ParseContext) (*SipMsg, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipMsg{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipMsg(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipMsg{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*SipMsg)(unsafe.Pointer(mem)).Init()
-	return (*SipMsg)(unsafe.Pointer(mem)), addr
+	addr.GetSipMsg(context).Init()
+	return addr
 }
 
 func (this *SipMsg) Init() {
@@ -85,14 +84,14 @@ func (this *SipMsg) ParseSingleBody(context *ParseContext, src []byte, pos int) 
 		return newPos, nil
 	}
 
-	body, addr := NewSipMsgBody(context)
-	if body == nil {
+	addr := NewSipMsgBody(context)
+	if addr == ABNF_PTR_NIL {
 		return newPos, &AbnfError{"SipMsg parse: out of memory for sip-mshg-body", src, newPos}
 	}
-	// copy Content-* headers from sip-msg to sip-msg-body's headers
-	body.headers.CopyContentHeaders(context, &this.headers)
 
-	body.SetBody(context, src[pos:pos+bodySize])
+	// copy Content-* headers from sip-msg to sip-msg-body's headers
+	addr.GetSipMsgBody(context).headers.CopyContentHeaders(context, &this.headers)
+	addr.GetSipMsgBody(context).SetBody(context, src[pos:pos+bodySize])
 	this.bodies.AddBody(context, addr)
 	return newPos, nil
 }
@@ -128,10 +127,12 @@ func (this *SipMsg) ParseMultiBody(context *ParseContext, src []byte, pos int, b
 			return newPos, &AbnfError{"SipMsg ParseMultiBody: no CRLF after dash-bounday", src, newPos}
 		}
 
-		body, addr := NewSipMsgBody(context)
-		if body == nil {
+		addr := NewSipMsgBody(context)
+		if addr == ABNF_PTR_NIL {
 			return newPos, &AbnfError{"SipMsg ParseMultiBody: out of memory for body", src, newPos}
 		}
+
+		body := addr.GetSipMsgBody(context)
 
 		newPos, err = body.headers.Parse(context, src, newPos)
 		if err != nil {
@@ -167,17 +168,18 @@ func (this *SipMsg) FindOrCreateBoundary(context *ParseContext) (boundary []byte
 
 	} else {
 		// create Content-Type header
-		contentType, addr := this.headers.CreateSingleHeader(context, ABNF_NAME_SIP_HDR_CONTENT_TYPE)
-		if contentType == nil {
+		addr := this.headers.CreateSingleHeader(context, ABNF_NAME_SIP_HDR_CONTENT_TYPE)
+		if addr == ABNF_PTR_NIL {
 			return nil
 		}
-		parsedContentType, parsedPtr = NewSipHeaderContentType(context)
-		if parsedContentType == nil {
+		parsedPtr = NewSipHeaderContentType(context)
+		if parsedPtr == ABNF_PTR_NIL {
 			return nil
 		}
+		parsedContentType = parsedPtr.GetSipHeaderContentType(context)
 		parsedContentType.SetMainType(context, "multipart")
 		parsedContentType.SetSubType(context, "mixed")
-		contentType.parsed = parsedPtr
+		addr.GetSipSingleHeader(context).parsed = parsedPtr
 		this.headers.singleHeaders.PushBack(context, addr)
 	}
 
@@ -205,8 +207,8 @@ func (this *SipMsg) Encode(context *ParseContext, buf *bytes.Buffer) error {
 
 		_, ok := this.headers.GetSingleHeader(context, "MIME-Version")
 		if !ok {
-			addr, _ := this.headers.GenerateAndAddSingleHeader(context, "MIME-Version", "1.0")
-			if addr == nil {
+			addr := this.headers.GenerateAndAddSingleHeader(context, "MIME-Version", "1.0")
+			if addr == ABNF_PTR_NIL {
 				return &AbnfError{"SipMsg encode: out of memory for adding MIME-Version", nil, 0}
 			}
 		}

@@ -29,7 +29,8 @@ func TestSipHeaderCallIdParse(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		header, _ := NewSipHeaderCallId(context)
+		addr := NewSipHeaderCallId(context)
+		header := addr.GetSipHeaderCallId(context)
 		newPos, err := header.Parse(context, []byte(v.src), 0)
 
 		if v.ok && err != nil {
@@ -61,7 +62,8 @@ func BenchmarkSipHeaderCallIdParse(b *testing.B) {
 	v := []byte("Call-ID: 0009b7da-0352000f-30a69b83-0e7b53d6@24.15.255.101")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	header, _ := NewSipHeaderCallId(context)
+	addr := NewSipHeaderCallId(context)
+	header := addr.GetSipHeaderCallId(context)
 	remain := context.allocator.Used()
 	b.ReportAllocs()
 	b.SetBytes(2)
@@ -85,7 +87,8 @@ func BenchmarkSipHeaderCallIdEncode(b *testing.B) {
 	v := []byte("Call-ID: 0009b7da-0352000f-30a69b83-0e7b53d6@24.15.255.101")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	header, _ := NewSipHeaderCallId(context)
+	addr := NewSipHeaderCallId(context)
+	header := addr.GetSipHeaderCallId(context)
 	header.Parse(context, v, 0)
 	remain := context.allocator.Used()
 	buf := bytes.NewBuffer(make([]byte, 1024*1024))

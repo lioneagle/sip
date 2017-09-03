@@ -10,14 +10,13 @@ type SipQuotedString struct {
 	value AbnfBuf
 }
 
-func NewSipQuotedString(context *ParseContext) (*SipQuotedString, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipQuotedString{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipQuotedString(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipQuotedString{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*SipQuotedString)(unsafe.Pointer(mem)).Init()
-	return (*SipQuotedString)(unsafe.Pointer(mem)), addr
+	addr.GetSipQuotedString(context).Init()
+	return addr
 }
 
 func (this *SipQuotedString) Init() {

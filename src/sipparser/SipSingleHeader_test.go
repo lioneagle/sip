@@ -12,7 +12,8 @@ func TestSipSingleHeader(t *testing.T) {
 	context.allocator = NewMemAllocator(1024 * 30)
 	prefix := FuncName()
 
-	header, _ := GenerateSingleHeader(context, "Content-ABC", "asdjhd")
+	addr := GenerateSingleHeader(context, "Content-ABC", "asdjhd")
+	header := addr.GetSipSingleHeader(context)
 
 	if header.IsParsed() {
 		t.Errorf("%s failed: should not be parsed\n", prefix)
@@ -55,7 +56,8 @@ func TestSipSingleHeaders(t *testing.T) {
 	context.allocator = NewMemAllocator(1024 * 30)
 	prefix := FuncName()
 
-	headers, _ := NewSipSingleHeaders(context)
+	addr := NewSipSingleHeaders(context)
+	headers := addr.GetSipSingleHeaders(context)
 
 	encode1 := ""
 	encode2 := ""
@@ -113,7 +115,8 @@ func TestSipSingleHeadersRemoveHeaderByNameString(t *testing.T) {
 	context.allocator = NewMemAllocator(1024 * 30)
 	prefix := FuncName()
 
-	headers, _ := NewSipSingleHeaders(context)
+	addr := NewSipSingleHeaders(context)
+	headers := addr.GetSipSingleHeaders(context)
 	headers.GenerateAndAddHeader(context, "Route", "<sip:123@ada.com>;ax=ads")
 	headers.GenerateAndAddHeader(context, "Route", "<tel:+1233>")
 	headers.GenerateAndAddHeader(context, "Content-xxY", "adsdfd")

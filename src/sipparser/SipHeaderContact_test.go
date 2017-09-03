@@ -30,7 +30,8 @@ func TestSipHeaderContactParse(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		header, _ := NewSipHeaderContact(context)
+		addr := NewSipHeaderContact(context)
+		header := addr.GetSipHeaderContact(context)
 		newPos, err := header.Parse(context, []byte(v.src), 0)
 
 		if v.ok && err != nil {
@@ -60,7 +61,8 @@ func BenchmarkSipHeaderContactParse(b *testing.B) {
 	v := []byte("Contact: sip:6140000@24.15.255.101:5060")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	header, _ := NewSipHeaderContact(context)
+	addr := NewSipHeaderContact(context)
+	header := addr.GetSipHeaderContact(context)
 	remain := context.allocator.Used()
 	b.ReportAllocs()
 	b.SetBytes(2)
@@ -83,7 +85,8 @@ func BenchmarkSipHeaderContactEncode(b *testing.B) {
 	v := []byte("Contact: sip:6140000@24.15.255.101:5060")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 300)
-	header, _ := NewSipHeaderContact(context)
+	addr := NewSipHeaderContact(context)
+	header := addr.GetSipHeaderContact(context)
 	header.Parse(context, v, 0)
 	remain := context.allocator.Used()
 	buf := bytes.NewBuffer(make([]byte, 1024*1024))

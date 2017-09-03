@@ -11,14 +11,13 @@ type SipHeaderContentDisposition struct {
 	params   SipGenericParams
 }
 
-func NewSipHeaderContentDisposition(context *ParseContext) (*SipHeaderContentDisposition, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipHeaderContentDisposition{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipHeaderContentDisposition(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipHeaderContentDisposition{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*SipHeaderContentDisposition)(unsafe.Pointer(mem)).Init()
-	return (*SipHeaderContentDisposition)(unsafe.Pointer(mem)), addr
+	addr.GetSipHeaderContentDisposition(context).Init()
+	return addr
 }
 
 func (this *SipHeaderContentDisposition) Init() {
@@ -81,11 +80,11 @@ func (this *SipHeaderContentDisposition) String(context *ParseContext) string {
 }
 
 func ParseSipContentDisposition(context *ParseContext, src []byte, pos int) (newPos int, parsed AbnfPtr, err error) {
-	header, addr := NewSipHeaderContentDisposition(context)
-	if header == nil || addr == ABNF_PTR_NIL {
+	addr := NewSipHeaderContentDisposition(context)
+	if addr == ABNF_PTR_NIL {
 		return newPos, ABNF_PTR_NIL, &AbnfError{"Content-Disposition parse: out of memory for new header", src, newPos}
 	}
-	newPos, err = header.ParseValue(context, src, pos)
+	newPos, err = addr.GetSipHeaderContentDisposition(context).ParseValue(context, src, pos)
 	return newPos, addr, err
 }
 

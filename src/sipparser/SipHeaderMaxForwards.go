@@ -10,14 +10,13 @@ type SipHeaderMaxForwards struct {
 	size uint32
 }
 
-func NewSipHeaderMaxForwards(context *ParseContext) (*SipHeaderMaxForwards, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipHeaderMaxForwards{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipHeaderMaxForwards(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipHeaderMaxForwards{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*SipHeaderMaxForwards)(unsafe.Pointer(mem)).Init()
-	return (*SipHeaderMaxForwards)(unsafe.Pointer(mem)), addr
+	addr.GetSipHeaderMaxForwards(context).Init()
+	return addr
 }
 
 func (this *SipHeaderMaxForwards) Init() {
@@ -70,11 +69,11 @@ func (this *SipHeaderMaxForwards) String(context *ParseContext) string {
 }
 
 func ParseSipMaxForwards(context *ParseContext, src []byte, pos int) (newPos int, parsed AbnfPtr, err error) {
-	header, addr := NewSipHeaderMaxForwards(context)
-	if header == nil || addr == ABNF_PTR_NIL {
+	addr := NewSipHeaderMaxForwards(context)
+	if addr == ABNF_PTR_NIL {
 		return newPos, ABNF_PTR_NIL, &AbnfError{"Max-Forwards parse: out of memory for new header", src, newPos}
 	}
-	newPos, err = header.ParseValue(context, src, pos)
+	newPos, err = addr.GetSipHeaderMaxForwards(context).ParseValue(context, src, pos)
 	return newPos, addr, err
 }
 

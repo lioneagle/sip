@@ -26,7 +26,8 @@ func TestGenericParamParse(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		param, _ := NewSipGenericParam(context)
+		addr := NewSipGenericParam(context)
+		param := addr.GetSipGenericParam(context)
 		newPos, err := param.Parse(context, []byte(v.src), 0)
 
 		if v.ok && err != nil {
@@ -66,7 +67,8 @@ func TestGenericParamSetValueQuotedString(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		param, _ := NewSipGenericParam(context)
+		addr := NewSipGenericParam(context)
+		param := addr.GetSipGenericParam(context)
 		param.SetNameAsString(context, v.name)
 		param.SetValueQuotedString(context, []byte(v.value))
 
@@ -93,7 +95,8 @@ func TestGenericParamSetValueToken(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		param, _ := NewSipGenericParam(context)
+		addr := NewSipGenericParam(context)
+		param := addr.GetSipGenericParam(context)
 		param.SetNameAsString(context, v.name)
 		param.SetValueToken(context, []byte(v.value))
 
@@ -130,7 +133,8 @@ func TestGenericParamsParse(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		params, _ := NewSipGenericParams(context)
+		addr := NewSipGenericParams(context)
+		params := addr.GetSipGenericParams(context)
 		newPos, err := params.Parse(context, []byte(v.src), 0, ';')
 
 		if v.ok && err != nil {

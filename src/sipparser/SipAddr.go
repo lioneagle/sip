@@ -11,14 +11,14 @@ type SipAddr struct {
 	addr     SipNameAddr
 }
 
-func NewSipAddr(context *ParseContext) (*SipAddr, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipAddr{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipAddr(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipAddr{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
 
-	(*SipAddr)(unsafe.Pointer(mem)).Init()
-	return (*SipAddr)(unsafe.Pointer(mem)), addr
+	addr.GetSipAddr(context).Init()
+	return addr
 }
 
 func (this *SipAddr) Init() {

@@ -13,14 +13,14 @@ type AbnfListNode struct {
 	Value AbnfPtr
 }
 
-func NewAbnfListNode(context *ParseContext) (*AbnfListNode, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(AbnfListNode{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewAbnfListNode(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(AbnfListNode{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-	(*AbnfListNode)(unsafe.Pointer(mem)).Init()
-	//(*AbnfListNode)(unsafe.Pointer(mem)).AbnfPtr = addr
-	return (*AbnfListNode)(unsafe.Pointer(mem)), addr
+
+	addr.GetAbnfListNode(context).Init()
+	return addr
 }
 
 func (this *AbnfListNode) Init() {
@@ -49,13 +49,13 @@ type AbnfList struct {
 	size int32
 }
 
-func NewAbnfList(context *ParseContext) (*AbnfList, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(AbnfList{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewAbnfList(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(AbnfList{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-	(*AbnfList)(unsafe.Pointer(mem)).Init()
-	return (*AbnfList)(unsafe.Pointer(mem)), addr
+	addr.GetAbnfList(context).Init()
+	return addr
 }
 
 func (this *AbnfList) Init() {
@@ -80,19 +80,19 @@ func (this *AbnfList) Back(context *ParseContext) *AbnfListNode {
 	return this.tail.GetAbnfListNode(context)
 }
 
-func (this *AbnfList) PushBack(context *ParseContext, value AbnfPtr) *AbnfListNode {
-	node, addr := NewAbnfListNode(context)
-	if node == nil {
+func (this *AbnfList) PushBack(context *ParseContext, value AbnfPtr) (node *AbnfListNode) {
+	addr := NewAbnfListNode(context)
+	if addr == ABNF_PTR_NIL {
 		return nil
 	}
 
+	node = addr.GetAbnfListNode(context)
 	node.prev = this.tail
 	node.Value = value
 
 	if this.size == 0 {
 		this.head = addr
 	} else {
-
 		this.tail.GetAbnfListNode(context).next = addr
 	}
 	this.tail = addr
@@ -100,12 +100,13 @@ func (this *AbnfList) PushBack(context *ParseContext, value AbnfPtr) *AbnfListNo
 	return node
 }
 
-func (this *AbnfList) PushFront(context *ParseContext, value AbnfPtr) *AbnfListNode {
-	node, addr := NewAbnfListNode(context)
-	if node == nil {
+func (this *AbnfList) PushFront(context *ParseContext, value AbnfPtr) (node *AbnfListNode) {
+	addr := NewAbnfListNode(context)
+	if addr == ABNF_PTR_NIL {
 		return nil
 	}
 
+	node = addr.GetAbnfListNode(context)
 	node.next = this.head
 	node.Value = value
 

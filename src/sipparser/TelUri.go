@@ -13,14 +13,13 @@ type TelUri struct {
 	params         TelUriParams
 }
 
-func NewTelUri(context *ParseContext) (*TelUri, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(TelUri{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewTelUri(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(TelUri{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*TelUri)(unsafe.Pointer(mem)).Init()
-	return (*TelUri)(unsafe.Pointer(mem)), addr
+	addr.GetTelUri(context).Init()
+	return addr
 }
 
 func (this *TelUri) Init() {
@@ -204,10 +203,11 @@ func (this *TelUri) ParseParams(context *ParseContext, src []byte, pos int) (new
 			return newPos, nil
 		}
 
-		param, addr := NewTelUriParam(context)
-		if param == nil {
+		addr := NewTelUriParam(context)
+		if addr == ABNF_PTR_NIL {
 			return newPos, &AbnfError{"tel-uri parse: out of memory for tel-uri param", src, newPos}
 		}
+		param := addr.GetTelUriParam(context)
 		newPos, err = param.Parse(context, src, newPos+1)
 		if err != nil {
 			return newPos, err

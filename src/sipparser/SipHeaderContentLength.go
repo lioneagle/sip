@@ -11,14 +11,13 @@ type SipHeaderContentLength struct {
 	encodeEnd uint32 // record end position when encoding for modify length of sip msg
 }
 
-func NewSipHeaderContentLength(context *ParseContext) (*SipHeaderContentLength, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipHeaderContentLength{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipHeaderContentLength(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipHeaderContentLength{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*SipHeaderContentLength)(unsafe.Pointer(mem)).Init()
-	return (*SipHeaderContentLength)(unsafe.Pointer(mem)), addr
+	addr.GetSipHeaderContentLength(context).Init()
+	return addr
 }
 
 func (this *SipHeaderContentLength) Init() {
@@ -77,11 +76,11 @@ func (this *SipHeaderContentLength) String(context *ParseContext) string {
 }
 
 func ParseSipContentLength(context *ParseContext, src []byte, pos int) (newPos int, parsed AbnfPtr, err error) {
-	header, addr := NewSipHeaderContentLength(context)
-	if header == nil || addr == ABNF_PTR_NIL {
+	addr := NewSipHeaderContentLength(context)
+	if addr == ABNF_PTR_NIL {
 		return newPos, ABNF_PTR_NIL, &AbnfError{"Content-Length parse: out of memory for new header", src, newPos}
 	}
-	newPos, err = header.ParseValue(context, src, pos)
+	newPos, err = addr.GetSipHeaderContentLength(context).ParseValue(context, src, pos)
 	return newPos, addr, err
 }
 

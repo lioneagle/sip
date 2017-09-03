@@ -11,7 +11,8 @@ func TestSipMultiHeader(t *testing.T) {
 	context.allocator = NewMemAllocator(1024 * 30)
 	prefix := FuncName()
 
-	multiHeader, _ := NewSipMultiHeader(context)
+	addr := NewSipMultiHeader(context)
+	multiHeader := addr.GetSipMultiHeader(context)
 	multiHeader.SetNameByteSlice(context, []byte("Content-ABC"))
 
 	multiHeader.GenerateAndAddHeader(context, "Content-ABC", "asdjhd")
@@ -51,7 +52,8 @@ func TestSipMultiHeaders(t *testing.T) {
 	context.allocator = NewMemAllocator(1024 * 30)
 	prefix := FuncName()
 
-	headers, _ := NewSipMultiHeaders(context)
+	addr := NewSipMultiHeaders(context)
+	headers := addr.GetSipMultiHeaders(context)
 	for _, v := range testdata {
 		for _, x := range v.values {
 			headers.GenerateAndAddHeader(context, v.name, x)
@@ -74,7 +76,8 @@ func TestSipMultiHeadersRemoveHeaderByNameString(t *testing.T) {
 	context.allocator = NewMemAllocator(1024 * 30)
 	prefix := FuncName()
 
-	headers, _ := NewSipMultiHeaders(context)
+	addr := NewSipMultiHeaders(context)
+	headers := addr.GetSipMultiHeaders(context)
 	headers.GenerateAndAddHeader(context, "Route", "<sip:123@ada.com>;ax=ads")
 	headers.GenerateAndAddHeader(context, "Route", "<tel:+1233>")
 	headers.GenerateAndAddHeader(context, "Content-xxY", "adsdfd")

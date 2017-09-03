@@ -11,14 +11,13 @@ type SipHeaderRoute struct {
 	params SipGenericParams
 }
 
-func NewSipHeaderRoute(context *ParseContext) (*SipHeaderRoute, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipHeaderRoute{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipHeaderRoute(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipHeaderRoute{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*SipHeaderRoute)(unsafe.Pointer(mem)).Init()
-	return (*SipHeaderRoute)(unsafe.Pointer(mem)), addr
+	addr.GetSipHeaderRoute(context).Init()
+	return addr
 }
 
 func (this *SipHeaderRoute) Init() {
@@ -74,11 +73,11 @@ func (this *SipHeaderRoute) String(context *ParseContext) string {
 }
 
 func ParseSipRoute(context *ParseContext, src []byte, pos int) (newPos int, parsed AbnfPtr, err error) {
-	header, addr := NewSipHeaderRoute(context)
-	if header == nil || addr == ABNF_PTR_NIL {
+	addr := NewSipHeaderRoute(context)
+	if addr == ABNF_PTR_NIL {
 		return newPos, ABNF_PTR_NIL, &AbnfError{"Route parse: out of memory for new header", src, newPos}
 	}
-	newPos, err = header.ParseValue(context, src, pos)
+	newPos, err = addr.GetSipHeaderRoute(context).ParseValue(context, src, pos)
 	return newPos, addr, err
 }
 

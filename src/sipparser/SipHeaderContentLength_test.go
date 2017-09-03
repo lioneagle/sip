@@ -29,7 +29,8 @@ func TestSipHeaderContentLengthParse(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		header, _ := NewSipHeaderContentLength(context)
+		addr := NewSipHeaderContentLength(context)
+		header := addr.GetSipHeaderContentLength(context)
 		newPos, err := header.Parse(context, []byte(v.src), 0)
 
 		if v.ok && err != nil {
@@ -68,7 +69,8 @@ func BenchmarkSipHeaderContentLengthParse(b *testing.B) {
 	v := []byte("Content-Length: 226")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	header, _ := NewSipHeaderContentLength(context)
+	addr := NewSipHeaderContentLength(context)
+	header := addr.GetSipHeaderContentLength(context)
 	remain := context.allocator.Used()
 	b.ReportAllocs()
 	b.SetBytes(2)
@@ -88,7 +90,8 @@ func BenchmarkSipHeaderContentLengthEncode(b *testing.B) {
 	v := []byte("Content-Length: 226")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	header, _ := NewSipHeaderContentLength(context)
+	addr := NewSipHeaderContentLength(context)
+	header := addr.GetSipHeaderContentLength(context)
 	header.Parse(context, v, 0)
 	remain := context.allocator.Used()
 	buf := bytes.NewBuffer(make([]byte, 1024*1024))

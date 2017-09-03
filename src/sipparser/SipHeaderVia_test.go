@@ -29,7 +29,8 @@ func TestSipHeaderViaParse(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		header, _ := NewSipHeaderVia(context)
+		addr := NewSipHeaderVia(context)
+		header := addr.GetSipHeaderVia(context)
 		newPos, err := header.Parse(context, []byte(v.src), 0)
 
 		if v.ok && err != nil {
@@ -60,7 +61,8 @@ func BenchmarkSipHeaderViaParse(b *testing.B) {
 	v := []byte("Via: SIP/2.0/UDP 24.15.255.101:5060")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	header, _ := NewSipHeaderVia(context)
+	addr := NewSipHeaderVia(context)
+	header := addr.GetSipHeaderVia(context)
 	remain := context.allocator.Used()
 	b.ReportAllocs()
 	b.SetBytes(2)
@@ -81,7 +83,8 @@ func BenchmarkSipHeaderViaEncode(b *testing.B) {
 	v := []byte("Via: SIP/2.0/UDP 24.15.255.101:5060")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	header, _ := NewSipHeaderVia(context)
+	addr := NewSipHeaderVia(context)
+	header := addr.GetSipHeaderVia(context)
 	header.Parse(context, v, 0)
 	remain := context.allocator.Used()
 	buf := bytes.NewBuffer(make([]byte, 0, 1024*1024))

@@ -12,7 +12,8 @@ func TestSipMsgBody(t *testing.T) {
 	context.allocator = NewMemAllocator(1024 * 30)
 	prefix := FuncName()
 
-	body, _ := NewSipMsgBody(context)
+	addr := NewSipMsgBody(context)
+	body := addr.GetSipMsgBody(context)
 	body.headers.GenerateAndAddSingleHeader(context, "Content-Length", "123")
 	body.headers.GenerateAndAddSingleHeader(context, "Content-Type", "application/sdp")
 	body.headers.GenerateAndAddSingleHeader(context, "Content-Disposition", "render")
@@ -49,9 +50,11 @@ func TestSipMsgBodies(t *testing.T) {
 	context.allocator = NewMemAllocator(1024 * 30)
 	prefix := FuncName()
 
-	bodies, _ := NewSipMsgBodies(context)
+	addr := NewSipMsgBodies(context)
+	bodies := addr.GetSipMsgBodies(context)
 
-	body, addr := NewSipMsgBody(context)
+	addr = NewSipMsgBody(context)
+	body := addr.GetSipMsgBody(context)
 	body.headers.GenerateAndAddSingleHeader(context, "Content-Length", "123")
 	body.headers.GenerateAndAddSingleHeader(context, "Content-Type", "application/sdp")
 	body.headers.GenerateAndAddSingleHeader(context, "Content-Disposition", "render")
@@ -82,7 +85,8 @@ func TestSipMsgBodies(t *testing.T) {
 		t.Errorf("%s failed: encode = \n%s \nwanted = \n%s\n", prefix, bodies.StringMulti(context, []byte(boundary)), encode)
 	}
 
-	body, addr = NewSipMsgBody(context)
+	addr = NewSipMsgBody(context)
+	body = addr.GetSipMsgBody(context)
 	body.headers.GenerateAndAddSingleHeader(context, "Content-Length", "123")
 	body.headers.GenerateAndAddSingleHeader(context, "Content-Type", "application/text")
 

@@ -32,8 +32,9 @@ func TestSipAddrParse(t *testing.T) {
 
 	for i, v := range testdata {
 		context.allocator.FreeAll()
-		addr, _ := NewSipAddr(context)
-		newPos, err := addr.Parse(context, []byte(v.src), 0)
+		addr := NewSipAddr(context)
+		sipaddr := addr.GetSipAddr(context)
+		newPos, err := sipaddr.Parse(context, []byte(v.src), 0)
 
 		if v.ok && err != nil {
 			t.Errorf("%s[%d] failed: err = %s\n", prefix, i, err)
@@ -49,8 +50,8 @@ func TestSipAddrParse(t *testing.T) {
 			t.Errorf("%s[%d] failed: newPos = %d, wanted = %d\n", prefix, i, newPos, v.newPos)
 		}
 
-		if v.ok && v.encode != addr.String(context) {
-			t.Errorf("%s[%d] failed: encode = %s, wanted = %s\n", prefix, i, addr.String(context), v.encode)
+		if v.ok && v.encode != sipaddr.String(context) {
+			t.Errorf("%s[%d] failed: encode = %s, wanted = %s\n", prefix, i, sipaddr.String(context), v.encode)
 			continue
 		}
 	}

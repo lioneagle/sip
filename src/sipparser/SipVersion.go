@@ -12,14 +12,13 @@ type SipVersion struct {
 	minor AbnfBuf
 }
 
-func NewSipVersion(context *ParseContext) (*SipVersion, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipVersion{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipVersion(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipVersion{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*SipVersion)(unsafe.Pointer(mem)).Init()
-	return (*SipVersion)(unsafe.Pointer(mem)), addr
+	addr.GetSipVersion(context).Init()
+	return addr
 }
 
 func (this *SipVersion) Init() {

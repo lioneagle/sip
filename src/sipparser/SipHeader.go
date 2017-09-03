@@ -164,36 +164,36 @@ func (this *SipHeaders) GetUnknownHeader(context *ParseContext, name string) (he
 	return this.unknownHeaders.GetHeaderByString(context, name)
 }
 
-func (this *SipHeaders) GenerateAndAddSingleHeader(context *ParseContext, name, value string) (*SipSingleHeader, AbnfPtr) {
+func (this *SipHeaders) GenerateAndAddSingleHeader(context *ParseContext, name, value string) AbnfPtr {
 	return this.singleHeaders.GenerateAndAddHeader(context, name, value)
 }
 
-func (this *SipHeaders) GenerateAndAddMultiHeader(context *ParseContext, name, value string) (*SipSingleHeader, AbnfPtr) {
+func (this *SipHeaders) GenerateAndAddMultiHeader(context *ParseContext, name, value string) AbnfPtr {
 	return this.multiHeaders.GenerateAndAddHeader(context, name, value)
 }
 
-func (this *SipHeaders) GenerateAndAddUnknownHeader(context *ParseContext, name, value string) (*SipSingleHeader, AbnfPtr) {
+func (this *SipHeaders) GenerateAndAddUnknownHeader(context *ParseContext, name, value string) AbnfPtr {
 	return this.unknownHeaders.GenerateAndAddHeader(context, name, value)
 }
 
-func (this *SipHeaders) CreateSingleHeader(context *ParseContext, name string) (*SipSingleHeader, AbnfPtr) {
-	header, addr := NewSipSingleHeader(context)
-	if header == nil {
-		return nil, ABNF_PTR_NIL
+func (this *SipHeaders) CreateSingleHeader(context *ParseContext, name string) AbnfPtr {
+	addr := NewSipSingleHeader(context)
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
 	info, _ := GetSipHeaderInfo(StringToByteSlice(name))
-	header.info = info
-	return header, addr
+	addr.GetSipSingleHeader(context).info = info
+	return addr
 }
 
-func (this *SipHeaders) CreateSingleHeaderEx(context *ParseContext, headerIndex uint32) (*SipSingleHeader, AbnfPtr) {
-	header, addr := NewSipSingleHeader(context)
-	if header == nil {
-		return nil, ABNF_PTR_NIL
+func (this *SipHeaders) CreateSingleHeaderEx(context *ParseContext, headerIndex uint32) AbnfPtr {
+	addr := NewSipSingleHeader(context)
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
 
-	header.info = g_SipHeaderInfos[headerIndex]
-	return header, addr
+	addr.GetSipSingleHeader(context).info = g_SipHeaderInfos[headerIndex]
+	return addr
 }
 
 // remove Content-* headers from sip message except Content-Length and Content-Type*/
@@ -216,17 +216,17 @@ func (this *SipHeaders) CreateContentLength(context *ParseContext, size uint32) 
 		return nil
 	}
 
-	contentLength, addr := this.CreateSingleHeaderEx(context, ABNF_SIP_HDR_CONTENT_LENGTH)
-	if contentLength == nil {
+	addr := this.CreateSingleHeaderEx(context, ABNF_SIP_HDR_CONTENT_LENGTH)
+	if addr == ABNF_PTR_NIL {
 		return &AbnfError{"SipHeaders: out of memory for creating Content-Length", nil, 0}
 	}
 
-	parsedContentLength, parsedPtr := NewSipHeaderContentLength(context)
-	if parsedContentLength == nil {
+	parsedPtr := NewSipHeaderContentLength(context)
+	if parsedPtr == ABNF_PTR_NIL {
 		return &AbnfError{"SipHeaders  encode: out of memory for creating parsed Content-Length", nil, 0}
 	}
-	parsedContentLength.size = size
-	contentLength.parsed = parsedPtr
+	parsedPtr.GetSipHeaderContentLength(context).size = size
+	addr.GetSipSingleHeader(context).parsed = parsedPtr
 	this.singleHeaders.AddHeader(context, addr)
 	return nil
 }
@@ -321,10 +321,12 @@ func (this *SipHeaders) parseMultiKnownHeader(context *ParseContext, src []byte,
 	multiHeader, ok := this.multiHeaders.GetHeaderByIndex(context, info.index)
 	if !ok {
 		var addr AbnfPtr
-		multiHeader, addr = NewSipMultiHeader(context)
-		if multiHeader == nil {
+		addr = NewSipMultiHeader(context)
+		if addr == ABNF_PTR_NIL {
 			return newPos, &AbnfError{"SipHeaders  parse: out of memory for known multi headers", src, newPos}
 		}
+
+		multiHeader = addr.GetSipMultiHeader(context)
 		multiHeader.info = info
 		multiHeader.SetNameByteSlice(context, info.name)
 		this.multiHeaders.AddHeader(context, addr)

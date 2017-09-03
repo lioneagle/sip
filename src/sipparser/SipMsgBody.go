@@ -11,14 +11,13 @@ type SipMsgBody struct {
 	headers SipHeaders
 }
 
-func NewSipMsgBody(context *ParseContext) (*SipMsgBody, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipMsgBody{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipMsgBody(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipMsgBody{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*SipMsgBody)(unsafe.Pointer(mem)).Init()
-	return (*SipMsgBody)(unsafe.Pointer(mem)), addr
+	addr.GetSipMsgBody(context).Init()
+	return addr
 }
 
 func (this *SipMsgBody) Init() {
@@ -48,14 +47,13 @@ type SipMsgBodies struct {
 	AbnfList
 }
 
-func NewSipMsgBodies(context *ParseContext) (*SipMsgBodies, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipMsgBodies{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipMsgBodies(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipMsgBodies{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*SipMsgBodies)(unsafe.Pointer(mem)).Init()
-	return (*SipMsgBodies)(unsafe.Pointer(mem)), addr
+	addr.GetSipMsgBodies(context).Init()
+	return addr
 }
 
 func (this *SipMsgBodies) Init() {

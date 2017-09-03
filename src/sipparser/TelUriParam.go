@@ -12,14 +12,13 @@ type TelUriContext struct {
 	desc         AbnfBuf
 }
 
-func NewTelUriContext(context *ParseContext) (*TelUriContext, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(TelUriContext{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewTelUriContext(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(TelUriContext{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*TelUriContext)(unsafe.Pointer(mem)).Init()
-	return (*TelUriContext)(unsafe.Pointer(mem)), addr
+	addr.GetTelUriContext(context).Init()
+	return addr
 }
 
 func (this *TelUriContext) Init() {
@@ -60,14 +59,13 @@ type TelUriParam struct {
 	value AbnfBuf
 }
 
-func NewTelUriParam(context *ParseContext) (*TelUriParam, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(TelUriParam{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewTelUriParam(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(TelUriParam{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*TelUriParam)(unsafe.Pointer(mem)).Init()
-	return (*TelUriParam)(unsafe.Pointer(mem)), addr
+	addr.GetTelUriParam(context).Init()
+	return addr
 }
 
 func (this *TelUriParam) Init() {
@@ -110,14 +108,14 @@ type TelUriParams struct {
 	AbnfList
 }
 
-func NewTelUriParams(context *ParseContext) (*TelUriParams, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(TelUriParams{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewTelUriParams(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(TelUriParams{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
 
-	(*TelUriParams)(unsafe.Pointer(mem)).Init()
-	return (*TelUriParams)(unsafe.Pointer(mem)), addr
+	addr.GetTelUriParams(context).Init()
+	return addr
 }
 
 func (this *TelUriParams) Init() {

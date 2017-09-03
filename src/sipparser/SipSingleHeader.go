@@ -13,26 +13,25 @@ type SipSingleHeader struct {
 	parsed AbnfPtr
 }
 
-func NewSipSingleHeader(context *ParseContext) (*SipSingleHeader, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipSingleHeader{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipSingleHeader(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipSingleHeader{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*SipSingleHeader)(unsafe.Pointer(mem)).Init()
-	return (*SipSingleHeader)(unsafe.Pointer(mem)), addr
+	addr.GetSipSingleHeader(context).Init()
+	return addr
 }
 
-func GenerateSingleHeader(context *ParseContext, name, value string) (*SipSingleHeader, AbnfPtr) {
-	header, addr := NewSipSingleHeader(context)
-	if header == nil {
-		return nil, ABNF_PTR_NIL
+func GenerateSingleHeader(context *ParseContext, name, value string) AbnfPtr {
+	addr := NewSipSingleHeader(context)
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
+	header := addr.GetSipSingleHeader(context)
 	header.SetInfo(name)
 	header.SetNameByteSlice(context, StringToByteSlice(name))
 	header.SetValueByteSlice(context, StringToByteSlice(value))
-	return header, addr
+	return addr
 }
 
 func (this *SipSingleHeader) Init() {
@@ -108,14 +107,13 @@ type SipSingleHeaders struct {
 	AbnfList
 }
 
-func NewSipSingleHeaders(context *ParseContext) (*SipSingleHeaders, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipSingleHeaders{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipSingleHeaders(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipSingleHeaders{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*SipSingleHeaders)(unsafe.Pointer(mem)).Init()
-	return (*SipSingleHeaders)(unsafe.Pointer(mem)), addr
+	addr.GetSipSingleHeaders(context).Init()
+	return addr
 }
 
 func (this *SipSingleHeaders) Init() {
@@ -225,14 +223,14 @@ func (this *SipSingleHeaders) AddHeader(context *ParseContext, header AbnfPtr) {
 	this.PushBack(context, header)
 }
 
-func (this *SipSingleHeaders) GenerateAndAddHeader(context *ParseContext, name, value string) (*SipSingleHeader, AbnfPtr) {
-	header, addr := GenerateSingleHeader(context, name, value)
-	if header == nil {
-		return nil, ABNF_PTR_NIL
+func (this *SipSingleHeaders) GenerateAndAddHeader(context *ParseContext, name, value string) AbnfPtr {
+	addr := GenerateSingleHeader(context, name, value)
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
 
 	this.AddHeader(context, addr)
-	return header, addr
+	return addr
 }
 
 func (this *SipSingleHeaders) Encode(context *ParseContext, buf *bytes.Buffer) {
@@ -268,10 +266,11 @@ func parseOneSingleHeader(context *ParseContext, src []byte, pos int, info *SipH
 		return ABNF_PTR_NIL, newPos, err
 	}
 
-	newHeader, addr := NewSipSingleHeader(context)
-	if newHeader == nil {
+	addr = NewSipSingleHeader(context)
+	if addr == ABNF_PTR_NIL {
 		return ABNF_PTR_NIL, newPos, &AbnfError{"SipHeaders  parse: out of memory for one known single header", src, newPos}
 	}
+	newHeader := addr.GetSipSingleHeader(context)
 	newHeader.info = info
 	newHeader.parsed = parsed
 	newHeader.SetNameByteSlice(context, info.name)
@@ -283,10 +282,11 @@ func parseOneSingleHeader(context *ParseContext, src []byte, pos int, info *SipH
 
 func parseRawHeader(context *ParseContext, name AbnfRef, src []byte, pos int, info *SipHeaderInfo) (addr AbnfPtr, newPos int, err error) {
 	newPos = pos
-	header, addr := NewSipSingleHeader(context)
-	if header == nil {
+	addr = NewSipSingleHeader(context)
+	if addr == ABNF_PTR_NIL {
 		return ABNF_PTR_NIL, newPos, &AbnfError{"SipHeaders  parse: out of memory for one unparsed headers", src, newPos}
 	}
+	header := addr.GetSipSingleHeader(context)
 	header.SetNameByteSlice(context, src[name.Begin:name.End])
 	header.info = info
 	header.value, newPos, err = ParseHeaderValue(context, src, newPos)

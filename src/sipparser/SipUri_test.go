@@ -36,7 +36,8 @@ func TestSipUriParseOK(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		uri, _ := NewSipUri(context)
+		addr := NewSipUri(context)
+		uri := addr.GetSipUri(context)
 
 		newPos, err := uri.Parse(context, []byte(v.src), 0)
 		if err != nil {
@@ -81,7 +82,8 @@ func TestSipUriParamsParseOK(t *testing.T) {
 	context.allocator = NewMemAllocator(1024 * 30)
 	prefix := FuncName()
 
-	uri, _ := NewSipUri(context)
+	addr := NewSipUri(context)
+	uri := addr.GetSipUri(context)
 	src := "sip:123@abc.com;ttl=10;user%32=phone%31;a;b;c;d;e?xx=yy&x1=aa"
 
 	_, err := uri.Parse(context, []byte(src), 0)
@@ -134,7 +136,8 @@ func TestSipUriHeadersParseOK(t *testing.T) {
 	context.allocator = NewMemAllocator(1024 * 30)
 	prefix := FuncName()
 
-	uri, _ := NewSipUri(context)
+	addr := NewSipUri(context)
+	uri := addr.GetSipUri(context)
 	src := "sip:123@abc.com;ttl=10;user=phone;a;b;c;d;e?xx=yy&x1=aa"
 
 	_, err := uri.Parse(context, []byte(src), 0)
@@ -203,7 +206,8 @@ func TestSipUriParseNOK(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		uri, _ := NewSipUri(context)
+		addr := NewSipUri(context)
+		uri := addr.GetSipUri(context)
 
 		newPos, err := uri.Parse(context, []byte(v.src), 0)
 		if err == nil {
@@ -236,7 +240,8 @@ func TestSipUriEncode(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		uri, _ := NewSipUri(context)
+		addr := NewSipUri(context)
+		uri := addr.GetSipUri(context)
 
 		_, err := uri.Parse(context, []byte(v.src), 0)
 		if err != nil {
@@ -287,8 +292,10 @@ func TestSipUriEqual(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		uri1, _ := NewSipUri(context)
-		uri2, _ := NewSipUri(context)
+		addr1 := NewSipUri(context)
+		addr2 := NewSipUri(context)
+		uri1 := addr1.GetSipUri(context)
+		uri2 := addr2.GetSipUri(context)
 
 		_, err := uri1.Parse(context, []byte(v.uri1), 0)
 		if err != nil {
@@ -325,7 +332,8 @@ func BenchmarkSipUriParse(b *testing.B) {
 	//v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	uri, _ := NewSipUri(context)
+	addr := NewSipUri(context)
+	uri := addr.GetSipUri(context)
 	remain := context.allocator.Used()
 	b.ReportAllocs()
 	b.SetBytes(2)
@@ -376,7 +384,8 @@ func BenchmarkSipUriString(b *testing.B) {
 	v := []byte("sip:abc@biloxi.com")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	uri, _ := NewSipUri(context)
+	addr := NewSipUri(context)
+	uri := addr.GetSipUri(context)
 	uri.Parse(context, v, 0)
 	remain := context.allocator.Used()
 	b.ReportAllocs()
@@ -399,7 +408,8 @@ func BenchmarkSipUriEncode(b *testing.B) {
 	v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	uri, _ := NewSipUri(context)
+	addr := NewSipUri(context)
+	uri := addr.GetSipUri(context)
 	uri.Parse(context, v, 0)
 	remain := context.allocator.Used()
 	b.SetBytes(2)

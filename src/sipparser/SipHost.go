@@ -21,14 +21,13 @@ type SipHost struct {
 	data AbnfBuf
 }
 
-func NewSipHost(context *ParseContext) (*SipHost, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipHost{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipHost(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipHost{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*SipHost)(unsafe.Pointer(mem)).Init()
-	return (*SipHost)(unsafe.Pointer(mem)), addr
+	addr.GetSipHost(context).Init()
+	return addr
 }
 
 func (this *SipHost) Init() {
@@ -193,14 +192,13 @@ type SipHostPort struct {
 	port    uint16
 }
 
-func NewSipHostPort(context *ParseContext) (*SipHostPort, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipHostPort{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipHostPort(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipHostPort{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*SipHostPort)(unsafe.Pointer(mem)).Init()
-	return (*SipHostPort)(unsafe.Pointer(mem)), addr
+	addr.GetSipHostPort(context).Init()
+	return addr
 }
 
 func (this *SipHostPort) Init() {

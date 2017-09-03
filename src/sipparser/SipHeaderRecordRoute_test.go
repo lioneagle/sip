@@ -29,7 +29,8 @@ func TestSipHeaderRecordRouteParse(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		header, _ := NewSipHeaderRecordRoute(context)
+		addr := NewSipHeaderRecordRoute(context)
+		header := addr.GetSipHeaderRecordRoute(context)
 		newPos, err := header.Parse(context, []byte(v.src), 0)
 
 		if v.ok && err != nil {

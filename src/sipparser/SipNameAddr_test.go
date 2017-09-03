@@ -30,7 +30,8 @@ func TestSipNameAddrParse(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		nameaddr, _ := NewSipNameAddr(context)
+		addr := NewSipNameAddr(context)
+		nameaddr := addr.GetSipNameAddr(context)
 		newPos, err := nameaddr.Parse(context, []byte(v.src), 0)
 
 		if v.ok && err != nil {
@@ -63,7 +64,8 @@ func BenchmarkSipNameAddrSpecParse(b *testing.B) {
 	v := []byte("<sip:abc@biloxi.com;transport=tcp;method=REGISTER>")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	addr, _ := NewSipNameAddr(context)
+	addr := NewSipNameAddr(context)
+	nameaddr := addr.GetSipNameAddr(context)
 	remain := context.allocator.Used()
 	b.ReportAllocs()
 	b.SetBytes(2)
@@ -72,6 +74,6 @@ func BenchmarkSipNameAddrSpecParse(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		context.allocator.ClearAllocNum()
 		context.allocator.FreePart(remain)
-		addr.Parse(context, v, 0)
+		nameaddr.Parse(context, v, 0)
 	}
 }

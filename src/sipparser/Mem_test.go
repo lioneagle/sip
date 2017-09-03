@@ -38,21 +38,11 @@ func TestMemAllocatorAlloc(t *testing.T) {
 			break
 		}
 
-		mem, addr := allocator.Alloc(v.allocSize)
+		addr := allocator.Alloc(v.allocSize)
 
 		if v.ok {
 			used += v.allocSize
 			used = RoundToAlign(used, SIP_MEM_ALIGN)
-		}
-
-		if mem == nil && v.ok {
-			t.Errorf("%s[%d] failed: mem should not be nil\n", prefix, i)
-			continue
-		}
-
-		if mem != nil && !v.ok {
-			t.Errorf("%s[%d] failed: mem should be nil\n", prefix, i)
-			continue
 		}
 
 		if addr == ABNF_PTR_NIL && v.ok {
@@ -147,13 +137,13 @@ func TestMemAllocatorUsed(t *testing.T) {
 			used = RoundToAlign(used, SIP_MEM_ALIGN)
 		}
 
-		mem, _ := allocator.Alloc(v.allocSize)
-		if mem == nil && v.ok {
+		addr := allocator.Alloc(v.allocSize)
+		if addr == ABNF_PTR_NIL && v.ok {
 			t.Errorf("%s[%d] failed: mem should not be nil\n", prefix, i)
 			continue
 		}
 
-		if mem != nil && !v.ok {
+		if addr != ABNF_PTR_NIL && !v.ok {
 			t.Errorf("%s[%d] failed: mem should be nil\n", prefix, i)
 			continue
 		}
@@ -224,7 +214,7 @@ func BenchmarkMemAlloc(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		allocator.FreeAll()
-		_, _ = allocator.Alloc(1000)
+		allocator.Alloc(1000)
 	}
 	//fmt.Printf("uri = %s\n", uri.String())
 	//fmt.Printf("")

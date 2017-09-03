@@ -11,14 +11,13 @@ type SipHeaderCseq struct {
 	method AbnfBuf
 }
 
-func NewSipHeaderCseq(context *ParseContext) (*SipHeaderCseq, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipHeaderCseq{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipHeaderCseq(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipHeaderCseq{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-
-	(*SipHeaderCseq)(unsafe.Pointer(mem)).Init()
-	return (*SipHeaderCseq)(unsafe.Pointer(mem)), addr
+	addr.GetSipHeaderCseq(context).Init()
+	return addr
 }
 
 func (this *SipHeaderCseq) Init() {
@@ -81,11 +80,11 @@ func (this *SipHeaderCseq) String(context *ParseContext) string {
 }
 
 func ParseSipCseq(context *ParseContext, src []byte, pos int) (newPos int, parsed AbnfPtr, err error) {
-	header, addr := NewSipHeaderCseq(context)
-	if header == nil || addr == ABNF_PTR_NIL {
+	addr := NewSipHeaderCseq(context)
+	if addr == ABNF_PTR_NIL {
 		return newPos, ABNF_PTR_NIL, &AbnfError{"CSeq parse: out of memory for new header", src, newPos}
 	}
-	newPos, err = header.ParseValue(context, src, pos)
+	newPos, err = addr.GetSipHeaderCseq(context).ParseValue(context, src, pos)
 	return newPos, addr, err
 }
 

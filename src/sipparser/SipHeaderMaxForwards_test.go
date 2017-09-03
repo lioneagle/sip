@@ -27,7 +27,8 @@ func TestSipHeaderMaxForwardsParse(t *testing.T) {
 	prefix := FuncName()
 
 	for i, v := range testdata {
-		header, _ := NewSipHeaderMaxForwards(context)
+		addr := NewSipHeaderMaxForwards(context)
+		header := addr.GetSipHeaderMaxForwards(context)
 		newPos, err := header.Parse(context, []byte(v.src), 0)
 
 		if v.ok && err != nil {

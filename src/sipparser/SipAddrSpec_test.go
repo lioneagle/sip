@@ -27,8 +27,9 @@ func TestSipAddrSpecParse(t *testing.T) {
 
 	for i, v := range testdata {
 		context.allocator.FreeAll()
-		addrsepc, _ := NewSipAddrSpec(context)
-		newPos, err := addrsepc.Parse(context, []byte(v.src), 0)
+		addr := NewSipAddrSpec(context)
+		addrspec := addr.GetSipAddrSpec(context)
+		newPos, err := addrspec.Parse(context, []byte(v.src), 0)
 
 		if v.ok && err != nil {
 			t.Errorf("%s[%d] failed: err = %s\n", prefix, i, err)
@@ -44,8 +45,8 @@ func TestSipAddrSpecParse(t *testing.T) {
 			t.Errorf("%s[%d] failed: newPos = %d, wanted = %d\n", prefix, i, newPos, v.newPos)
 		}
 
-		if v.ok && v.encode != addrsepc.String(context) {
-			t.Errorf("%s[%d] failed: encode = %s, wanted = %s\n", prefix, i, addrsepc.String(context), v.encode)
+		if v.ok && v.encode != addrspec.String(context) {
+			t.Errorf("%s[%d] failed: encode = %s, wanted = %s\n", prefix, i, addrspec.String(context), v.encode)
 			continue
 		}
 	}
@@ -72,8 +73,9 @@ func TestSipAddrSpecParseWithouParam(t *testing.T) {
 
 	for i, v := range testdata {
 		context.allocator.FreeAll()
-		addrsepc, _ := NewSipAddrSpec(context)
-		newPos, err := addrsepc.ParseWithoutParam(context, []byte(v.src), 0)
+		addr := NewSipAddrSpec(context)
+		addrspec := addr.GetSipAddrSpec(context)
+		newPos, err := addrspec.ParseWithoutParam(context, []byte(v.src), 0)
 
 		if v.ok && err != nil {
 			t.Errorf("%s[%d] failed: err = %s\n", prefix, i, err)
@@ -89,8 +91,8 @@ func TestSipAddrSpecParseWithouParam(t *testing.T) {
 			t.Errorf("%s[%d] failed: newPos = %d, wanted = %d\n", prefix, i, newPos, v.newPos)
 		}
 
-		if v.ok && v.encode != addrsepc.String(context) {
-			t.Errorf("%s[%d] failed: encode = %s, wanted = %s\n", prefix, i, addrsepc.String(context), v.encode)
+		if v.ok && v.encode != addrspec.String(context) {
+			t.Errorf("%s[%d] failed: encode = %s, wanted = %s\n", prefix, i, addrspec.String(context), v.encode)
 			continue
 		}
 	}
@@ -144,27 +146,29 @@ func TestSipAddrSpecEqual(t *testing.T) {
 
 	for i, v := range testdata {
 		context.allocator.FreeAll()
-		addrsepc1, _ := NewSipAddrSpec(context)
-		addrsepc2, _ := NewSipAddrSpec(context)
+		addr1 := NewSipAddrSpec(context)
+		addr2 := NewSipAddrSpec(context)
+		addrspec1 := addr1.GetSipAddrSpec(context)
+		addrspec2 := addr2.GetSipAddrSpec(context)
 
-		_, err := addrsepc1.Parse(context, []byte(v.uri1), 0)
+		_, err := addrspec1.Parse(context, []byte(v.uri1), 0)
 		if err != nil {
 			t.Errorf("%s[%d] failed: uri1 parse failed: err = %s\n", prefix, i, err.Error())
 			continue
 		}
 
-		_, err = addrsepc2.Parse(context, []byte(v.uri2), 0)
+		_, err = addrspec2.Parse(context, []byte(v.uri2), 0)
 		if err != nil {
 			t.Errorf("%s[%d] failed: uri2 parse failed: err = %s\n", prefix, i, err.Error())
 			continue
 		}
 
-		if v.equal && !addrsepc1.Equal(context, addrsepc2) {
+		if v.equal && !addrspec1.Equal(context, addrspec2) {
 			t.Errorf("%s[%d] failed: should be equal, uri1 = %s, uri2 = %s\n", prefix, i, v.uri1, v.uri2)
 			continue
 		}
 
-		if !v.equal && addrsepc1.Equal(context, addrsepc2) {
+		if !v.equal && addrspec1.Equal(context, addrspec2) {
 			t.Errorf("%s[%d] failed: should not be equal, uri1 = %s, uri2 = %s\n", prefix, i, v.uri1, v.uri2)
 			continue
 		}
@@ -180,7 +184,8 @@ func BenchmarkSipAddrSpecParse(b *testing.B) {
 	v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
-	addr, _ := NewSipAddrSpec(context)
+	addr := NewSipAddrSpec(context)
+	addrspec := addr.GetSipAddrSpec(context)
 	remain := context.allocator.Used()
 	b.ReportAllocs()
 	b.SetBytes(2)
@@ -189,6 +194,6 @@ func BenchmarkSipAddrSpecParse(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		context.allocator.ClearAllocNum()
 		context.allocator.FreePart(remain)
-		addr.Parse(context, v, 0)
+		addrspec.Parse(context, v, 0)
 	}
 }

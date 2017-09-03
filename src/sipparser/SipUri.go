@@ -15,14 +15,14 @@ type SipUri struct {
 	headers  SipUriHeaders
 }
 
-func NewSipUri(context *ParseContext) (*SipUri, AbnfPtr) {
-	mem, addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipUri{})))
-	if mem == nil {
-		return nil, ABNF_PTR_NIL
+func NewSipUri(context *ParseContext) AbnfPtr {
+	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipUri{})))
+	if addr == ABNF_PTR_NIL {
+		return ABNF_PTR_NIL
 	}
-	(*SipUri)(unsafe.Pointer(mem)).isSecure = false
-	(*SipUri)(unsafe.Pointer(mem)).Init()
-	return (*SipUri)(unsafe.Pointer(mem)), addr
+	addr.GetSipUri(context).isSecure = false
+	addr.GetSipUri(context).Init()
+	return addr
 }
 
 func (this *SipUri) Init() {
