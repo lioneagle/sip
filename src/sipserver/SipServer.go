@@ -140,6 +140,9 @@ func main() {
 		} //*/
 	}
 
+	fmt.Printf("allocator.AllocNum = %d\n", context.GetAllocNum())
+	fmt.Printf("allocator.Used = %d\n", context.Used())
+
 	/*
 		fmt.Println("Count1 =", sipparser.Count1)
 		fmt.Println("Count2 =", sipparser.Count2)
