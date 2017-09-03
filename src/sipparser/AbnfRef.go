@@ -29,8 +29,9 @@ func (this *AbnfRef) Parse(src []byte, pos int, inCharset AbnfIsInCharset) (end 
 
 func (this *AbnfRef) ParseSipToken(src []byte, pos int) (end int) {
 	this.Begin = int32(pos)
+	len1 := len(src)
 
-	for end = pos; end < len(src); end++ {
+	for end = pos; end < len1; end++ {
 		if !IsSipToken(src[end]) {
 			break
 		}
@@ -42,8 +43,9 @@ func (this *AbnfRef) ParseSipToken(src []byte, pos int) (end int) {
 
 func (this *AbnfRef) ParseSipWord(src []byte, pos int) (end int) {
 	this.Begin = int32(pos)
+	len1 := len(src)
 
-	for end = pos; end < len(src); end++ {
+	for end = pos; end < len1; end++ {
 		if !IsSipWord(src[end]) {
 			break
 		}
@@ -55,8 +57,9 @@ func (this *AbnfRef) ParseSipWord(src []byte, pos int) (end int) {
 
 func (this *AbnfRef) ParseUriScheme(src []byte, pos int) (end int) {
 	this.Begin = int32(pos)
+	len1 := len(src)
 
-	for end = pos; end < len(src); end++ {
+	for end = pos; end < len1; end++ {
 		if !IsUriScheme(src[end]) {
 			break
 		}
@@ -68,8 +71,9 @@ func (this *AbnfRef) ParseUriScheme(src []byte, pos int) (end int) {
 
 func (this *AbnfRef) ParseWspChar(src []byte, pos int) (end int) {
 	this.Begin = int32(pos)
+	len1 := len(src)
 
-	for end = pos; end < len(src); end++ {
+	for end = pos; end < len1; end++ {
 		if !IsWspChar(src[end]) {
 			break
 		}
@@ -81,8 +85,9 @@ func (this *AbnfRef) ParseWspChar(src []byte, pos int) (end int) {
 
 func (this *AbnfRef) ParseDigit(src []byte, pos int) (end int) {
 	this.Begin = int32(pos)
+	len1 := len(src)
 
-	for end = pos; end < len(src); end++ {
+	for end = pos; end < len1; end++ {
 		if !IsDigit(src[end]) {
 			break
 		}
@@ -94,10 +99,11 @@ func (this *AbnfRef) ParseDigit(src []byte, pos int) (end int) {
 
 func (this *AbnfRef) ParseEscapable(src []byte, pos int, inCharset AbnfIsInCharset) (escapeNum, newPos int, err error) {
 	this.Begin = int32(pos)
+	len1 := len(src)
 
-	for newPos = pos; newPos < len(src); newPos++ {
+	for newPos = pos; newPos < len1; newPos++ {
 		if src[newPos] == '%' {
-			if (newPos + 2) >= len(src) {
+			if (newPos + 2) >= len1 {
 				return escapeNum, newPos, &AbnfError{"AbnfRef ParseEscapable: reach end after %", src, newPos}
 			}
 			if !IsHex(src[newPos+1]) || !IsHex(src[newPos+2]) {
@@ -115,10 +121,11 @@ func (this *AbnfRef) ParseEscapable(src []byte, pos int, inCharset AbnfIsInChars
 
 func (this *AbnfRef) ParseEscapableSipUser(src []byte, pos int) (escapeNum, newPos int, err error) {
 	this.Begin = int32(pos)
+	len1 := len(src)
 
-	for newPos = pos; newPos < len(src); newPos++ {
+	for newPos = pos; newPos < len1; newPos++ {
 		if src[newPos] == '%' {
-			if (newPos + 2) >= len(src) {
+			if (newPos + 2) >= len1 {
 				return escapeNum, newPos, &AbnfError{"AbnfRef ParseEscapableSipUser: reach end after %", src, newPos}
 			}
 			if !IsHex(src[newPos+1]) || !IsHex(src[newPos+2]) {

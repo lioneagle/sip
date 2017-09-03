@@ -61,7 +61,8 @@ var Count3 int = 0
 var Count4 int = 0
 
 func EqualNoCase(s1, s2 []byte) bool {
-	if len(s1) != len(s2) {
+	len1 := len(s1)
+	if len1 != len(s2) {
 		return false
 	}
 
@@ -69,9 +70,9 @@ func EqualNoCase(s1, s2 []byte) bool {
 		return false
 	}
 
-	for i, v := range s1 {
-		if v != s2[i] {
-			if ToLower(v) != ToLower(s2[i]) {
+	for i := 0; i < len1; i++ {
+		if s1[i] != s2[i] {
+			if ToLower(s1[i]) != ToLower(s2[i]) {
 				return false
 			}
 		}
@@ -139,7 +140,8 @@ func Escape(src []byte, inCharset AbnfIsInCharset) (dst []byte) {
 }
 
 func ParseUInt(src []byte, pos int) (digit, num, newPos int, ok bool) {
-	if pos >= len(src) || !IsDigit(src[pos]) {
+	len1 := len(src)
+	if pos >= len1 || !IsDigit(src[pos]) {
 		return 0, 0, pos, false
 	}
 
@@ -147,7 +149,7 @@ func ParseUInt(src []byte, pos int) (digit, num, newPos int, ok bool) {
 	digit = 0
 	newPos = pos
 
-	for newPos < len(src) && IsDigit(src[newPos]) {
+	for newPos < len1 && IsDigit(src[newPos]) {
 		digit = digit*10 + int(src[newPos]) - '0'
 		newPos++
 		num++

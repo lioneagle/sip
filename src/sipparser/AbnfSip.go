@@ -178,7 +178,8 @@ func GetSipHeaderIndex(name []byte) uint32 {
 	var i uint32
 	for i = 1; i < ABNF_SIP_HDR_TOTAL_NUM; i++ {
 		info := g_SipHeaderInfos[i]
-		if EqualNoCase(name, info.name) {
+		if len(name) == len(info.name) && EqualNoCase(name, info.name) {
+			//if EqualNoCase(name, info.name) {
 			return i
 		}
 		if info.hasShortName && EqualNoCase(name, info.shortName) {
