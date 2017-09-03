@@ -42,7 +42,7 @@ func (this *SipVersion) Parse(context *ParseContext, src []byte, pos int) (newPo
 
 	newPos += 4
 
-	newPos, err = this.major.Parse(context, src, newPos, IsDigit)
+	newPos, err = this.major.ParseDigit(context, src, newPos)
 	if err != nil {
 		return newPos, &AbnfError{"SipVersion parse: parse major version failed", src, newPos}
 	}
@@ -53,7 +53,7 @@ func (this *SipVersion) Parse(context *ParseContext, src []byte, pos int) (newPo
 
 	newPos++
 
-	newPos, err = this.minor.Parse(context, src, newPos, IsDigit)
+	newPos, err = this.minor.ParseDigit(context, src, newPos)
 	if err != nil {
 		return newPos, &AbnfError{"SipVersion parse: parse minor version failed", src, newPos}
 	}

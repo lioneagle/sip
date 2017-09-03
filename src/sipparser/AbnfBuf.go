@@ -238,6 +238,17 @@ func (this *AbnfBuf) ParseWspChar(context *ParseContext, src []byte, pos int) (n
 	return newPos, nil
 }
 
+func (this *AbnfBuf) ParseDigit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	ref := AbnfRef{}
+	newPos = ref.ParseDigit(src, pos)
+
+	if ref.Begin >= ref.End {
+		return newPos, &AbnfError{"AbnfBuf ParseDigit: value is empty", src, newPos}
+	}
+	this.SetByteSlice(context, src[ref.Begin:ref.End])
+	return newPos, nil
+}
+
 func (this *AbnfBuf) ParseEscapableEnableEmpty(context *ParseContext, src []byte, pos int, inCharset AbnfIsInCharset) (newPos int, err error) {
 	ref := AbnfRef{}
 	escapeNum, newPos, err := ref.ParseEscapable(src, pos, inCharset)

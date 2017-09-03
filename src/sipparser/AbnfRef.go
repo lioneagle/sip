@@ -79,6 +79,19 @@ func (this *AbnfRef) ParseWspChar(src []byte, pos int) (end int) {
 	return end
 }
 
+func (this *AbnfRef) ParseDigit(src []byte, pos int) (end int) {
+	this.Begin = int32(pos)
+
+	for end = pos; end < len(src); end++ {
+		if !IsDigit(src[end]) {
+			break
+		}
+	}
+
+	this.End = int32(end)
+	return end
+}
+
 func (this *AbnfRef) ParseEscapable(src []byte, pos int, inCharset AbnfIsInCharset) (escapeNum, newPos int, err error) {
 	this.Begin = int32(pos)
 
