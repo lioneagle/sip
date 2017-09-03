@@ -129,7 +129,7 @@ func main() {
 	remain := context.Used()
 	msg1 := []byte(msg)
 
-	for i := 0; i < 100000; i++ {
+	for i := 0; i < 1; i++ {
 		context.ClearAllocNum()
 		context.FreePart(remain)
 		_, err := sipmsg.Parse(context, msg1, 0)
@@ -142,6 +142,8 @@ func main() {
 
 	fmt.Printf("allocator.AllocNum = %d\n", context.GetAllocNum())
 	fmt.Printf("allocator.Used = %d\n", context.Used())
+	fmt.Printf("len(msg) = %d\n", len(msg))
+	fmt.Printf("msg = \n%s\n", msg)
 
 	/*
 		fmt.Println("Count1 =", sipparser.Count1)

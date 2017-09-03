@@ -2,6 +2,7 @@ package sipparser
 
 import (
 	"fmt"
+	//"logger"
 	"reflect"
 	"strconv"
 	"unsafe"
@@ -132,6 +133,8 @@ func (this *MemAllocator) GetMem(addr int32) *byte {
 func (this *MemAllocator) Alloc(size int32) (mem *byte, addr AbnfPtr) {
 	this.stat.allocNum++
 	this.stat.allocReqBytes += size
+
+	//logger.PrintStack()
 	/*
 		if print_mem {
 			fmt.Printf("MEM: alloc_request = %d\n", size)
@@ -155,6 +158,8 @@ func (this *MemAllocator) Alloc(size int32) (mem *byte, addr AbnfPtr) {
 	}
 	used := this.used
 	this.stat.allocNumOk++
+
+	//fmt.Printf("========================== [%d] size = %d, more = %d  ==========================\n", this.stat.allocNum, size, newSize-size-used)
 
 	mem = (*byte)(unsafe.Pointer(&this.mem[used]))
 	addr = AbnfPtr(used)
