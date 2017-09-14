@@ -75,7 +75,7 @@ func TestEqualNoCase(t *testing.T) {
 	for i, v := range wanted {
 		u := EqualNoCase([]byte(v.s1), []byte(v.s2))
 		if u != v.ret {
-			t.Errorf("TestCompareNoCase[%d] failed, ret = %d, wanted = %d\n", i, u, v.ret)
+			t.Errorf("TestCompareNoCase[%d] failed, ret = %v, wanted = %v\n", i, u, v.ret)
 		}
 	}
 }

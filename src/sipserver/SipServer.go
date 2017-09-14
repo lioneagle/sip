@@ -125,7 +125,7 @@ func main() {
 	//fmt.Println("ABNF_SIP_HDR_TOTAL_NUM =", sipparser.ABNF_SIP_HDR_TOTAL_NUM)
 	context := sipparser.NewParseContext()
 	context.SetAllocator(sipparser.NewMemAllocator(1024 * 30))
-	sipmsg, _ := sipparser.NewSipMsg(context)
+	sipmsg := sipparser.NewSipMsg(context).GetSipMsg(context)
 	remain := context.Used()
 	msg1 := []byte(msg)
 

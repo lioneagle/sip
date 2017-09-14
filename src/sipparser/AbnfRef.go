@@ -16,8 +16,9 @@ func (this *AbnfRef) Len() int32 {
 
 func (this *AbnfRef) Parse(src []byte, pos int, inCharset AbnfIsInCharset) (end int) {
 	this.Begin = int32(pos)
+	len1 := len(src)
 
-	for end = pos; end < len(src); end++ {
+	for end = pos; end < len1; end++ {
 		if !inCharset(src[end]) {
 			break
 		}

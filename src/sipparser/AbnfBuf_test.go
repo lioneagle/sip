@@ -45,7 +45,7 @@ func TestAbnfBufNew(t *testing.T) {
 		buf := addr.GetAbnfBuf(context)
 
 		if !buf.Empty() {
-			t.Errorf("%s[%d]: buf should be empty\n", prefix, i, buf.Size())
+			t.Errorf("%s[%d]: buf should be empty (buf = %v)\n", prefix, i, buf)
 			continue
 		}
 

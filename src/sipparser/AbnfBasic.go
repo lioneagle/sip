@@ -15,21 +15,24 @@ func ToLowerHex(ch byte) byte {
 
 func ToLower(ch byte) byte {
 	if IsUpper(ch) {
-		return ch - 'A' + 'a'
+		//return ch - 'A' + 'a'
+		return ch | 0x20
 	}
 	return ch
 }
 
 func ToUpper(ch byte) byte {
 	if IsLower(ch) {
-		return ch - 'a' + 'A'
+		//return ch - 'a' + 'A'
+		return ch & 0xDF
 	}
 	return ch
 }
 
 func HexToByte(ch byte) byte {
 	if IsDigit(ch) {
-		return ch - '0'
+		//return ch - '0'
+		return ch & 0x0F
 	}
 	if IsLowerHexAlpha(ch) {
 		return ch - 'a' + 10
@@ -38,13 +41,14 @@ func HexToByte(ch byte) byte {
 }
 
 func CompareNoCase(s1, s2 []byte) int {
-	if len(s1) != len(s2) {
-		return len(s1) - len(s2)
+	len1 := len(s1)
+	if len1 != len(s2) {
+		return len1 - len(s2)
 	}
 
-	for i, v := range s1 {
-		if v != s2[i] {
-			ch1 := ToLower(v)
+	for i := 0; i < len1; i++ {
+		if s1[i] != s2[i] {
+			ch1 := ToLower(s1[i])
 			ch2 := ToLower(s2[i])
 			if ch1 != ch2 {
 				return int(ch1) - int(ch2)
@@ -66,11 +70,11 @@ func EqualNoCase(s1, s2 []byte) bool {
 		return false
 	}
 
-	/*if ToLower(s1[0]) != ToLower(s2[0]) {
+	if ToLower(s1[0]) != ToLower(s2[0]) {
 		return false
-	}*/
+	}
 
-	for i := 0; i < len1; i++ {
+	for i := 1; i < len1; i++ {
 		if s1[i] != s2[i] {
 			if ToLower(s1[i]) != ToLower(s2[i]) {
 				return false
@@ -86,8 +90,10 @@ func Unescape(src []byte) (dst []byte) {
 		return src
 	}
 
-	for i := 0; i < len(src); {
-		if (src[i] == '%') && ((i + 2) < len(src)) && IsHex(src[i+1]) && IsHex(src[i+2]) {
+	len1 := len(src)
+
+	for i := 0; i < len1; {
+		if (src[i] == '%') && ((i + 2) < len1) && IsHex(src[i+1]) && IsHex(src[i+2]) {
 			dst = append(dst, unescapeToByte(src[i:]))
 			i += 3
 		} else {
@@ -100,18 +106,23 @@ func Unescape(src []byte) (dst []byte) {
 }
 
 func HasPrefixByteSliceNoCase(s1, s2 []byte) bool {
-	if len(s1) < len(s2) {
+	len2 := len(s2)
+	if len(s1) < len2 {
 		return false
 	}
 
-	if len(s2) <= 0 {
+	if len2 <= 0 {
 		return false
 	}
-	return EqualNoCase(s1[:len(s2)], s2)
+	return EqualNoCase(s1[:len2], s2)
 }
 
 func unescapeToByte(src []byte) byte {
 	return HexToByte(src[1])<<4 | HexToByte(src[2])
+}
+
+func unescapeToByte2(x1, x2 byte) byte {
+	return HexToByte(x1)<<4 | HexToByte(x2)
 }
 
 func NeedEscape(src []byte, inCharset AbnfIsInCharset) bool {

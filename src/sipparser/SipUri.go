@@ -115,7 +115,10 @@ func (this *SipUri) Encode(context *ParseContext, buf *bytes.Buffer) {
 		buf.Write(Escape(this.user.GetAsByteSlice(context), IsSipUser))
 		if this.password.Exist() {
 			buf.WriteByte(':')
-			buf.Write(Escape(this.password.GetAsByteSlice(context), IsSipPassword))
+
+			if !this.password.Empty() {
+				buf.Write(Escape(this.password.GetAsByteSlice(context), IsSipPassword))
+			}
 		}
 		buf.WriteByte('@')
 	}

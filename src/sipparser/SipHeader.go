@@ -374,16 +374,17 @@ func FindCrlfRFC3261(src []byte, pos int) (begin, end int, ok bool) {
 	 *  'CR' or 'LF' is not equal to 'CRLF' in this routine
 	 */
 	end = pos
-	for end < len(src) {
-		for ; (end < len(src)) && (src[end] != '\n'); end++ {
+	len1 := len(src)
+	for end < len1 {
+		for ; (end < len1) && (src[end] != '\n'); end++ {
 		}
-		if end >= len(src) {
+		if end >= len1 {
 			/* no CRLF" */
 			return end, end, false
 		}
 		end++
 
-		if end >= len(src) {
+		if end >= len1 {
 			break
 		}
 
