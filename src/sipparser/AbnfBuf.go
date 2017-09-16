@@ -99,17 +99,6 @@ func (this *AbnfBuf) SetByteSlice(context *ParseContext, buf []byte) {
 		return
 	}
 
-	/*
-		if this.allocMem(context, int32(len(buf))) {
-			//this.SetExist()
-			copy(this.GetAsByteSlice(context), buf)
-		}
-
-		// remain unchanged
-		return
-		//*/
-
-	//*
 	if int32(this.allocSize) < size {
 		addr, allocSize := context.allocator.AllocEx(size)
 		if addr == ABNF_PTR_NIL {
@@ -121,9 +110,29 @@ func (this *AbnfBuf) SetByteSlice(context *ParseContext, buf []byte) {
 	}
 	this.setSize(size)
 
-	copy(this.GetAsByteSlice(context), buf)
-	//*/
+	copy(this.GetAsByteSlice2(context), buf)
+}
 
+func (this *AbnfBuf) SetByteSlice2(context *ParseContext, buf *[]byte) {
+	buf1 := *buf
+	size := int32(len(buf1))
+	if size == 0 {
+		this.SetNonExist()
+		return
+	}
+
+	if int32(this.allocSize) < size {
+		addr, allocSize := context.allocator.AllocEx(size)
+		if addr == ABNF_PTR_NIL {
+			// keep unchanged
+			return
+		}
+		this.addr = addr
+		this.allocSize = uint32(allocSize)
+	}
+	this.setSize(size)
+
+	copy(this.GetAsByteSlice2(context), buf1)
 }
 
 func (this *AbnfBuf) SetByteSliceWithUnescape(context *ParseContext, buf []byte, escapeNum int) {
@@ -163,6 +172,17 @@ func (this *AbnfBuf) GetAsByteSlice(context *ParseContext) []byte {
 	size := int(this.Size())
 	header := reflect.SliceHeader{Data: this.addr.GetUintptr(context), Len: size, Cap: size}
 	return *(*[]byte)(unsafe.Pointer(&header))
+}
+
+func (this *AbnfBuf) GetAsByteSlice3(context *ParseContext) []byte {
+	size := int(this.Size())
+	header := reflect.SliceHeader{Data: this.addr.GetUintptr(context), Len: size, Cap: size}
+	return *(*[]byte)(unsafe.Pointer(&header))
+}
+
+func (this *AbnfBuf) GetAsByteSlice2(context *ParseContext) []byte {
+	size := int(this.Size())
+	return *(*[]byte)(unsafe.Pointer(&reflect.SliceHeader{Data: this.addr.GetUintptr(context), Len: size, Cap: size}))
 }
 
 func (this *AbnfBuf) GetAsString(context *ParseContext) string {

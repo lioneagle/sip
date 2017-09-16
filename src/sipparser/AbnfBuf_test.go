@@ -649,3 +649,43 @@ func TestAbnfBufEncode(t *testing.T) {
 		return
 	}
 }
+
+func BenchmarkSetByteSlice(b *testing.B) {
+	b.StopTimer()
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+	remain := context.allocator.Used()
+
+	b.ReportAllocs()
+	b.SetBytes(2)
+	b.StartTimer()
+
+	data := []byte("0123456789012345678901234567890123456789")
+	buf := &AbnfBuf{}
+
+	for i := 0; i < b.N; i++ {
+		context.allocator.ClearAllocNum()
+		context.allocator.FreePart(remain)
+		buf.SetByteSlice(context, data)
+	}
+}
+
+func BenchmarkSetByteSlice2(b *testing.B) {
+	b.StopTimer()
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+	remain := context.allocator.Used()
+
+	b.ReportAllocs()
+	b.SetBytes(2)
+	b.StartTimer()
+
+	data := []byte("0123456789012345678901234567890123456789")
+	buf := &AbnfBuf{}
+
+	for i := 0; i < b.N; i++ {
+		context.allocator.ClearAllocNum()
+		context.allocator.FreePart(remain)
+		buf.SetByteSlice2(context, &data)
+	}
+}

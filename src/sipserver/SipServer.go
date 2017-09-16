@@ -122,6 +122,11 @@ var msg string = "INVITE sip:6135000@24.15.255.4 SIP/2.0\r\n" +
 	"\r\n"
 
 func main() {
+
+	x := &[]byte{0, 1}
+
+	fmt.Println("x[1] =", (*x)[1])
+
 	//fmt.Println("ABNF_SIP_HDR_TOTAL_NUM =", sipparser.ABNF_SIP_HDR_TOTAL_NUM)
 	context := sipparser.NewParseContext()
 	context.SetAllocator(sipparser.NewMemAllocator(1024 * 30))

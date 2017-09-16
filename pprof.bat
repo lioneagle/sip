@@ -9,7 +9,12 @@ call env.bat
 if not exist .\test_temp\%1.test.exe goto end
 if not exist .\test_temp\%1_cpu.prof goto end
 gofmt -w src
-go tool pprof .\test_temp\%1.test.exe .\test_temp\%1_cpu.prof
+
+if "%2" == "" (
+	go tool pprof .\test_temp\%1.test.exe .\test_temp\%1_cpu.prof
+) else (
+	go tool pprof %2 %3=%4 .\test_temp\%1.test.exe .\test_temp\%1_cpu.prof
+)
 
 
 :end

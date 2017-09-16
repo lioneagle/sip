@@ -186,7 +186,7 @@ func GetSipHeaderIndex(name []byte) uint32 {
 			return i
 		}
 	}
-	return 0
+	return ABNF_SIP_HDR_UNKNOWN
 }
 
 func GetSipHeaderInfo(name []byte) (info *SipHeaderInfo, ok bool) {

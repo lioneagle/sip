@@ -57,7 +57,7 @@ func (this *SipHost) IsIpv4() bool     { return this.id == HOST_TYPE_IPV4 }
 func (this *SipHost) IsIpv6() bool     { return this.id == HOST_TYPE_IPV6 }
 func (this *SipHost) IsHostname() bool { return this.id == HOST_TYPE_NAME }
 
-func (this *SipHost) SetIpv4(context *ParseContext, ip net.IP) {
+func (this *SipHost) SetIpv4(context *ParseContext, ip []byte) {
 	this.id = HOST_TYPE_IPV4
 	this.data.SetByteSlice(context, ip)
 }
@@ -116,13 +116,14 @@ func (this *SipHost) Equal(context *ParseContext, rhs *SipHost) bool {
 
 func (this *SipHost) parseIpv6(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
-	for ; newPos < len(src); newPos++ {
+	len1 := len(src)
+	for ; newPos < len1; newPos++ {
 		if src[newPos] == ']' {
 			break
 		}
 	}
 
-	if newPos >= len(src) {
+	if newPos >= len1 {
 		return newPos, &AbnfError{"host parse: no \"]\" for ipv6-reference", src, newPos}
 	}
 
@@ -138,10 +139,11 @@ func (this *SipHost) parseIpv4(context *ParseContext, src []byte, pos int) (newP
 
 	var ipv4 [net.IPv4len]byte
 
+	len1 := len(src)
 	newPos = pos
 
 	for num := 0; num < net.IPv4len; num++ {
-		if newPos >= len(src) {
+		if newPos >= len1 {
 			return newPos, false
 		}
 
@@ -164,11 +166,11 @@ func (this *SipHost) parseIpv4(context *ParseContext, src []byte, pos int) (newP
 		ipv4[num] = byte(digit)
 	}
 
-	if newPos < len(src) && IsHostname(src[newPos]) {
+	if newPos < len1 && IsHostname(src[newPos]) {
 		return newPos, false
 	}
 
-	this.SetIpv4(context, net.IPv4(ipv4[0], ipv4[1], ipv4[2], ipv4[3]))
+	this.SetIpv4(context, ipv4[0:])
 
 	return newPos, true
 }

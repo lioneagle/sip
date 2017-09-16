@@ -307,7 +307,7 @@ func findUserinfo(src []byte, pos int) bool {
 		if v == '@' {
 			return true
 		} else if v == '>' || IsLwsChar(v) {
-			break
+			return false
 		}
 	}
 	return false

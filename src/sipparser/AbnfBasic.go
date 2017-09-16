@@ -64,7 +64,7 @@ var Count2 int = 0
 var Count3 int = 0
 var Count4 int = 0
 
-func EqualNoCase(s1, s2 []byte) bool {
+func EqualNoCase0(s1, s2 []byte) bool {
 	len1 := len(s1)
 	if len1 != len(s2) {
 		return false
@@ -79,6 +79,33 @@ func EqualNoCase(s1, s2 []byte) bool {
 			if ToLower(s1[i]) != ToLower(s2[i]) {
 				return false
 			}
+		}
+	}
+
+	return true
+}
+
+func EqualNoCase(s1, s2 []byte) bool {
+	len1 := len(s1)
+	if len1 != len(s2) {
+		return false
+	}
+
+	if ToLower(s1[0]) != ToLower(s2[0]) {
+		return false
+	}
+
+	i := 1
+
+	for ; i < len1; i++ {
+		if s1[i] != s2[i] {
+			break
+		}
+	}
+
+	for ; i < len1; i++ {
+		if ToLower(s1[i]) != ToLower(s2[i]) {
+			return false
 		}
 	}
 
@@ -208,10 +235,19 @@ func ParseHcolon(src []byte, pos int) (newPos int, err error) {
 	 *
 	 * HCOLON  =  *( SP / HTAB ) ":" SWS
 	 */
-	ref := AbnfRef{}
-	newPos = ref.ParseWspChar(src, pos)
+	//ref := AbnfRef{}
+	//newPos = ref.ParseWspChar(src, pos)
+	//newPos = (&AbnfRef{}).ParseWspChar(src, pos)
 
-	if newPos >= len(src) {
+	len1 := len(src)
+
+	for newPos = pos; newPos < len1; newPos++ {
+		if !IsWspChar(src[newPos]) {
+			break
+		}
+	}
+
+	if newPos >= len1 {
 		return newPos, &AbnfError{"HCOLON parse: reach end before ':'", src, newPos}
 	}
 
@@ -288,13 +324,19 @@ func ParseLWS(src []byte, pos int) (newPos int, ok bool) {
 	 * 2. WSP's defination is from RFC2234 Section 6.1, page 12
 	 *
 	 */
-	newPos = eatWsp(src, pos)
+	//newPos = eatWsp(src, pos)
+	for newPos = pos; newPos < len(src); newPos++ {
+		if !IsWspChar(src[newPos]) {
+			break
+		}
+	}
 
-	if newPos >= len(src) {
+	if (newPos + 1) >= len(src) {
 		return newPos, true
 	}
 
-	if IsCRLF(src, newPos) {
+	//if IsCRLF2(src, newPos) {
+	if (src[newPos] == '\r') && (src[newPos+1] == '\n') {
 		newPos += 2
 
 		if newPos >= len(src) {
@@ -307,7 +349,12 @@ func ParseLWS(src []byte, pos int) (newPos int, ok bool) {
 			return newPos, false
 		}
 
-		newPos = eatWsp(src, newPos)
+		//newPos = eatWsp(src, newPos)
+		for ; newPos < len(src); newPos++ {
+			if !IsWspChar(src[newPos]) {
+				break
+			}
+		}
 	}
 
 	return newPos, true
@@ -329,8 +376,9 @@ func ParseLeftAngleQuote(src []byte, pos int) (newPos int, err error) {
 	 *
 	 */
 	newPos = pos
+	len1 := len(src)
 
-	if newPos >= len(src) {
+	if newPos >= len1 {
 		return newPos, &AbnfError{"LAQUOT parse: reach end at begining", src, newPos}
 	}
 
@@ -339,7 +387,7 @@ func ParseLeftAngleQuote(src []byte, pos int) (newPos int, err error) {
 		return newPos, err
 	}
 
-	if newPos >= len(src) {
+	if newPos >= len1 {
 		return newPos, &AbnfError{"LAQUOT parse: reach end before <", src, newPos}
 	}
 
@@ -370,6 +418,10 @@ func ParseRightAngleQuote(src []byte, pos int) (newPos int, err error) {
 
 func IsCRLF(src []byte, pos int) bool {
 	return ((pos + 1) < len(src)) && (src[pos] == '\r') && (src[pos+1] == '\n')
+}
+
+func IsCRLF2(src []byte, pos int) bool {
+	return (src[pos] == '\r') && (src[pos+1] == '\n')
 }
 
 func IsOnlyCRLF(src []byte, pos int) bool {
