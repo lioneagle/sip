@@ -13,7 +13,8 @@ gofmt -w src
 if "%2" == "" (
 	go tool pprof .\test_temp\%1.test.exe .\test_temp\%1_cpu.prof
 ) else (
-	go tool pprof %2 %3=%4 .\test_temp\%1.test.exe .\test_temp\%1_cpu.prof
+	echo go tool pprof %2 -nodecount=%3 .\test_temp\%1.test.exe .\test_temp\%1_cpu.prof
+	go tool pprof %2 -nodecount=%3 .\test_temp\%1.test.exe .\test_temp\%1_cpu.prof
 )
 
 
