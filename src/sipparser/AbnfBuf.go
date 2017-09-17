@@ -174,12 +174,6 @@ func (this *AbnfBuf) GetAsByteSlice(context *ParseContext) []byte {
 	return *(*[]byte)(unsafe.Pointer(&header))
 }
 
-func (this *AbnfBuf) GetAsByteSlice3(context *ParseContext) []byte {
-	size := int(this.Size())
-	header := reflect.SliceHeader{Data: this.addr.GetUintptr(context), Len: size, Cap: size}
-	return *(*[]byte)(unsafe.Pointer(&header))
-}
-
 func (this *AbnfBuf) GetAsByteSlice2(context *ParseContext) []byte {
 	size := int(this.Size())
 	return *(*[]byte)(unsafe.Pointer(&reflect.SliceHeader{Data: this.addr.GetUintptr(context), Len: size, Cap: size}))

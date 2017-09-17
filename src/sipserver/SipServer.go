@@ -127,6 +127,10 @@ func main() {
 
 	fmt.Println("x[1] =", (*x)[1])
 
+	y := []byte("12345")
+
+	fmt.Println("x[1] =", &y[0:1])
+
 	//fmt.Println("ABNF_SIP_HDR_TOTAL_NUM =", sipparser.ABNF_SIP_HDR_TOTAL_NUM)
 	context := sipparser.NewParseContext()
 	context.SetAllocator(sipparser.NewMemAllocator(1024 * 30))

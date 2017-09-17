@@ -48,6 +48,12 @@ func StringToByteSlice(str string) []byte {
 	return *(*[]byte)(unsafe.Pointer(&retHeader))
 }
 
+func StringToByteSlice2(str string) *[]byte {
+	strHeader := (*reflect.StringHeader)(unsafe.Pointer(&str))
+	retHeader := reflect.SliceHeader{Data: strHeader.Data, Len: strHeader.Len, Cap: strHeader.Len}
+	return (*[]byte)(unsafe.Pointer(&retHeader))
+}
+
 func ByteSliceToString(bytes []byte) string {
 	return *(*string)(unsafe.Pointer(&bytes))
 }
