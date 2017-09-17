@@ -56,15 +56,17 @@ func (this *SipUri) Parse(context *ParseContext, src []byte, pos int) (newPos in
 }
 
 func (this *SipUri) ParseAfterScheme(context *ParseContext, src []byte, pos int) (newPos int, err error) {
-	newPos = pos
 	this.Init()
+	return this.ParseAfterSchemeWithoutInit(context, src, pos)
+}
 
-	newPos, err = this.parseUserinfo(context, src, newPos)
+func (this *SipUri) ParseAfterSchemeWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	newPos, err = this.parseUserinfo(context, src, pos)
 	if err != nil {
 		return newPos, err
 	}
 
-	newPos, err = this.hostport.Parse(context, src, newPos)
+	newPos, err = this.hostport.ParseWithoutInit(context, src, newPos)
 	if err != nil {
 		return newPos, err
 	}
@@ -95,16 +97,17 @@ func (this *SipUri) ParseAfterScheme(context *ParseContext, src []byte, pos int)
 }
 
 func (this *SipUri) ParseAfterSchemeWithoutParam(context *ParseContext, src []byte, pos int) (newPos int, err error) {
-	newPos = pos
-	this.Init()
+	//newPos = pos
+	//this.Init()
 
-	newPos, err = this.parseUserinfo(context, src, newPos)
+	//newPos, err = this.parseUserinfo(context, src, newPos)
+	newPos, err = this.parseUserinfo(context, src, pos)
 	if err != nil {
 		return newPos, err
 	}
 	//return newPos, nil
 
-	return this.hostport.Parse(context, src, newPos)
+	return this.hostport.ParseWithoutInit(context, src, newPos)
 }
 
 func (this *SipUri) Encode(context *ParseContext, buf *bytes.Buffer) {

@@ -76,7 +76,7 @@ func (this *SipHeaderVia) Parse(context *ParseContext, src []byte, pos int) (new
 }
 
 func (this *SipHeaderVia) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
-	this.Init()
+	//this.Init()
 	newPos = pos
 	newPos, err = this.version.Parse(context, src, newPos)
 	if err != nil {
@@ -99,12 +99,12 @@ func (this *SipHeaderVia) ParseValue(context *ParseContext, src []byte, pos int)
 		return newPos, &AbnfError{"Via parse: wrong LWS", src, newPos}
 	}
 
-	newPos, err = this.sentBy.Parse(context, src, newPos)
+	newPos, err = this.sentBy.ParseWithoutInit(context, src, newPos)
 	if err != nil {
 		return newPos, err
 	}
 
-	return this.params.Parse(context, src, newPos, ';')
+	return this.params.ParseWithoutInit(context, src, newPos, ';')
 }
 
 func (this *SipHeaderVia) Encode(context *ParseContext, buf *bytes.Buffer) {

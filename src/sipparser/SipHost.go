@@ -232,6 +232,10 @@ func (this *SipHostPort) String(context *ParseContext) string {
 
 func (this *SipHostPort) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	this.Init()
+	return this.ParseWithoutInit(context, src, pos)
+}
+
+func (this *SipHostPort) ParseWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos, err = this.SipHost.Parse(context, src, pos)
 	if err != nil {
 		return newPos, err

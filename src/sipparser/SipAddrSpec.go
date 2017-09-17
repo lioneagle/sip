@@ -47,7 +47,10 @@ func (this *SipAddrSpec) Equal(context *ParseContext, rhs *SipAddrSpec) bool {
 
 func (this *SipAddrSpec) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	this.Init()
+	return this.ParseWithoutInit(context, src, pos)
+}
 
+func (this *SipAddrSpec) ParseWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	var scheme AbnfBuf
 
 	newPos, err = ParseUriScheme(context, src, pos, &scheme)
@@ -64,7 +67,7 @@ func (this *SipAddrSpec) Parse(context *ParseContext, src []byte, pos int) (newP
 		sipuri.SetSipUri()
 		this.uri = addr
 		this.uriType = ABNF_SIP_URI
-		return sipuri.ParseAfterScheme(context, src, newPos)
+		return sipuri.ParseAfterSchemeWithoutInit(context, src, newPos)
 	}
 
 	if scheme.EqualStringNoCase(context, ABNF_NAME_URI_SCHEME_SIPS) {
@@ -76,7 +79,7 @@ func (this *SipAddrSpec) Parse(context *ParseContext, src []byte, pos int) (newP
 		sipuri.SetSipsUri()
 		this.uri = addr
 		this.uriType = ABNF_SIPS_URI
-		return sipuri.ParseAfterScheme(context, src, newPos)
+		return sipuri.ParseAfterSchemeWithoutInit(context, src, newPos)
 	}
 
 	if scheme.EqualStringNoCase(context, ABNF_NAME_URI_SCHEME_TEL) {
@@ -87,7 +90,7 @@ func (this *SipAddrSpec) Parse(context *ParseContext, src []byte, pos int) (newP
 		teluri := addr.GetTelUri(context)
 		this.uri = addr
 		this.uriType = ABNF_TEL_URI
-		return teluri.ParseAfterScheme(context, src, newPos)
+		return teluri.ParseAfterSchemeWithoutInit(context, src, newPos)
 	}
 
 	return newPos, &AbnfError{"addr-spec parse: unsupported uri", src, newPos}
@@ -95,7 +98,10 @@ func (this *SipAddrSpec) Parse(context *ParseContext, src []byte, pos int) (newP
 
 func (this *SipAddrSpec) ParseWithoutParam(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	this.Init()
+	return this.ParseWithoutParamNorInit(context, src, pos)
+}
 
+func (this *SipAddrSpec) ParseWithoutParamNorInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	var scheme AbnfBuf
 
 	newPos, err = ParseUriScheme(context, src, pos, &scheme)

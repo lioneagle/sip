@@ -102,10 +102,12 @@ func (this *TelUri) ParseScheme(context *ParseContext, src []byte, pos int) (new
 }
 
 func (this *TelUri) ParseAfterScheme(context *ParseContext, src []byte, pos int) (newPos int, err error) {
-	newPos = pos
 	this.Init()
+	return this.ParseAfterSchemeWithoutInit(context, src, pos)
+}
 
-	newPos, err = this.ParseNumber(context, src, newPos)
+func (this *TelUri) ParseAfterSchemeWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	newPos, err = this.ParseNumber(context, src, pos)
 	if err != nil {
 		return newPos, err
 	}

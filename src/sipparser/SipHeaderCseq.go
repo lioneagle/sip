@@ -34,6 +34,11 @@ func (this *SipHeaderCseq) HasValue() bool   { return true }
  *
  */
 func (this *SipHeaderCseq) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
+	return this.ParseWithoutInit(context, src, newPos)
+}
+
+func (this *SipHeaderCseq) ParseWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	name, newPos, err := ParseHeaderName(context, src, pos)
 	if err != nil {
 		return newPos, err
@@ -43,13 +48,16 @@ func (this *SipHeaderCseq) Parse(context *ParseContext, src []byte, pos int) (ne
 		return newPos, &AbnfError{"CSeq parse: wrong header-name", src, newPos}
 	}
 
-	return this.ParseValue(context, src, newPos)
+	return this.ParseValueWithoutInit(context, src, newPos)
 }
 
 func (this *SipHeaderCseq) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	this.Init()
-	newPos = pos
-	digit, _, newPos, ok := ParseUInt(src, newPos)
+	return this.ParseValueWithoutInit(context, src, pos)
+}
+
+func (this *SipHeaderCseq) ParseValueWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	digit, _, newPos, ok := ParseUInt(src, pos)
 	if !ok {
 		return newPos, &AbnfError{"CSeq parse: wrong num", src, newPos}
 	}
@@ -84,7 +92,7 @@ func ParseSipCseq(context *ParseContext, src []byte, pos int) (newPos int, parse
 	if addr == ABNF_PTR_NIL {
 		return newPos, ABNF_PTR_NIL, &AbnfError{"CSeq parse: out of memory for new header", src, newPos}
 	}
-	newPos, err = addr.GetSipHeaderCseq(context).ParseValue(context, src, pos)
+	newPos, err = addr.GetSipHeaderCseq(context).ParseValueWithoutInit(context, src, pos)
 	return newPos, addr, err
 }
 

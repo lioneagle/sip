@@ -49,14 +49,14 @@ func (this *SipHeaderTo) Parse(context *ParseContext, src []byte, pos int) (newP
 }
 
 func (this *SipHeaderTo) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
-	this.Init()
+	//this.Init()
 	newPos = pos
 	newPos, err = this.addr.Parse(context, src, newPos)
 	if err != nil {
 		return newPos, err
 	}
 
-	return this.params.Parse(context, src, newPos, ';')
+	return this.params.ParseWithoutInit(context, src, newPos, ';')
 }
 
 func (this *SipHeaderTo) Encode(context *ParseContext, buf *bytes.Buffer) {

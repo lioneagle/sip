@@ -86,7 +86,7 @@ func (this *SipHeaderContentType) ParseValue(context *ParseContext, src []byte, 
 		return newPos, err
 	}
 
-	return this.params.Parse(context, src, newPos, ';')
+	return this.params.ParseWithoutInit(context, src, newPos, ';')
 }
 
 func (this *SipHeaderContentType) Encode(context *ParseContext, buf *bytes.Buffer) {

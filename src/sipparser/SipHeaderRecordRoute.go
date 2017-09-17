@@ -35,6 +35,11 @@ func (this *SipHeaderRecordRoute) HasValue() bool   { return true }
  * rr-param      =  generic-param
  */
 func (this *SipHeaderRecordRoute) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
+	return this.ParseWithoutInit(context, src, pos)
+}
+
+func (this *SipHeaderRecordRoute) ParseWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	name, newPos, err := ParseHeaderName(context, src, pos)
 	if err != nil {
 		return newPos, err
@@ -44,18 +49,21 @@ func (this *SipHeaderRecordRoute) Parse(context *ParseContext, src []byte, pos i
 		return newPos, &AbnfError{"Record-Route parse: wrong header-name", src, newPos}
 	}
 
-	return this.ParseValue(context, src, newPos)
+	return this.ParseValueWithoutInit(context, src, newPos)
 }
 
 func (this *SipHeaderRecordRoute) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	this.Init()
-	newPos = pos
-	newPos, err = this.addr.Parse(context, src, newPos)
+	return this.ParseValueWithoutInit(context, src, pos)
+}
+
+func (this *SipHeaderRecordRoute) ParseValueWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	newPos, err = this.addr.Parse(context, src, pos)
 	if err != nil {
 		return newPos, err
 	}
 
-	return this.params.Parse(context, src, newPos, ';')
+	return this.params.ParseWithoutInit(context, src, newPos, ';')
 }
 
 func (this *SipHeaderRecordRoute) Encode(context *ParseContext, buf *bytes.Buffer) {
@@ -77,7 +85,7 @@ func ParseSipRecordRoute(context *ParseContext, src []byte, pos int) (newPos int
 	if addr == ABNF_PTR_NIL {
 		return newPos, ABNF_PTR_NIL, &AbnfError{"Record-Route parse: out of memory for new header", src, newPos}
 	}
-	newPos, err = addr.GetSipHeaderRecordRoute(context).ParseValue(context, src, pos)
+	newPos, err = addr.GetSipHeaderRecordRoute(context).ParseValueWithoutInit(context, src, pos)
 	return newPos, addr, err
 }
 

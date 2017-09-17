@@ -194,8 +194,9 @@ func (this *SipMultiHeaders) RemoveContentHeaders(context *ParseContext) {
 
 	for e := this.Front(context); e != nil; {
 		v := e.Value.GetSipMultiHeader(context)
-		if v.EqualNameString(context, ABNF_NAME_SIP_HDR_CONTENT_TYPE) ||
-			v.EqualNameString(context, ABNF_NAME_SIP_HDR_CONTENT_LENGTH) {
+		//if v.EqualNameString(context, ABNF_NAME_SIP_HDR_CONTENT_TYPE) ||
+		//	v.EqualNameString(context, ABNF_NAME_SIP_HDR_CONTENT_LENGTH) {
+		if v.info != nil && (v.info.index == ABNF_SIP_HDR_CONTENT_TYPE || v.info.index == ABNF_SIP_HDR_CONTENT_LENGTH) {
 			e = e.Next(context)
 			continue
 		}
@@ -214,6 +215,11 @@ func (this *SipMultiHeaders) CopyContentHeaders(context *ParseContext, rhs *SipM
 
 	for e := this.Front(context); e != nil; e = e.Next(context) {
 		v := e.Value.GetSipSingleHeader(context)
+		if v.info != nil && (v.info.index == ABNF_SIP_HDR_CONTENT_TYPE || v.info.index == ABNF_SIP_HDR_CONTENT_LENGTH) {
+			rhs.AddHeader(context, e.Value)
+			continue
+		}
+
 		if v.NameHasPrefixBytes(context, prefix) {
 			rhs.AddHeader(context, e.Value)
 		}

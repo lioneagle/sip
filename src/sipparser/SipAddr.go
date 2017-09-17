@@ -35,6 +35,11 @@ func (this *SipAddr) Init() {
  *
  */
 func (this *SipAddr) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
+	return this.ParseWithoutInit(context, src, pos)
+}
+
+func (this *SipAddr) ParseWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
 	if newPos >= len(src) {
 		return newPos, &AbnfError{"SipAddr parse: empty", src, newPos}
@@ -48,7 +53,7 @@ func (this *SipAddr) Parse(context *ParseContext, src []byte, pos int) (newPos i
 
 	if (src[newPos] == '<') || (src[newPos] == '"') {
 		this.addrType = ABNF_SIP_NAME_ADDR
-		return this.addr.Parse(context, src, newPos)
+		return this.addr.ParseWithoutInit(context, src, newPos)
 	}
 
 	var scheme AbnfBuf
@@ -56,11 +61,11 @@ func (this *SipAddr) Parse(context *ParseContext, src []byte, pos int) (newPos i
 	_, err = ParseUriScheme(context, src, newPos, &scheme)
 	if err == nil {
 		this.addrType = ABNF_SIP_ADDR_SPEC
-		return this.addr.addrsepc.ParseWithoutParam(context, src, newPos)
+		return this.addr.addrsepc.ParseWithoutParamNorInit(context, src, newPos)
 	}
 
 	this.addrType = ABNF_SIP_NAME_ADDR
-	return this.addr.Parse(context, src, newPos)
+	return this.addr.ParseWithoutInit(context, src, newPos)
 }
 
 func (this *SipAddr) Encode(context *ParseContext, buf *bytes.Buffer) {

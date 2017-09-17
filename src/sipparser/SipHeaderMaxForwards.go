@@ -31,6 +31,11 @@ func (this *SipHeaderMaxForwards) HasValue() bool   { return true }
  * Max-Forwards  =  "Max-Forwards" HCOLON 1*DIGIT
  */
 func (this *SipHeaderMaxForwards) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
+	return this.ParseWithoutInit(context, src, pos)
+}
+
+func (this *SipHeaderMaxForwards) ParseWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	name, newPos, err := ParseHeaderName(context, src, pos)
 	if err != nil {
 		return newPos, err
@@ -40,13 +45,16 @@ func (this *SipHeaderMaxForwards) Parse(context *ParseContext, src []byte, pos i
 		return newPos, &AbnfError{"Max-Forwards parse: wrong header-name", src, newPos}
 	}
 
-	return this.ParseValue(context, src, newPos)
+	return this.ParseValueWithoutInit(context, src, newPos)
 }
 
 func (this *SipHeaderMaxForwards) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	this.Init()
-	newPos = pos
-	digit, _, newPos, ok := ParseUInt(src, newPos)
+	return this.ParseValueWithoutInit(context, src, pos)
+}
+
+func (this *SipHeaderMaxForwards) ParseValueWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	digit, _, newPos, ok := ParseUInt(src, pos)
 	if !ok {
 		return newPos, &AbnfError{"Max-Forwards parse: wrong num", src, newPos}
 	}
@@ -73,7 +81,7 @@ func ParseSipMaxForwards(context *ParseContext, src []byte, pos int) (newPos int
 	if addr == ABNF_PTR_NIL {
 		return newPos, ABNF_PTR_NIL, &AbnfError{"Max-Forwards parse: out of memory for new header", src, newPos}
 	}
-	newPos, err = addr.GetSipHeaderMaxForwards(context).ParseValue(context, src, pos)
+	newPos, err = addr.GetSipHeaderMaxForwards(context).ParseValueWithoutInit(context, src, pos)
 	return newPos, addr, err
 }
 

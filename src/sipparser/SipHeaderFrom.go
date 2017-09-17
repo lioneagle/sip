@@ -35,6 +35,11 @@ func (this *SipHeaderFrom) HasValue() bool   { return true }
  *                *( SEMI from-param )
  */
 func (this *SipHeaderFrom) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
+	return this.ParseWithoutInit(context, src, pos)
+}
+
+func (this *SipHeaderFrom) ParseWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	name, newPos, err := ParseHeaderName(context, src, pos)
 	if err != nil {
 		return newPos, err
@@ -45,18 +50,21 @@ func (this *SipHeaderFrom) Parse(context *ParseContext, src []byte, pos int) (ne
 		return newPos, &AbnfError{"From parse: wrong header-name", src, newPos}
 	}
 
-	return this.ParseValue(context, src, newPos)
+	return this.ParseValueWithoutInit(context, src, newPos)
 }
 
 func (this *SipHeaderFrom) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	this.Init()
-	newPos = pos
-	newPos, err = this.addr.Parse(context, src, newPos)
+	return this.ParseValueWithoutInit(context, src, pos)
+}
+
+func (this *SipHeaderFrom) ParseValueWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	newPos, err = this.addr.Parse(context, src, pos)
 	if err != nil {
 		return newPos, err
 	}
 
-	return this.params.Parse(context, src, newPos, ';')
+	return this.params.ParseWithoutInit(context, src, newPos, ';')
 }
 
 func (this *SipHeaderFrom) Encode(context *ParseContext, buf *bytes.Buffer) {
@@ -78,7 +86,7 @@ func ParseSipFrom(context *ParseContext, src []byte, pos int) (newPos int, parse
 	if addr == ABNF_PTR_NIL {
 		return newPos, ABNF_PTR_NIL, &AbnfError{"From parse: out of memory for new header", src, newPos}
 	}
-	newPos, err = addr.GetSipHeaderFrom(context).ParseValue(context, src, pos)
+	newPos, err = addr.GetSipHeaderFrom(context).ParseValueWithoutInit(context, src, pos)
 	return newPos, addr, err
 }
 

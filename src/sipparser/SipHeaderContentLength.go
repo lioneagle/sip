@@ -34,6 +34,11 @@ func (this *SipHeaderContentLength) SetValue(size int32) { this.size = uint32(si
  * Content-Length  =  ( "Content-Length" / "l" ) HCOLON 1*DIGIT
  */
 func (this *SipHeaderContentLength) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
+	return this.ParseWithoutInit(context, src, pos)
+}
+
+func (this *SipHeaderContentLength) ParseWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	name, newPos, err := ParseHeaderName(context, src, pos)
 	if err != nil {
 		return newPos, err
@@ -44,15 +49,16 @@ func (this *SipHeaderContentLength) Parse(context *ParseContext, src []byte, pos
 		return newPos, &AbnfError{"Content-Length parse: wrong header-name", src, newPos}
 	}
 
-	return this.ParseValue(context, src, newPos)
+	return this.ParseValueWithoutInit(context, src, newPos)
 }
 
 func (this *SipHeaderContentLength) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
-
-	//fmt.Println("enter Content-Length ParseValue")
 	this.Init()
-	newPos = pos
-	digit, _, newPos, ok := ParseUInt(src, newPos)
+	return this.ParseValueWithoutInit(context, src, pos)
+}
+
+func (this *SipHeaderContentLength) ParseValueWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	digit, _, newPos, ok := ParseUInt(src, pos)
 	if !ok {
 		return newPos, &AbnfError{"Content-Length parse: wrong num", src, newPos}
 	}
@@ -80,7 +86,7 @@ func ParseSipContentLength(context *ParseContext, src []byte, pos int) (newPos i
 	if addr == ABNF_PTR_NIL {
 		return newPos, ABNF_PTR_NIL, &AbnfError{"Content-Length parse: out of memory for new header", src, newPos}
 	}
-	newPos, err = addr.GetSipHeaderContentLength(context).ParseValue(context, src, pos)
+	newPos, err = addr.GetSipHeaderContentLength(context).ParseValueWithoutInit(context, src, pos)
 	return newPos, addr, err
 }
 

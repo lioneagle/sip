@@ -156,8 +156,16 @@ func (this *SipHeaders) GetSingleHeaderParsed(context *ParseContext, name string
 	return this.singleHeaders.GetHeaderParsedByString(context, name)
 }
 
+func (this *SipHeaders) GetSingleHeaderParsedByIndex(context *ParseContext, headerIndex uint32) (parsed AbnfPtr, ok bool) {
+	return this.singleHeaders.GetHeaderParsedByIndex(context, headerIndex)
+}
+
 func (this *SipHeaders) GetMultiHeader(context *ParseContext, name string) (header *SipMultiHeader, ok bool) {
 	return this.multiHeaders.GetHeaderByString(context, name)
+}
+
+func (this *SipHeaders) GetMultiHeaderByIndex(context *ParseContext, headerIndex uint32) (header *SipMultiHeader, ok bool) {
+	return this.multiHeaders.GetHeaderByIndex(context, headerIndex)
 }
 
 func (this *SipHeaders) GetUnknownHeader(context *ParseContext, name string) (header *SipSingleHeader, ok bool) {
@@ -186,7 +194,7 @@ func (this *SipHeaders) CreateSingleHeader(context *ParseContext, name string) A
 	return addr
 }
 
-func (this *SipHeaders) CreateSingleHeaderEx(context *ParseContext, headerIndex uint32) AbnfPtr {
+func (this *SipHeaders) CreateSingleHeaderByIndex(context *ParseContext, headerIndex uint32) AbnfPtr {
 	addr := NewSipSingleHeader(context)
 	if addr == ABNF_PTR_NIL {
 		return ABNF_PTR_NIL
@@ -210,13 +218,13 @@ func (this *SipHeaders) CopyContentHeaders(context *ParseContext, rhs *SipHeader
 }
 
 func (this *SipHeaders) CreateContentLength(context *ParseContext, size uint32) error {
-	headerPtr, ok := this.GetSingleHeaderParsed(context, ABNF_NAME_SIP_HDR_CONTENT_LENGTH)
+	headerPtr, ok := this.GetSingleHeaderParsedByIndex(context, ABNF_SIP_HDR_CONTENT_LENGTH)
 	if ok {
 		headerPtr.GetSipHeaderContentLength(context).size = size
 		return nil
 	}
 
-	addr := this.CreateSingleHeaderEx(context, ABNF_SIP_HDR_CONTENT_LENGTH)
+	addr := this.CreateSingleHeaderByIndex(context, ABNF_SIP_HDR_CONTENT_LENGTH)
 	if addr == ABNF_PTR_NIL {
 		return &AbnfError{"SipHeaders: out of memory for creating Content-Length", nil, 0}
 	}

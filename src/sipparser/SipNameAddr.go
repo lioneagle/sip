@@ -137,10 +137,18 @@ func (this *SipNameAddr) Parse(context *ParseContext, src []byte, pos int) (newP
 	 * RAQUOT  =  ">" SWS ; right angle quote
 	 * LAQUOT  =  SWS "<"; left angle quote
 	 */
-	newPos = pos
 	this.Init()
+	return this.ParseWithoutInit(context, src, pos)
+}
 
-	newPos, err = ParseSWS(src, newPos)
+func (this *SipNameAddr) ParseWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	/* RFC3261 Section 25.1, page 222
+	 *
+	 * name-addr =  [ display-name ] LAQUOT addr-spec RAQUOT
+	 * RAQUOT  =  ">" SWS ; right angle quote
+	 * LAQUOT  =  SWS "<"; left angle quote
+	 */
+	newPos, err = ParseSWS(src, pos)
 	if err != nil {
 		return newPos, err
 	}
@@ -161,7 +169,7 @@ func (this *SipNameAddr) Parse(context *ParseContext, src []byte, pos int) (newP
 		return newPos, err
 	}
 
-	newPos, err = this.addrsepc.Parse(context, src, newPos)
+	newPos, err = this.addrsepc.ParseWithoutInit(context, src, newPos)
 	if err != nil {
 		return newPos, err
 	}

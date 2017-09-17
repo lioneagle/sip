@@ -30,7 +30,7 @@ func (this *SipMsgBody) SetBody(context *ParseContext, body []byte) {
 }
 
 func (this *SipMsgBody) Encode(context *ParseContext, buf *bytes.Buffer) {
-	headerPtr, ok := this.headers.GetSingleHeaderParsed(context, ABNF_NAME_SIP_HDR_CONTENT_LENGTH)
+	headerPtr, ok := this.headers.GetSingleHeaderParsedByIndex(context, ABNF_SIP_HDR_CONTENT_LENGTH)
 	if ok {
 		headerPtr.GetSipHeaderContentLength(context).SetValue(this.body.Size())
 	}

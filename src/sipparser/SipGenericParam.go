@@ -43,6 +43,11 @@ func (this *SipGenericParam) Init() {
  *
  */
 func (this *SipGenericParam) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
+	return this.ParseWithoutInit(context, src, pos)
+}
+
+func (this *SipGenericParam) ParseWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos, err = this.name.ParseEscapable(context, src, pos, IsSipPname)
 	if err != nil {
 		return newPos, err
@@ -202,6 +207,10 @@ func (this *SipGenericParams) GetParam(context *ParseContext, name string) (val 
  */
 func (this *SipGenericParams) Parse(context *ParseContext, src []byte, pos int, seperator byte) (newPos int, err error) {
 	this.Init()
+	return this.ParseWithoutInit(context, src, pos, seperator)
+}
+
+func (this *SipGenericParams) ParseWithoutInit(context *ParseContext, src []byte, pos int, seperator byte) (newPos int, err error) {
 	newPos = pos
 	if newPos >= len(src) {
 		return newPos, nil
@@ -226,7 +235,7 @@ func (this *SipGenericParams) Parse(context *ParseContext, src []byte, pos int, 
 		if addr == ABNF_PTR_NIL {
 			return newPos, &AbnfError{"generic-param  parse: out of memory for name", src, newPos}
 		}
-		newPos, err = addr.GetSipGenericParam(context).Parse(context, src, newPos)
+		newPos, err = addr.GetSipGenericParam(context).ParseWithoutInit(context, src, newPos)
 		if err != nil {
 			return newPos, err
 		}

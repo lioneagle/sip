@@ -93,6 +93,11 @@ func (this *SipHeaderContact) HasValue() bool   { return true }
  *
  */
 func (this *SipHeaderContact) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
+	return this.ParseWithoutInit(context, src, pos)
+}
+
+func (this *SipHeaderContact) ParseWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	name, newPos, err := ParseHeaderName(context, src, pos)
 	if err != nil {
 		return newPos, err
@@ -103,13 +108,16 @@ func (this *SipHeaderContact) Parse(context *ParseContext, src []byte, pos int) 
 		return newPos, &AbnfError{"Contact parse: wrong header-name", src, newPos}
 	}
 
-	return this.ParseValue(context, src, newPos)
+	return this.ParseValueWithoutInit(context, src, newPos)
 }
 
 func (this *SipHeaderContact) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	this.Init()
-	newPos = pos
-	newPos, err = ParseSWS(src, newPos)
+	return this.ParseValueWithoutInit(context, src, pos)
+}
+
+func (this *SipHeaderContact) ParseValueWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	newPos, err = ParseSWS(src, pos)
 	if err != nil {
 		return newPos, err
 	}
@@ -128,7 +136,7 @@ func (this *SipHeaderContact) ParseValue(context *ParseContext, src []byte, pos 
 		return newPos, err
 	}
 
-	return this.params.Parse(context, src, newPos, ';')
+	return this.params.ParseWithoutInit(context, src, newPos, ';')
 }
 
 func (this *SipHeaderContact) Encode(context *ParseContext, buf *bytes.Buffer) {
@@ -154,7 +162,7 @@ func ParseSipContact(context *ParseContext, src []byte, pos int) (newPos int, pa
 	if addr == ABNF_PTR_NIL {
 		return newPos, ABNF_PTR_NIL, &AbnfError{"Contact parse: out of memory for new header", src, newPos}
 	}
-	newPos, err = addr.GetSipHeaderContact(context).ParseValue(context, src, pos)
+	newPos, err = addr.GetSipHeaderContact(context).ParseValueWithoutInit(context, src, pos)
 	return newPos, addr, err
 }
 

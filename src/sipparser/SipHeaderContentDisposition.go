@@ -43,6 +43,11 @@ func (this *SipHeaderContentDisposition) HasValue() bool   { return true }
  *
  */
 func (this *SipHeaderContentDisposition) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
+	return this.ParseWithoutInit(context, src, newPos)
+}
+
+func (this *SipHeaderContentDisposition) ParseWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	name, newPos, err := ParseHeaderName(context, src, pos)
 	if err != nil {
 		return newPos, err
@@ -52,17 +57,21 @@ func (this *SipHeaderContentDisposition) Parse(context *ParseContext, src []byte
 		return newPos, &AbnfError{"Content-Disposition parse: wrong header-name", src, newPos}
 	}
 
-	return this.ParseValue(context, src, newPos)
+	return this.ParseValueWithoutInit(context, src, newPos)
 }
 
 func (this *SipHeaderContentDisposition) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	this.Init()
+	return this.ParseValueWithoutInit(context, src, pos)
+}
+
+func (this *SipHeaderContentDisposition) ParseValueWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos, err = this.dispType.ParseSipToken(context, src, pos)
 	if err != nil {
 		return newPos, err
 	}
 
-	return this.params.Parse(context, src, newPos, ';')
+	return this.params.ParseWithoutInit(context, src, newPos, ';')
 }
 
 func (this *SipHeaderContentDisposition) Encode(context *ParseContext, buf *bytes.Buffer) {
@@ -84,7 +93,7 @@ func ParseSipContentDisposition(context *ParseContext, src []byte, pos int) (new
 	if addr == ABNF_PTR_NIL {
 		return newPos, ABNF_PTR_NIL, &AbnfError{"Content-Disposition parse: out of memory for new header", src, newPos}
 	}
-	newPos, err = addr.GetSipHeaderContentDisposition(context).ParseValue(context, src, pos)
+	newPos, err = addr.GetSipHeaderContentDisposition(context).ParseValueWithoutInit(context, src, pos)
 	return newPos, addr, err
 }
 

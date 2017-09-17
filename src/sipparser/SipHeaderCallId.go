@@ -35,6 +35,11 @@ func (this *SipHeaderCallId) HasValue() bool   { return true }
  * callid   =  word [ "@" word ]
  */
 func (this *SipHeaderCallId) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
+	return this.ParseWithoutInit(context, src, pos)
+}
+
+func (this *SipHeaderCallId) ParseWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	name, newPos, err := ParseHeaderName(context, src, pos)
 	if err != nil {
 		return newPos, err
@@ -45,13 +50,16 @@ func (this *SipHeaderCallId) Parse(context *ParseContext, src []byte, pos int) (
 		return newPos, &AbnfError{"Call-ID parse: wrong header-name", src, newPos}
 	}
 
-	return this.ParseValue(context, src, newPos)
+	return this.ParseValueWithoutInit(context, src, newPos)
 }
 
 func (this *SipHeaderCallId) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	this.Init()
-	newPos = pos
-	newPos, err = this.id1.ParseSipWord(context, src, newPos)
+	return this.ParseValueWithoutInit(context, src, pos)
+}
+
+func (this *SipHeaderCallId) ParseValueWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	newPos, err = this.id1.ParseSipWord(context, src, pos)
 	if err != nil {
 		return newPos, err
 	}
@@ -89,7 +97,7 @@ func ParseSipCallId(context *ParseContext, src []byte, pos int) (newPos int, par
 	if addr == ABNF_PTR_NIL {
 		return newPos, ABNF_PTR_NIL, &AbnfError{"Call-ID parse: out of memory for new header", src, newPos}
 	}
-	newPos, err = addr.GetSipHeaderCallId(context).ParseValue(context, src, pos)
+	newPos, err = addr.GetSipHeaderCallId(context).ParseValueWithoutInit(context, src, pos)
 	return newPos, addr, err
 }
 

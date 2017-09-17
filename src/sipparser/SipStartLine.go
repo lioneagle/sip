@@ -44,7 +44,7 @@ func (this *SipStartLine) HasValue() bool   { return true }
  */
 func (this *SipStartLine) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	//fmt.Println("enter Start-Line Parse")
-	this.Init()
+	//this.Init()
 
 	newPos = pos
 

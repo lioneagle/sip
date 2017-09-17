@@ -194,7 +194,6 @@ func ParseUInt(src []byte, pos int) (digit, num, newPos int, ok bool) {
 	}
 
 	return digit, num, newPos, true
-
 }
 
 func ParseUriScheme(context *ParseContext, src []byte, pos int, scheme *AbnfBuf) (newPos int, err error) {
