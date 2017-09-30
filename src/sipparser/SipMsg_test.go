@@ -282,6 +282,7 @@ func BenchmarkSipMsgParse(b *testing.B) {
 	//fmt.Printf("allocator.Used = %d\n", context.allocator.Used())
 	//context.ParseSipHeaderAsRaw = true
 	msg1 := []byte(msg)
+	//msg2 := make([]byte, len(msg1))
 	total_headers = 0
 
 	b.ReportAllocs()
@@ -290,6 +291,7 @@ func BenchmarkSipMsgParse(b *testing.B) {
 
 	//for i := 0; i < 1; i++ {
 	for i := 0; i < b.N; i++ {
+		//copy(msg2, msg1[:len(msg1)])
 		context.allocator.ClearAllocNum()
 		context.allocator.FreePart(remain)
 		print_mem = true

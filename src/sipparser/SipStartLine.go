@@ -43,8 +43,12 @@ func (this *SipStartLine) HasValue() bool   { return true }
  * Request-URI    =  SIP-URI / SIPS-URI / absoluteURI
  */
 func (this *SipStartLine) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
+	return this.ParseWithoutInit(context, src, pos)
+}
+
+func (this *SipStartLine) ParseWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	//fmt.Println("enter Start-Line Parse")
-	//this.Init()
 
 	newPos = pos
 
@@ -135,7 +139,7 @@ func (this *SipStartLine) ParseRequestLine(context *ParseContext, src []byte, po
 		return newPos, &AbnfError{"RequestLine parse: no SP after METHOD", src, newPos}
 	}
 
-	newPos, err = this.addrspec.Parse(context, src, newPos+1)
+	newPos, err = this.addrspec.ParseWithoutInit(context, src, newPos+1)
 	if err != nil {
 		//return newPos, &AbnfError{"RequestLine parse: wrong Request-URI", src, newPos}
 		return newPos, err

@@ -30,7 +30,7 @@ func (this *SipMsg) Init() {
 func (this *SipMsg) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	this.Init()
 	newPos = pos
-	newPos, err = this.startLine.Parse(context, src, newPos)
+	newPos, err = this.startLine.ParseWithoutInit(context, src, newPos)
 	if err != nil {
 		return newPos, err
 	}

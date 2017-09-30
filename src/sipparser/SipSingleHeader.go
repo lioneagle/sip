@@ -288,7 +288,7 @@ func (this *SipSingleHeaders) String(context *ParseContext) string {
 }
 
 func parseOneSingleHeader(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (addr AbnfPtr, newPos int, err error) {
-	begin := pos
+	//begin := pos
 	newPos, parsed, err := info.parseFunc(context, src, pos)
 	if err != nil {
 		return ABNF_PTR_NIL, newPos, err
@@ -301,10 +301,11 @@ func parseOneSingleHeader(context *ParseContext, src []byte, pos int, info *SipH
 	newHeader := addr.GetSipSingleHeader(context)
 	newHeader.info = info
 	newHeader.parsed = parsed
-	newHeader.SetNameByteSlice(context, info.name)
-	if newPos > begin {
-		newHeader.SetValueByteSlice(context, src[begin:newPos])
-	}
+	/*
+		newHeader.SetNameByteSlice(context, info.name)
+		if newPos > begin {
+			newHeader.SetValueByteSlice(context, src[begin:newPos])
+		}*/
 	return addr, newPos, nil
 }
 
