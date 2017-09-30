@@ -25,6 +25,7 @@ func NewSipMsg(context *ParseContext) AbnfPtr {
 func (this *SipMsg) Init() {
 	this.startLine.Init()
 	this.headers.Init()
+	this.bodies.Init()
 }
 
 func (this *SipMsg) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
