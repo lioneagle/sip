@@ -16,8 +16,8 @@ const (
 )
 
 type SipHost struct {
-	id byte
-	//data []byte
+	id   byte
+	ip   [16]byte
 	data AbnfBuf
 }
 
@@ -59,12 +59,32 @@ func (this *SipHost) IsHostname() bool { return this.id == HOST_TYPE_NAME }
 
 func (this *SipHost) SetIpv4(context *ParseContext, ip []byte) {
 	this.id = HOST_TYPE_IPV4
-	this.data.SetByteSlice(context, ip)
+	//this.data.SetByteSlice(context, ip)
+	this.ip[0] = ip[0]
+	this.ip[1] = ip[1]
+	this.ip[2] = ip[2]
+	this.ip[3] = ip[3]
 }
 
 func (this *SipHost) SetIpv6(context *ParseContext, ip net.IP) {
 	this.id = HOST_TYPE_IPV6
-	this.data.SetByteSlice(context, ip)
+	//this.data.SetByteSlice(context, ip)
+	this.ip[0] = ip[0]
+	this.ip[1] = ip[1]
+	this.ip[2] = ip[2]
+	this.ip[3] = ip[3]
+	this.ip[4] = ip[4]
+	this.ip[5] = ip[5]
+	this.ip[6] = ip[6]
+	this.ip[7] = ip[7]
+	this.ip[8] = ip[8]
+	this.ip[9] = ip[9]
+	this.ip[10] = ip[10]
+	this.ip[11] = ip[11]
+	this.ip[12] = ip[12]
+	this.ip[13] = ip[13]
+	this.ip[14] = ip[14]
+	this.ip[15] = ip[15]
 }
 
 func (this *SipHost) SetHostname(context *ParseContext, hostname []byte) {
@@ -72,9 +92,17 @@ func (this *SipHost) SetHostname(context *ParseContext, hostname []byte) {
 	this.data.SetByteSlice(context, hostname)
 }
 
-func (this *SipHost) GetIp(context *ParseContext) net.IP { return this.data.GetAsByteSlice(context) }
-func (this *SipHost) GetIpString(context *ParseContext) string {
+//func (this *SipHost) GetIp(context *ParseContext) net.IP { return this.data.GetAsByteSlice(context) }
+func (this *SipHost) GetIp(context *ParseContext) net.IP { return this.ip[:] }
+
+/*func (this *SipHost) GetIpString(context *ParseContext) string {
 	return net.IP(this.data.GetAsByteSlice(context)).String()
+}*/
+func (this *SipHost) GetIpString(context *ParseContext) string {
+	if this.id == HOST_TYPE_IPV4 {
+		return net.IP(this.ip[0:4]).String()
+	}
+	return net.IP(this.ip[0:]).String()
 }
 
 func (this *SipHost) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
@@ -114,7 +142,11 @@ func (this *SipHost) Equal(context *ParseContext, rhs *SipHost) bool {
 	if this.IsHostname() {
 		return this.data.EqualNoCase(context, &rhs.data)
 	}
-	return this.data.Equal(context, &rhs.data)
+	if this.id == HOST_TYPE_IPV4 {
+		return bytes.Equal(this.ip[0:4], rhs.ip[0:4])
+	}
+	return bytes.Equal(this.ip[0:], rhs.ip[0:])
+	//return this.data.Equal(context, &rhs.data)
 
 }
 
@@ -141,7 +173,7 @@ func (this *SipHost) parseIpv6(context *ParseContext, src []byte, pos int) (newP
 
 func (this *SipHost) parseIpv4(context *ParseContext, src []byte, pos int) (newPos int, ok bool) {
 
-	var ipv4 [net.IPv4len]byte
+	//var ipv4 [net.IPv4len]byte
 
 	len1 := len(src)
 	newPos = pos
@@ -167,14 +199,16 @@ func (this *SipHost) parseIpv4(context *ParseContext, src []byte, pos int) (newP
 			return newPos, false
 		}
 
-		ipv4[num] = byte(digit)
+		this.ip[num] = byte(digit)
 	}
 
 	if newPos < len1 && IsHostname(src[newPos]) {
 		return newPos, false
 	}
 
-	this.SetIpv4(context, ipv4[0:])
+	this.id = HOST_TYPE_IPV4
+
+	//this.SetIpv4(context, ipv4[0:])
 
 	return newPos, true
 }

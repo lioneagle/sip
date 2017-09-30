@@ -28,7 +28,8 @@ func TestSipHostIpv4String(t *testing.T) {
 	addr := NewSipHost(context)
 	host := addr.GetSipHost(context)
 
-	ipv4 := net.IPv4(10, 1, 1, 1)
+	//ipv4 := net.IPv4(10, 1, 1, 1)
+	ipv4 := []byte{10, 1, 1, 1}
 
 	host.SetIpv4(context, ipv4)
 
