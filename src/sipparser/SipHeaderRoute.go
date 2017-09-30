@@ -35,6 +35,11 @@ func (this *SipHeaderRoute) HasValue() bool   { return true }
  * rr-param     =  generic-param
  */
 func (this *SipHeaderRoute) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
+	return this.ParseWithoutInit(context, src, pos)
+}
+
+func (this *SipHeaderRoute) ParseWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	name, newPos, err := ParseHeaderName(context, src, pos)
 	if err != nil {
 		return newPos, err
@@ -47,8 +52,12 @@ func (this *SipHeaderRoute) Parse(context *ParseContext, src []byte, pos int) (n
 	return this.ParseValueWithoutInit(context, src, newPos)
 }
 
-func (this *SipHeaderRoute) ParseValueWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+func (this *SipHeaderRoute) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	this.Init()
+	return this.ParseValueWithoutInit(context, src, newPos)
+}
+
+func (this *SipHeaderRoute) ParseValueWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
 	newPos, err = this.addr.ParseWithoutInit(context, src, newPos)
 	if err != nil {

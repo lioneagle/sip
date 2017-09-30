@@ -79,6 +79,10 @@ func (this *SipHost) GetIpString(context *ParseContext) string {
 
 func (this *SipHost) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	this.Init()
+	return this.ParseWithoutInit(context, src, pos)
+}
+
+func (this *SipHost) ParseWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	if pos >= len(src) {
 		return pos, &AbnfError{"host parse: parse failed", src, newPos}
 	}
@@ -236,7 +240,7 @@ func (this *SipHostPort) Parse(context *ParseContext, src []byte, pos int) (newP
 }
 
 func (this *SipHostPort) ParseWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
-	newPos, err = this.SipHost.Parse(context, src, pos)
+	newPos, err = this.SipHost.ParseWithoutInit(context, src, pos)
 	if err != nil {
 		return newPos, err
 	}

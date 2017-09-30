@@ -35,6 +35,11 @@ func (this *SipHeaderTo) HasValue() bool   { return true }
  *                *( SEMI from-param )
  */
 func (this *SipHeaderTo) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
+	return this.ParseWithoutInit(context, src, pos)
+}
+
+func (this *SipHeaderTo) ParseWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	name, newPos, err := ParseHeaderName(context, src, pos)
 	if err != nil {
 		return newPos, err
@@ -49,9 +54,14 @@ func (this *SipHeaderTo) Parse(context *ParseContext, src []byte, pos int) (newP
 }
 
 func (this *SipHeaderTo) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
-	//this.Init()
+	this.Init()
+	return this.ParseValueWithoutInit(context, src, pos)
+}
+
+func (this *SipHeaderTo) ParseValueWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
 	newPos = pos
-	newPos, err = this.addr.Parse(context, src, newPos)
+	newPos, err = this.addr.ParseWithoutInit(context, src, newPos)
 	if err != nil {
 		return newPos, err
 	}
@@ -78,7 +88,7 @@ func ParseSipTo(context *ParseContext, src []byte, pos int) (newPos int, parsed 
 	if addr == ABNF_PTR_NIL {
 		return newPos, ABNF_PTR_NIL, &AbnfError{"To parse: out of memory for new header", src, newPos}
 	}
-	newPos, err = addr.GetSipHeaderTo(context).ParseValue(context, src, pos)
+	newPos, err = addr.GetSipHeaderTo(context).ParseValueWithoutInit(context, src, pos)
 	return newPos, addr, err
 }
 

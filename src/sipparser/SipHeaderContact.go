@@ -131,7 +131,7 @@ func (this *SipHeaderContact) ParseValueWithoutInit(context *ParseContext, src [
 		return ParseSWS(src, newPos+1)
 	}
 
-	newPos, err = this.addr.Parse(context, src, newPos)
+	newPos, err = this.addr.ParseWithoutInit(context, src, newPos)
 	if err != nil {
 		return newPos, err
 	}

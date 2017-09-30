@@ -59,7 +59,7 @@ func (this *SipHeaderFrom) ParseValue(context *ParseContext, src []byte, pos int
 }
 
 func (this *SipHeaderFrom) ParseValueWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
-	newPos, err = this.addr.Parse(context, src, pos)
+	newPos, err = this.addr.ParseWithoutInit(context, src, pos)
 	if err != nil {
 		return newPos, err
 	}

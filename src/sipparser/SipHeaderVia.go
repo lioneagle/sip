@@ -62,6 +62,11 @@ func (this *SipHeaderVia) HasValue() bool   { return true }
  *
  */
 func (this *SipHeaderVia) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
+	return this.ParseWithoutInit(context, src, pos)
+}
+
+func (this *SipHeaderVia) ParseWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	name, newPos, err := ParseHeaderName(context, src, pos)
 	if err != nil {
 		return newPos, err
@@ -72,11 +77,15 @@ func (this *SipHeaderVia) Parse(context *ParseContext, src []byte, pos int) (new
 		return newPos, &AbnfError{"Via parse: wrong header-name", src, newPos}
 	}
 
-	return this.ParseValue(context, src, newPos)
+	return this.ParseValueWithoutInit(context, src, newPos)
 }
 
 func (this *SipHeaderVia) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
-	//this.Init()
+	this.Init()
+	return this.ParseValueWithoutInit(context, src, pos)
+}
+
+func (this *SipHeaderVia) ParseValueWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
 	newPos, err = this.version.Parse(context, src, newPos)
 	if err != nil {
@@ -137,7 +146,7 @@ func ParseSipVia(context *ParseContext, src []byte, pos int) (newPos int, parsed
 	if addr == ABNF_PTR_NIL {
 		return newPos, ABNF_PTR_NIL, &AbnfError{"Via parse: out of memory for new header", src, newPos}
 	}
-	newPos, err = addr.GetSipHeaderVia(context).ParseValue(context, src, pos)
+	newPos, err = addr.GetSipHeaderVia(context).ParseValueWithoutInit(context, src, pos)
 	return newPos, addr, err
 }
 
