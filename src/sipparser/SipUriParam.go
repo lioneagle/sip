@@ -13,7 +13,7 @@ type SipUriParam struct {
 }
 
 func NewSipUriParam(context *ParseContext) AbnfPtr {
-	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipUriParam{})))
+	addr := context.allocator.Alloc(uint32(unsafe.Sizeof(SipUriParam{})))
 	if addr == ABNF_PTR_NIL {
 		return ABNF_PTR_NIL
 	}
@@ -63,7 +63,7 @@ type SipUriParams struct {
 }
 
 func NewSipUriParams(context *ParseContext) AbnfPtr {
-	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipUriParams{})))
+	addr := context.allocator.Alloc(uint32(unsafe.Sizeof(SipUriParams{})))
 	if addr == ABNF_PTR_NIL {
 		return ABNF_PTR_NIL
 	}

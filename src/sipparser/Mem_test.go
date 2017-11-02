@@ -9,8 +9,8 @@ import (
 func TestMemAllocatorAlloc(t *testing.T) {
 
 	testdata := []struct {
-		memSize   int32
-		allocSize int32
+		memSize   uint32
+		allocSize uint32
 		ok        bool
 	}{
 
@@ -18,12 +18,12 @@ func TestMemAllocatorAlloc(t *testing.T) {
 		{200, 199, true},
 
 		{100, 0, false},
-		{100, -1, false},
-		{100, -100, false},
+		//{100, -1, false},
+		//{100, -100, false},
 	}
 
 	prefix := FuncName()
-	used := int32(0)
+	used := uint32(0)
 
 	for i, v := range testdata {
 
@@ -60,9 +60,9 @@ func TestMemAllocatorAlloc(t *testing.T) {
 func TestMemAllocatorAllocEx(t *testing.T) {
 
 	testdata := []struct {
-		memSize      int32
-		allocSize    int32
-		memAllocSize int32
+		memSize      uint32
+		allocSize    uint32
+		memAllocSize uint32
 		ok           bool
 	}{
 
@@ -71,7 +71,7 @@ func TestMemAllocatorAllocEx(t *testing.T) {
 	}
 
 	prefix := FuncName()
-	used := int32(0)
+	used := uint32(0)
 
 	for i, v := range testdata {
 
@@ -112,12 +112,12 @@ func TestMemAllocatorAllocEx(t *testing.T) {
 
 func TestMemAllocatorUsed(t *testing.T) {
 	testdata := []struct {
-		allocSize int32
+		allocSize uint32
 		ok        bool
 	}{
 		{101, true},
 		{203, true},
-		{-1, false},
+		//{-1, false},
 		{0, false},
 		{21, true},
 		{1, true},
@@ -125,9 +125,9 @@ func TestMemAllocatorUsed(t *testing.T) {
 
 	allocator := NewMemAllocator(1000)
 	prefix := FuncName()
-	used := int32(0)
-	allocNum := int32(0)
-	allocNumOk := int32(0)
+	used := uint32(0)
+	allocNum := uint32(0)
+	allocNumOk := uint32(0)
 
 	for i, v := range testdata {
 		allocNum++
@@ -193,10 +193,10 @@ func TestMemAllocatorUsed(t *testing.T) {
 		t.Errorf("%s failed: wong used = %d, wanted = 100\n", prefix, allocator.Used())
 	}
 
-	allocator.FreePart(-1)
+	/*allocator.FreePart(-1)
 	if allocator.Used() != 0 {
 		t.Errorf("%s failed: wong used = %d, wanted = 100\n", prefix, allocator.Used())
-	}
+	}*/
 
 	allocator.FreeAll()
 

@@ -12,7 +12,7 @@ type SipHeaderContentLength struct {
 }
 
 func NewSipHeaderContentLength(context *ParseContext) AbnfPtr {
-	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipHeaderContentLength{})))
+	addr := context.allocator.Alloc(uint32(unsafe.Sizeof(SipHeaderContentLength{})))
 	if addr == ABNF_PTR_NIL {
 		return ABNF_PTR_NIL
 	}
@@ -25,9 +25,9 @@ func (this *SipHeaderContentLength) Init() {
 	this.encodeEnd = 0
 }
 
-func (this *SipHeaderContentLength) AllowMulti() bool    { return false }
-func (this *SipHeaderContentLength) HasValue() bool      { return true }
-func (this *SipHeaderContentLength) SetValue(size int32) { this.size = uint32(size) }
+func (this *SipHeaderContentLength) AllowMulti() bool     { return false }
+func (this *SipHeaderContentLength) HasValue() bool       { return true }
+func (this *SipHeaderContentLength) SetValue(size uint32) { this.size = size }
 
 /* RFC3261
  *

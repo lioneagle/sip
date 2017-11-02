@@ -107,34 +107,34 @@ const (
 )
 
 const (
-	ABNF_SIP_HDR_UNKNOWN             uint32 = 0
-	ABNF_SIP_HDR_FROM                uint32 = 1
-	ABNF_SIP_HDR_TO                  uint32 = 2
-	ABNF_SIP_HDR_VIA                 uint32 = 3
-	ABNF_SIP_HDR_CALL_ID             uint32 = 4
-	ABNF_SIP_HDR_CSEQ                uint32 = 5
-	ABNF_SIP_HDR_CONTENT_LENGTH      uint32 = 6
-	ABNF_SIP_HDR_CONTENT_TYPE        uint32 = 7
-	ABNF_SIP_HDR_CONTACT             uint32 = 8
-	ABNF_SIP_HDR_MAX_FORWARDS        uint32 = 9
-	ABNF_SIP_HDR_ROUTE               uint32 = 10
-	ABNF_SIP_HDR_RECORD_ROUTE        uint32 = 11
-	ABNF_SIP_HDR_CONTENT_DISPOSITION uint32 = 12
-	ABNF_SIP_HDR_ALLOW               uint32 = 13
-	ABNF_SIP_HDR_CONTENT_ENCODING    uint32 = 14
-	ABNF_SIP_HDR_DATE                uint32 = 15
-	ABNF_SIP_HDR_SUBJECT             uint32 = 16
-	ABNF_SIP_HDR_SUPPORTED           uint32 = 17
-	ABNF_SIP_HDR_ALLOW_EVENT         uint32 = 18
-	ABNF_SIP_HDR_EVENT               uint32 = 19
-	ABNF_SIP_HDR_REFER_TO            uint32 = 20
-	ABNF_SIP_HDR_ACCEPT_CONTACT      uint32 = 21
-	ABNF_SIP_HDR_REJECT_CONTACT      uint32 = 22
-	ABNF_SIP_HDR_REQUEST_DISPOSITION uint32 = 23
-	ABNF_SIP_HDR_REFERRED_BY         uint32 = 24
-	ABNF_SIP_HDR_SESSION_EXPIRES     uint32 = 25
-	ABNF_SIP_HDR_MIME_VERSION        uint32 = 26
-	ABNF_SIP_HDR_TOTAL_NUM           uint32 = iota
+	ABNF_SIP_HDR_UNKNOWN             SipHeaderIndexType = 0
+	ABNF_SIP_HDR_FROM                SipHeaderIndexType = 1
+	ABNF_SIP_HDR_TO                  SipHeaderIndexType = 2
+	ABNF_SIP_HDR_VIA                 SipHeaderIndexType = 3
+	ABNF_SIP_HDR_CALL_ID             SipHeaderIndexType = 4
+	ABNF_SIP_HDR_CSEQ                SipHeaderIndexType = 5
+	ABNF_SIP_HDR_CONTENT_LENGTH      SipHeaderIndexType = 6
+	ABNF_SIP_HDR_CONTENT_TYPE        SipHeaderIndexType = 7
+	ABNF_SIP_HDR_CONTACT             SipHeaderIndexType = 8
+	ABNF_SIP_HDR_MAX_FORWARDS        SipHeaderIndexType = 9
+	ABNF_SIP_HDR_ROUTE               SipHeaderIndexType = 10
+	ABNF_SIP_HDR_RECORD_ROUTE        SipHeaderIndexType = 11
+	ABNF_SIP_HDR_CONTENT_DISPOSITION SipHeaderIndexType = 12
+	ABNF_SIP_HDR_ALLOW               SipHeaderIndexType = 13
+	ABNF_SIP_HDR_CONTENT_ENCODING    SipHeaderIndexType = 14
+	ABNF_SIP_HDR_DATE                SipHeaderIndexType = 15
+	ABNF_SIP_HDR_SUBJECT             SipHeaderIndexType = 16
+	ABNF_SIP_HDR_SUPPORTED           SipHeaderIndexType = 17
+	ABNF_SIP_HDR_ALLOW_EVENT         SipHeaderIndexType = 18
+	ABNF_SIP_HDR_EVENT               SipHeaderIndexType = 19
+	ABNF_SIP_HDR_REFER_TO            SipHeaderIndexType = 20
+	ABNF_SIP_HDR_ACCEPT_CONTACT      SipHeaderIndexType = 21
+	ABNF_SIP_HDR_REJECT_CONTACT      SipHeaderIndexType = 22
+	ABNF_SIP_HDR_REQUEST_DISPOSITION SipHeaderIndexType = 23
+	ABNF_SIP_HDR_REFERRED_BY         SipHeaderIndexType = 24
+	ABNF_SIP_HDR_SESSION_EXPIRES     SipHeaderIndexType = 25
+	ABNF_SIP_HDR_MIME_VERSION        SipHeaderIndexType = 26
+	ABNF_SIP_HDR_TOTAL_NUM           SipHeaderIndexType = iota
 )
 
 var g_SipHeaderInfos = []*SipHeaderInfo{
@@ -170,13 +170,13 @@ var g_SipHeaderInfos = []*SipHeaderInfo{
 func init() {
 	//fmt.Println("sipparser init")
 	for i, v := range g_SipHeaderInfos {
-		v.index = uint32(i)
+		v.index = SipHeaderIndexType(i)
 	}
 }
 
-func GetSipHeaderIndex(name []byte) uint32 {
+func GetSipHeaderIndex(name []byte) SipHeaderIndexType {
 	len1 := len(name)
-	for i := uint32(1); i < ABNF_SIP_HDR_TOTAL_NUM; i++ {
+	for i := SipHeaderIndexType(1); i < ABNF_SIP_HDR_TOTAL_NUM; i++ {
 		info := g_SipHeaderInfos[i]
 		if len1 == len(info.name) && EqualNoCase(name, info.name) {
 			//if EqualNoCase(name, info.name) {

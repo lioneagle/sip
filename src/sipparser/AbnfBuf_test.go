@@ -8,7 +8,7 @@ import (
 
 func TestAbnfBufNew(t *testing.T) {
 	testdata := []struct {
-		allocatorSize int32
+		allocatorSize uint32
 		ok            bool
 	}{
 		{100, true},
@@ -63,10 +63,10 @@ func TestAbnfBufNew(t *testing.T) {
 
 func TestAbnfBufSetByteSlice(t *testing.T) {
 	testdata := []struct {
-		allocatorSize int32
+		allocatorSize uint32
 		buf           string
 		exist         bool
-		size          int32
+		size          uint32
 	}{
 		{100, "123", true, 3},
 		{100, "asaad", true, 5},
@@ -117,12 +117,12 @@ func TestAbnfBufSetByteSlice(t *testing.T) {
 
 func TestAbnfBufSetByteSliceWithUnescape(t *testing.T) {
 	testdata := []struct {
-		allocatorSize int32
+		allocatorSize uint32
 		buf           string
 		escapeNum     int
 		dst           string
 		exist         bool
-		size          int32
+		size          uint32
 	}{
 		{100, "123", 0, "123", true, 3},
 		{100, "123%32", 1, "1232", true, 4},

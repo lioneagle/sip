@@ -19,8 +19,8 @@ const (
 	ABNF_BUF_EXIST_MASK = uint32(0x7fffffff)
 )
 
-func SizeofAbnfBuf() int32 {
-	return int32(unsafe.Sizeof(AbnfBuf{}))
+func SizeofAbnfBuf() uint32 {
+	return uint32(unsafe.Sizeof(AbnfBuf{}))
 }
 
 func NewAbnfBuf(context *ParseContext) AbnfPtr {
@@ -47,8 +47,8 @@ func (this *AbnfBuf) SetEmpty() {
 	this.size = ABNF_BUF_EXIST_BIT
 }
 
-func (this *AbnfBuf) Size() int32 {
-	return int32(this.size & ABNF_BUF_EXIST_MASK)
+func (this *AbnfBuf) Size() uint32 {
+	return this.size & ABNF_BUF_EXIST_MASK
 }
 
 func (this *AbnfBuf) Exist() bool {
@@ -63,22 +63,22 @@ func (this *AbnfBuf) SetNonExist() {
 	this.size = 0
 }
 
-func (this *AbnfBuf) setSize(size int32) {
-	this.size = uint32(size) | ABNF_BUF_EXIST_BIT
+func (this *AbnfBuf) setSize(size uint32) {
+	this.size = size | ABNF_BUF_EXIST_BIT
 }
 
 func (this *AbnfBuf) SetValue(context *ParseContext, value []byte) {
 	this.SetByteSlice(context, value)
 }
 
-func (this *AbnfBuf) allocMem(context *ParseContext, size int32) bool {
+func (this *AbnfBuf) allocMem(context *ParseContext, size uint32) bool {
 	if size == 0 {
 		this.SetNonExist()
 		return true
 	}
 
 	//if this.Size() < size {
-	if int32(this.allocSize) < size {
+	if this.allocSize < size {
 		addr, alloc := context.allocator.AllocEx(size)
 		if addr == ABNF_PTR_NIL {
 			// keep unchanged
@@ -93,20 +93,20 @@ func (this *AbnfBuf) allocMem(context *ParseContext, size int32) bool {
 }
 
 func (this *AbnfBuf) SetByteSlice(context *ParseContext, buf []byte) {
-	size := int32(len(buf))
+	size := uint32(len(buf))
 	if size == 0 {
 		this.SetNonExist()
 		return
 	}
 
-	if int32(this.allocSize) < size {
+	if this.allocSize < size {
 		addr, allocSize := context.allocator.AllocEx(size)
 		if addr == ABNF_PTR_NIL {
 			// keep unchanged
 			return
 		}
 		this.addr = addr
-		this.allocSize = uint32(allocSize)
+		this.allocSize = allocSize
 	}
 	this.setSize(size)
 
@@ -115,20 +115,20 @@ func (this *AbnfBuf) SetByteSlice(context *ParseContext, buf []byte) {
 
 func (this *AbnfBuf) SetByteSlice2(context *ParseContext, buf *[]byte) {
 	buf1 := *buf
-	size := int32(len(buf1))
+	size := uint32(len(buf1))
 	if size == 0 {
 		this.SetNonExist()
 		return
 	}
 
-	if int32(this.allocSize) < size {
+	if this.allocSize < size {
 		addr, allocSize := context.allocator.AllocEx(size)
 		if addr == ABNF_PTR_NIL {
 			// keep unchanged
 			return
 		}
 		this.addr = addr
-		this.allocSize = uint32(allocSize)
+		this.allocSize = allocSize
 	}
 	this.setSize(size)
 
@@ -141,7 +141,7 @@ func (this *AbnfBuf) SetByteSliceWithUnescape(context *ParseContext, buf []byte,
 		return
 	}
 	len1 := len(buf)
-	if !this.allocMem(context, int32(len1-2*escapeNum)) {
+	if !this.allocMem(context, uint32(len1-2*escapeNum)) {
 		this.SetByteSlice(context, buf)
 		return
 	}
@@ -335,7 +335,7 @@ func (this *AbnfBuf) simpleHaveNoPrefix(prefix []byte) bool {
 		return true
 	}
 
-	return this.Size() < int32(len(prefix))
+	return this.Size() < uint32(len(prefix))
 }
 
 func (this *AbnfBuf) HasPrefixByteSlice(context *ParseContext, prefix []byte) bool {
@@ -385,14 +385,14 @@ func (this *AbnfBuf) EqualNoCase(context *ParseContext, rhs *AbnfBuf) bool {
 }
 
 func (this *AbnfBuf) EqualByteSlice(context *ParseContext, rhs []byte) bool {
-	if this.addr == ABNF_PTR_NIL || this.Size() != int32(len(rhs)) {
+	if this.addr == ABNF_PTR_NIL || this.Size() != uint32(len(rhs)) {
 		return false
 	}
 	return bytes.Equal(this.GetAsByteSlice(context), rhs)
 }
 
 func (this *AbnfBuf) EqualByteSliceNoCase(context *ParseContext, rhs []byte) bool {
-	if this.addr == ABNF_PTR_NIL || this.Size() != int32(len(rhs)) {
+	if this.addr == ABNF_PTR_NIL || this.Size() != uint32(len(rhs)) {
 		return false
 	}
 	return EqualNoCase(this.GetAsByteSlice(context), rhs)

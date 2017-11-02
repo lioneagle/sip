@@ -9,21 +9,21 @@ import (
 )
 
 const SLICE_HEADER_LEN = int32(unsafe.Sizeof(reflect.SliceHeader{}))
-const SIP_MEM_ALIGN = int32(8)
+const SIP_MEM_ALIGN = uint32(8)
 const SIP_MEM_LIGN_MASK = ^(SIP_MEM_ALIGN - 1)
 const SIP_MEM_LIGN_MASK2 = (SIP_MEM_ALIGN - 1)
 
-func RoundToAlign(x, align int32) int32 {
+func RoundToAlign(x, align uint32) uint32 {
 	return (x + align - 1) & ^(align - 1)
 }
 
 type MemAllocatorStat struct {
-	allocNum      int32
-	allocNumOk    int32
-	freeAllNum    int32
-	freePartNum   int32
-	allocReqBytes int32
-	allocBytes    int32
+	allocNum      uint32
+	allocNumOk    uint32
+	freeAllNum    uint32
+	freePartNum   uint32
+	allocReqBytes uint32
+	allocBytes    uint32
 }
 
 func (this *MemAllocatorStat) Init() {
@@ -38,7 +38,7 @@ func (this *MemAllocatorStat) Init() {
 func (this *MemAllocatorStat) String() string {
 	stat := []struct {
 		name string
-		num  int32
+		num  uint32
 	}{
 		{"alloc num", this.allocNum},
 		{"alloc num ok", this.allocNumOk},
@@ -59,18 +59,18 @@ func (this *MemAllocatorStat) String() string {
 
 type MemAllocator struct {
 	mem  []byte
-	used int32
+	used uint32
 
 	stat MemAllocatorStat
 }
 
-func NewMemAllocator(capacity int32) *MemAllocator {
+func NewMemAllocator(capacity uint32) *MemAllocator {
 	ret := MemAllocator{}
 	ret.Init(capacity)
 	return &ret
 }
 
-func (this *MemAllocator) Init(capacity int32) *MemAllocator {
+func (this *MemAllocator) Init(capacity uint32) *MemAllocator {
 	this.used = 0
 	this.mem = make([]byte, int(capacity))
 	this.stat.Init()
@@ -81,7 +81,7 @@ func (this *MemAllocator) Stat() *MemAllocatorStat {
 	return &this.stat
 }
 
-func (this *MemAllocator) Used() int32 {
+func (this *MemAllocator) Used() uint32 {
 	return this.used
 }
 
@@ -89,40 +89,40 @@ func (this *MemAllocator) ClearAllocNum() {
 	this.stat.allocNum = 0
 }
 
-func (this *MemAllocator) AllocReqBytes() int32 {
+func (this *MemAllocator) AllocReqBytes() uint32 {
 	return this.stat.allocReqBytes
 }
 
-func (this *MemAllocator) AllocBytes() int32 {
+func (this *MemAllocator) AllocBytes() uint32 {
 	return this.stat.allocBytes
 }
 
-func (this *MemAllocator) AllocNum() int32 {
+func (this *MemAllocator) AllocNum() uint32 {
 	return this.stat.allocNum
 }
 
-func (this *MemAllocator) AllocNumOk() int32 {
+func (this *MemAllocator) AllocNumOk() uint32 {
 	return this.stat.allocNumOk
 }
 
-func (this *MemAllocator) FreeAllNum() int32 {
+func (this *MemAllocator) FreeAllNum() uint32 {
 	return this.stat.freeAllNum
 }
 
-func (this *MemAllocator) FreePartNum() int32 {
+func (this *MemAllocator) FreePartNum() uint32 {
 	return this.stat.freePartNum
 }
 
-func (this *MemAllocator) Capacity() int32 {
-	return int32(cap(this.mem))
+func (this *MemAllocator) Capacity() uint32 {
+	return uint32(cap(this.mem))
 }
 
-func (this *MemAllocator) Left() int32 {
-	return int32(cap(this.mem)) - this.used
+func (this *MemAllocator) Left() uint32 {
+	return uint32(cap(this.mem)) - this.used
 }
 
 //func (this *MemAllocator) GetMem(addr uint32) (mem *byte, size uint32) {
-func (this *MemAllocator) GetMem(addr int32) *byte {
+func (this *MemAllocator) GetMem(addr uint32) *byte {
 	if addr >= this.Capacity() {
 		panic("ERROR: out of memory range")
 		//return nil
@@ -130,7 +130,7 @@ func (this *MemAllocator) GetMem(addr int32) *byte {
 	return (*byte)(unsafe.Pointer(&this.mem[addr]))
 }
 
-func (this *MemAllocator) Alloc(size int32) (addr AbnfPtr) {
+func (this *MemAllocator) Alloc(size uint32) (addr AbnfPtr) {
 	this.stat.allocNum++
 	this.stat.allocReqBytes += size
 
@@ -150,7 +150,7 @@ func (this *MemAllocator) Alloc(size int32) (addr AbnfPtr) {
 	newSize := RoundToAlign(this.used+size, SIP_MEM_ALIGN)
 	//newSize := (this.used + size + SIP_MEM_LIGN_MASK2) & SIP_MEM_LIGN_MASK
 	//if newSize > this.Capacity() {
-	if newSize > int32(cap(this.mem)) {
+	if newSize > uint32(cap(this.mem)) {
 		//fmt.Println("newSize =", newSize)
 		//fmt.Println("alloc_size =", size)
 		//panic("ERROR: out of memory")
@@ -177,7 +177,7 @@ func (this *MemAllocator) Alloc(size int32) (addr AbnfPtr) {
 	return AbnfPtr(used)
 }
 
-func (this *MemAllocator) AllocEx(size int32) (addr AbnfPtr, allocSize int32) {
+func (this *MemAllocator) AllocEx(size uint32) (addr AbnfPtr, allocSize uint32) {
 	this.stat.allocNum++
 	this.stat.allocReqBytes += size
 
@@ -188,7 +188,7 @@ func (this *MemAllocator) AllocEx(size int32) (addr AbnfPtr, allocSize int32) {
 	used := this.used
 
 	newSize := RoundToAlign(used+size, SIP_MEM_ALIGN)
-	if newSize > int32(cap(this.mem)) {
+	if newSize > uint32(cap(this.mem)) {
 		return ABNF_PTR_NIL, 0
 	}
 
@@ -206,7 +206,7 @@ func (this *MemAllocator) FreeAll() {
 	this.used = 0
 }
 
-func (this *MemAllocator) FreePart(remain int32) {
+func (this *MemAllocator) FreePart(remain uint32) {
 	this.stat.freePartNum++
 	if remain >= this.used {
 		return

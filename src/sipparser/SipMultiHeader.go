@@ -13,7 +13,7 @@ type SipMultiHeader struct {
 }
 
 func NewSipMultiHeader(context *ParseContext) AbnfPtr {
-	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipMultiHeader{})))
+	addr := context.allocator.Alloc(uint32(unsafe.Sizeof(SipMultiHeader{})))
 	if addr == ABNF_PTR_NIL {
 		return ABNF_PTR_NIL
 	}
@@ -138,7 +138,7 @@ type SipMultiHeaders struct {
 }
 
 func NewSipMultiHeaders(context *ParseContext) AbnfPtr {
-	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipMultiHeaders{})))
+	addr := context.allocator.Alloc(uint32(unsafe.Sizeof(SipMultiHeaders{})))
 	if addr == ABNF_PTR_NIL {
 		return ABNF_PTR_NIL
 	}
@@ -178,7 +178,7 @@ func (this *SipMultiHeaders) GetHeaderByString(context *ParseContext, name strin
 	return this.GetHeaderByByteSlice(context, StringToByteSlice(name))
 }
 
-func (this *SipMultiHeaders) GetHeaderByIndex(context *ParseContext, headerIndex uint32) (val *SipMultiHeader, ok bool) {
+func (this *SipMultiHeaders) GetHeaderByIndex(context *ParseContext, headerIndex SipHeaderIndexType) (val *SipMultiHeader, ok bool) {
 	for e := this.Front(context); e != nil; e = e.Next(context) {
 		v := e.Value.GetSipMultiHeader(context)
 		if v.info != nil && v.info.index == headerIndex {

@@ -21,14 +21,14 @@ func (this *ParseContext) ClearAllocNum() {
 	this.allocator.ClearAllocNum()
 }
 
-func (this *ParseContext) GetAllocNum() int32 {
+func (this *ParseContext) GetAllocNum() uint32 {
 	return this.allocator.AllocNum()
 }
 
-func (this *ParseContext) FreePart(remain int32) {
+func (this *ParseContext) FreePart(remain uint32) {
 	this.allocator.FreePart(remain)
 }
 
-func (this *ParseContext) Used() int32 {
+func (this *ParseContext) Used() uint32 {
 	return this.allocator.Used()
 }

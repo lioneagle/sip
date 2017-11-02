@@ -48,16 +48,18 @@ type SipHeaderParsed interface {
 type SipPaseOneHeaderValue func(context *ParseContext, src []byte, pos int) (newPos int, parsed AbnfPtr, err error)
 type SipEncodeOneHeaderValue func(parsed AbnfPtr, context *ParseContext, buf *bytes.Buffer)
 
+type SipHeaderIndexType uint32
+
 type SipHeaderInfo struct {
-	index        uint32
+	index        SipHeaderIndexType
 	name         []byte
 	shortName    []byte
+	parseFunc    SipPaseOneHeaderValue
+	encodeFunc   SipEncodeOneHeaderValue
 	hasShortName bool
 	isKeyheader  bool
 	allowMulti   bool
 	needParse    bool
-	parseFunc    SipPaseOneHeaderValue
-	encodeFunc   SipEncodeOneHeaderValue
 }
 
 func (this *SipHeaderInfo) AllowMulti() bool   { return this.allowMulti }
@@ -156,7 +158,7 @@ func (this *SipHeaders) GetSingleHeaderParsed(context *ParseContext, name string
 	return this.singleHeaders.GetHeaderParsedByString(context, name)
 }
 
-func (this *SipHeaders) GetSingleHeaderParsedByIndex(context *ParseContext, headerIndex uint32) (parsed AbnfPtr, ok bool) {
+func (this *SipHeaders) GetSingleHeaderParsedByIndex(context *ParseContext, headerIndex SipHeaderIndexType) (parsed AbnfPtr, ok bool) {
 	return this.singleHeaders.GetHeaderParsedByIndex(context, headerIndex)
 }
 
@@ -164,7 +166,7 @@ func (this *SipHeaders) GetMultiHeader(context *ParseContext, name string) (head
 	return this.multiHeaders.GetHeaderByString(context, name)
 }
 
-func (this *SipHeaders) GetMultiHeaderByIndex(context *ParseContext, headerIndex uint32) (header *SipMultiHeader, ok bool) {
+func (this *SipHeaders) GetMultiHeaderByIndex(context *ParseContext, headerIndex SipHeaderIndexType) (header *SipMultiHeader, ok bool) {
 	return this.multiHeaders.GetHeaderByIndex(context, headerIndex)
 }
 
@@ -194,7 +196,7 @@ func (this *SipHeaders) CreateSingleHeader(context *ParseContext, name string) A
 	return addr
 }
 
-func (this *SipHeaders) CreateSingleHeaderByIndex(context *ParseContext, headerIndex uint32) AbnfPtr {
+func (this *SipHeaders) CreateSingleHeaderByIndex(context *ParseContext, headerIndex SipHeaderIndexType) AbnfPtr {
 	addr := NewSipSingleHeader(context)
 	if addr == ABNF_PTR_NIL {
 		return ABNF_PTR_NIL

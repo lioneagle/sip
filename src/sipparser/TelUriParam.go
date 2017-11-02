@@ -13,7 +13,7 @@ type TelUriContext struct {
 }
 
 func NewTelUriContext(context *ParseContext) AbnfPtr {
-	addr := context.allocator.Alloc(int32(unsafe.Sizeof(TelUriContext{})))
+	addr := context.allocator.Alloc(uint32(unsafe.Sizeof(TelUriContext{})))
 	if addr == ABNF_PTR_NIL {
 		return ABNF_PTR_NIL
 	}
@@ -60,7 +60,7 @@ type TelUriParam struct {
 }
 
 func NewTelUriParam(context *ParseContext) AbnfPtr {
-	addr := context.allocator.Alloc(int32(unsafe.Sizeof(TelUriParam{})))
+	addr := context.allocator.Alloc(uint32(unsafe.Sizeof(TelUriParam{})))
 	if addr == ABNF_PTR_NIL {
 		return ABNF_PTR_NIL
 	}
@@ -109,7 +109,7 @@ type TelUriParams struct {
 }
 
 func NewTelUriParams(context *ParseContext) AbnfPtr {
-	addr := context.allocator.Alloc(int32(unsafe.Sizeof(TelUriParams{})))
+	addr := context.allocator.Alloc(uint32(unsafe.Sizeof(TelUriParams{})))
 	if addr == ABNF_PTR_NIL {
 		return ABNF_PTR_NIL
 	}

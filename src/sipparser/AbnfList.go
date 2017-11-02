@@ -14,7 +14,7 @@ type AbnfListNode struct {
 }
 
 func NewAbnfListNode(context *ParseContext) AbnfPtr {
-	addr := context.allocator.Alloc(int32(unsafe.Sizeof(AbnfListNode{})))
+	addr := context.allocator.Alloc(uint32(unsafe.Sizeof(AbnfListNode{})))
 	if addr == ABNF_PTR_NIL {
 		return ABNF_PTR_NIL
 	}
@@ -50,7 +50,7 @@ type AbnfList struct {
 }
 
 func NewAbnfList(context *ParseContext) AbnfPtr {
-	addr := context.allocator.Alloc(int32(unsafe.Sizeof(AbnfList{})))
+	addr := context.allocator.Alloc(uint32(unsafe.Sizeof(AbnfList{})))
 	if addr == ABNF_PTR_NIL {
 		return ABNF_PTR_NIL
 	}

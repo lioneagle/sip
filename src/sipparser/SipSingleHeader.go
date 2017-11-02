@@ -14,7 +14,7 @@ type SipSingleHeader struct {
 }
 
 func NewSipSingleHeader(context *ParseContext) AbnfPtr {
-	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipSingleHeader{})))
+	addr := context.allocator.Alloc(uint32(unsafe.Sizeof(SipSingleHeader{})))
 	if addr == ABNF_PTR_NIL {
 		return ABNF_PTR_NIL
 	}
@@ -108,7 +108,7 @@ type SipSingleHeaders struct {
 }
 
 func NewSipSingleHeaders(context *ParseContext) AbnfPtr {
-	addr := context.allocator.Alloc(int32(unsafe.Sizeof(SipSingleHeaders{})))
+	addr := context.allocator.Alloc(uint32(unsafe.Sizeof(SipSingleHeaders{})))
 	if addr == ABNF_PTR_NIL {
 		return ABNF_PTR_NIL
 	}
@@ -149,7 +149,7 @@ func (this *SipSingleHeaders) GetHeaderByString(context *ParseContext, name stri
 	return this.GetHeaderByByteSlice(context, StringToByteSlice(name))
 }
 
-func (this *SipSingleHeaders) GetHeaderByIndex(context *ParseContext, headerIndex uint32) (val *SipSingleHeader, ok bool) {
+func (this *SipSingleHeaders) GetHeaderByIndex(context *ParseContext, headerIndex SipHeaderIndexType) (val *SipSingleHeader, ok bool) {
 	for e := this.Front(context); e != nil; e = e.Next(context) {
 		v := e.Value.GetSipSingleHeader(context)
 		if v.info != nil && v.info.index == headerIndex {
@@ -225,7 +225,7 @@ func (this *SipSingleHeaders) GetHeaderParsedByString(context *ParseContext, nam
 	return parsed, true
 }
 
-func (this *SipSingleHeaders) GetHeaderParsedByIndex(context *ParseContext, headerIndex uint32) (parsed AbnfPtr, ok bool) {
+func (this *SipSingleHeaders) GetHeaderParsedByIndex(context *ParseContext, headerIndex SipHeaderIndexType) (parsed AbnfPtr, ok bool) {
 	header, ok := this.GetHeaderByIndex(context, headerIndex)
 	if !ok {
 		return ABNF_PTR_NIL, false

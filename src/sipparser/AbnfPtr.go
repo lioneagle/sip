@@ -5,9 +5,9 @@ import (
 	"unsafe"
 )
 
-type AbnfPtr int32
+type AbnfPtr uint32
 
-const ABNF_PTR_NIL = AbnfPtr(-1)
+const ABNF_PTR_NIL = AbnfPtr(0xffffffff)
 
 func (this AbnfPtr) GetMemAddr(context *ParseContext) *byte {
 	return (*byte)(unsafe.Pointer(&context.allocator.mem[this]))
