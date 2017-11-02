@@ -48,6 +48,11 @@ func (this *SipHeaderContentType) HasValue() bool   { return true }
  * m-value          =  token / quoted-string
  */
 func (this *SipHeaderContentType) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	this.Init()
+	return this.ParseWithoutInit(context, src, pos)
+}
+
+func (this *SipHeaderContentType) ParseWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	name, newPos, err := ParseHeaderName(context, src, pos)
 	if err != nil {
 		return newPos, err
@@ -58,11 +63,15 @@ func (this *SipHeaderContentType) Parse(context *ParseContext, src []byte, pos i
 		return newPos, &AbnfError{"Content-Type parse: wrong header-name", src, newPos}
 	}
 
-	return this.ParseValue(context, src, newPos)
+	return this.ParseValueWithoutInit(context, src, newPos)
 }
 
 func (this *SipHeaderContentType) ParseValue(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	this.Init()
+	return this.ParseValueWithoutInit(context, src, pos)
+}
+
+func (this *SipHeaderContentType) ParseValueWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos, err = this.mainType.ParseSipToken(context, src, pos)
 	if err != nil {
 		return newPos, err
@@ -143,7 +152,7 @@ func ParseSipContentType(context *ParseContext, src []byte, pos int) (newPos int
 	if addr == ABNF_PTR_NIL {
 		return newPos, ABNF_PTR_NIL, &AbnfError{"Content-Type parse: out of memory for new header", nil, 0}
 	}
-	newPos, err = addr.GetSipHeaderContentType(context).ParseValue(context, src, pos)
+	newPos, err = addr.GetSipHeaderContentType(context).ParseValueWithoutInit(context, src, pos)
 	return newPos, addr, err
 }
 

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"testing"
-	//"unsafe"
+	_ "unsafe"
 )
 
 //*
@@ -316,6 +316,11 @@ func BenchmarkSipMsgParse(b *testing.B) {
 		fmt.Printf("sizeof(SipAddr) =%d\n", unsafe.Sizeof(SipAddr{}))
 		fmt.Printf("sizeof(SipNameAddr) =%d\n", unsafe.Sizeof(SipNameAddr{}))
 		fmt.Printf("sizeof(SipUri) =%d\n", unsafe.Sizeof(SipUri{}))
+		fmt.Printf("sizeof(AbnfBuf) =%d\n", unsafe.Sizeof(AbnfBuf{}))
+		fmt.Printf("sizeof(SipHostPort) =%d\n", unsafe.Sizeof(SipHostPort{}))
+		fmt.Printf("sizeof(SipUriParams) =%d\n", unsafe.Sizeof(SipUriParams{}))
+		fmt.Printf("sizeof(SipUriHeaders) =%d\n", unsafe.Sizeof(SipUriHeaders{}))
+
 		//*/
 
 }

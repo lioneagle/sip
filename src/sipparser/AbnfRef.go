@@ -30,21 +30,6 @@ func (this *AbnfRef) Parse(src []byte, pos int, inCharset AbnfIsInCharset) (end 
 	return end
 }
 
-func (this *AbnfRef) ParseSipToken0(src []byte, pos int) (end int) {
-	this.Begin = int32(pos)
-	len1 := len(src)
-
-	for end = pos; end < len1; end++ {
-		if !IsSipToken(src[end]) {
-			this.End = int32(end)
-			return end
-		}
-	}
-
-	this.End = int32(end)
-	return end
-}
-
 func (this *AbnfRef) ParseSipToken(src []byte, pos int) (end int) {
 	this.Begin = int32(pos)
 	len1 := len(src)

@@ -2,7 +2,9 @@ package sipparser
 
 import (
 	"bytes"
+	//"fmt"
 	"strconv"
+	"unsafe"
 )
 
 func ToUpperHex(ch byte) byte {
@@ -91,19 +93,48 @@ func EqualNoCase(s1, s2 []byte) bool {
 		return false
 	}
 
-	if ToLower(s1[0]) != ToLower(s2[0]) {
+	p1 := uintptr(unsafe.Pointer(&s1[0]))
+	p2 := uintptr(unsafe.Pointer(&s2[0]))
+	end := p1 + uintptr(len1)
+	end1 := p1 + uintptr((len1>>3)<<3)
+
+	for p1 < end1 {
+		if *((*int64)(unsafe.Pointer(p1))) != *((*int64)(unsafe.Pointer(p2))) {
+			break
+		}
+		p1 += 8
+		p2 += 8
+	}
+
+	for p1 < end {
+		if *((*byte)(unsafe.Pointer(p1))) != *((*byte)(unsafe.Pointer(p2))) {
+			break
+		}
+		p1++
+		p2++
+	}
+	for p1 < end {
+		if ToLower(*((*byte)(unsafe.Pointer(p1)))) != ToLower(*((*byte)(unsafe.Pointer(p2)))) {
+			return false
+		}
+		p1++
+		p2++
+	}
+
+	return true
+}
+
+func EqualNoCase2(s1, s2 []byte) bool {
+	len1 := len(s1)
+	if len1 != len(s2) {
 		return false
 	}
 
-	i := 1
-
-	for ; i < len1; i++ {
-		if s1[i] != s2[i] {
-			break
-		}
+	if bytes.Equal(s1, s2) {
+		return true
 	}
 
-	for ; i < len1; i++ {
+	for i := 0; i < len1; i++ {
 		if ToLower(s1[i]) != ToLower(s2[i]) {
 			return false
 		}

@@ -110,3 +110,18 @@ func TestAbnfRefParseEscapable(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkParseSipToken(b *testing.B) {
+	b.StopTimer()
+
+	b.ReportAllocs()
+	b.SetBytes(2)
+	b.StartTimer()
+
+	data := []byte("012345")
+	ref := &AbnfRef{}
+
+	for i := 0; i < b.N; i++ {
+		ref.ParseSipToken(data, 0)
+	}
+}

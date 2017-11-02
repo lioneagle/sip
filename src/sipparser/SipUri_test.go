@@ -71,7 +71,7 @@ func TestSipUriParseOK(t *testing.T) {
 		}
 
 		if uri.hostport.String(context) != v.hostport {
-			t.Errorf("%s[%d] failed: host wrong, host = %s, wanted = %s", prefix, i, uri.hostport, v.hostport)
+			t.Errorf("%s[%d] failed: host wrong, host = %s, wanted = %s", prefix, i, uri.hostport.String(context), v.hostport)
 			continue
 		}
 	}

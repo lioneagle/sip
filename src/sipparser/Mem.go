@@ -177,7 +177,7 @@ func (this *MemAllocator) Alloc(size int32) (addr AbnfPtr) {
 	return AbnfPtr(used)
 }
 
-func (this *MemAllocator) AllocEx(size int32) (addr AbnfPtr, alloc int32) {
+func (this *MemAllocator) AllocEx(size int32) (addr AbnfPtr, allocSize int32) {
 	this.stat.allocNum++
 	this.stat.allocReqBytes += size
 
@@ -192,7 +192,7 @@ func (this *MemAllocator) AllocEx(size int32) (addr AbnfPtr, alloc int32) {
 		return ABNF_PTR_NIL, 0
 	}
 
-	//alloc = newSize - used
+	//allocSize = newSize - used
 	this.stat.allocNumOk++
 	//mem = (*byte)(unsafe.Pointer(&this.mem[used]))
 	//addr = AbnfPtr(used)
