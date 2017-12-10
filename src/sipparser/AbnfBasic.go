@@ -3,9 +3,14 @@ package sipparser
 import (
 	"bytes"
 	//"fmt"
-	"strconv"
+	//"strconv"
 	"unsafe"
 )
+
+var g_tolower_table [256]byte
+var g_toupper_table [256]byte
+
+var g_byteAsString_table [256]string
 
 func ToUpperHex(ch byte) byte {
 	return "0123456789ABCDEF"[ch&0x0F]
@@ -16,19 +21,21 @@ func ToLowerHex(ch byte) byte {
 }
 
 func ToLower(ch byte) byte {
-	if IsUpper(ch) {
+	/*if IsUpper(ch) {
 		//return ch - 'A' + 'a'
 		return ch | 0x20
 	}
-	return ch
+	return ch*/
+	return g_tolower_table[ch]
 }
 
 func ToUpper(ch byte) byte {
-	if IsLower(ch) {
+	/*if IsLower(ch) {
 		//return ch - 'a' + 'A'
 		return ch & 0xDF
 	}
-	return ch
+	return ch*/
+	return g_toupper_table[ch]
 }
 
 func HexToByte(ch byte) byte {
@@ -469,5 +476,70 @@ func ParseCRLF(src []byte, pos int) (newPos int, err error) {
 }
 
 func EncodeUInt(buf *bytes.Buffer, digit uint64) {
-	buf.WriteString(strconv.FormatUint(uint64(digit), 10))
+	//buf.WriteString(strconv.FormatUint(uint64(digit), 10))
+	if digit == 0 {
+		buf.WriteByte('0')
+		return
+	}
+	var val [32]byte
+	num := 0
+	for digit > 0 {
+		mod := digit
+		digit /= 10
+		val[num] = '0' + byte(mod-digit*10)
+		num++
+	}
+
+	for i := 0; i < num; i++ {
+		buf.WriteByte(val[num-i-1])
+	}
+}
+
+func EncodeUIntWithWidth(buf *bytes.Buffer, digit uint64, width int) {
+	//buf.WriteString(strconv.FormatUint(uint64(digit), 10))
+	if digit == 0 {
+		width--
+		for i := 0; i < width; i++ {
+			buf.WriteByte(' ')
+		}
+		buf.WriteByte('0')
+		return
+	}
+
+	var val [32]byte
+	num := 0
+	for digit > 0 {
+		mod := digit
+		digit /= 10
+		val[num] = '0' + byte(mod-digit*10)
+		num++
+	}
+
+	for i := num; i < width; i++ {
+		buf.WriteByte(' ')
+	}
+
+	for i := 0; i < num; i++ {
+		buf.WriteByte(val[num-i-1])
+	}
+}
+
+func EncodeUInt32(buf *bytes.Buffer, digit uint32) {
+	//buf.WriteString(strconv.FormatUint(uint64(digit), 10))
+	if digit == 0 {
+		buf.WriteByte('0')
+		return
+	}
+	var val [32]byte
+	num := 0
+	for digit > 0 {
+		mod := digit
+		digit /= 10
+		val[num] = '0' + byte(mod-digit*10)
+		num++
+	}
+
+	for i := 0; i < num; i++ {
+		buf.WriteByte(val[num-i-1])
+	}
 }

@@ -167,13 +167,6 @@ var g_SipHeaderInfos = []*SipHeaderInfo{
 	&SipHeaderInfo{name: []byte("MIME-Version")},
 }
 
-func init() {
-	//fmt.Println("sipparser init")
-	for i, v := range g_SipHeaderInfos {
-		v.index = SipHeaderIndexType(i)
-	}
-}
-
 func GetSipHeaderIndex(name []byte) SipHeaderIndexType {
 	len1 := len(name)
 	for i := SipHeaderIndexType(1); i < ABNF_SIP_HDR_TOTAL_NUM; i++ {

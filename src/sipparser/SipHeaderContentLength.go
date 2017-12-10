@@ -2,7 +2,7 @@ package sipparser
 
 import (
 	"bytes"
-	"fmt"
+	//"fmt"
 	"unsafe"
 )
 
@@ -73,7 +73,8 @@ func (this *SipHeaderContentLength) Encode(context *ParseContext, buf *bytes.Buf
 }
 
 func (this *SipHeaderContentLength) EncodeValue(context *ParseContext, buf *bytes.Buffer) {
-	buf.WriteString(fmt.Sprintf(ABNF_SIP_CONTENT_LENGTH_PRINT_FMT, this.size))
+	//buf.WriteString(fmt.Sprintf(ABNF_SIP_CONTENT_LENGTH_PRINT_FMT, this.size))
+	EncodeUIntWithWidth(buf, uint64(this.size), 10)
 	this.encodeEnd = uint32(len(buf.Bytes()))
 }
 

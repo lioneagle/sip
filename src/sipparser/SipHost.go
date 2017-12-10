@@ -4,7 +4,6 @@ import (
 	"bytes"
 	//"fmt"
 	"net"
-	"strconv"
 	"unsafe"
 )
 
@@ -117,24 +116,26 @@ func (this *SipHost) WriteIpv4AsString(buf *bytes.Buffer) {
 }
 
 func WriteByteAsString(buf *bytes.Buffer, v byte) {
-	if v == 0 {
-		buf.WriteByte('0')
-		return
-	}
+	buf.WriteString(g_byteAsString_table[v])
+	/*
+		if v == 0 {
+			buf.WriteByte('0')
+			return
+		}
 
-	x2 := v / 10
-	x1 := v - x2*10
-	x3 := x2 / 10
-	x2 -= x3 * 10
+		x2 := v / 10
+		x1 := v - x2*10
+		x3 := x2 / 10
+		x2 -= x3 * 10
 
-	if x3 != 0 {
-		buf.WriteByte('0' + x3)
-		buf.WriteByte('0' + x2)
-	} else if x2 != 0 {
-		buf.WriteByte('0' + x2)
-	}
+		if x3 != 0 {
+			buf.WriteByte('0' + x3)
+			buf.WriteByte('0' + x2)
+		} else if x2 != 0 {
+			buf.WriteByte('0' + x2)
+		}
 
-	buf.WriteByte('0' + x1)
+		buf.WriteByte('0' + x1) //*/
 
 }
 
@@ -297,7 +298,8 @@ func (this *SipHostPort) Encode(context *ParseContext, buf *bytes.Buffer) {
 	this.SipHost.Encode(context, buf)
 	if this.hasPort {
 		buf.WriteByte(':')
-		buf.WriteString(strconv.FormatUint(uint64(this.port), 10))
+		EncodeUInt(buf, uint64(this.port))
+		//buf.WriteString(strconv.FormatUint(uint64(this.port), 10))
 		//buf.WriteString(fmt.Sprintf(":%d", this.port))
 	}
 }
