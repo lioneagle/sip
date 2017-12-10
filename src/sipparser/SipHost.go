@@ -39,7 +39,8 @@ func (this *SipHost) Encode(context *ParseContext, buf *bytes.Buffer) {
 	if this.id == HOST_TYPE_UNKNOWN {
 		buf.WriteString("unknown host")
 	} else if this.IsIpv4() {
-		buf.WriteString(this.GetIpString(context))
+		//buf.WriteString(this.GetIpString(context))
+		this.WriteIpv4AsString(buf)
 	} else if this.IsIpv6() {
 		buf.WriteByte('[')
 		buf.WriteString(this.GetIpString(context))
@@ -103,6 +104,38 @@ func (this *SipHost) GetIpString(context *ParseContext) string {
 		return net.IP(this.ip[0:4]).String()
 	}
 	return net.IP(this.ip[0:]).String()
+}
+
+func (this *SipHost) WriteIpv4AsString(buf *bytes.Buffer) {
+	WriteByteAsString(buf, this.ip[0])
+	buf.WriteByte('.')
+	WriteByteAsString(buf, this.ip[1])
+	buf.WriteByte('.')
+	WriteByteAsString(buf, this.ip[2])
+	buf.WriteByte('.')
+	WriteByteAsString(buf, this.ip[3])
+}
+
+func WriteByteAsString(buf *bytes.Buffer, v byte) {
+	if v == 0 {
+		buf.WriteByte('0')
+		return
+	}
+
+	x2 := v / 10
+	x1 := v - x2*10
+	x3 := x2 / 10
+	x2 -= x3 * 10
+
+	if x3 != 0 {
+		buf.WriteByte('0' + x3)
+		buf.WriteByte('0' + x2)
+	} else if x2 != 0 {
+		buf.WriteByte('0' + x2)
+	}
+
+	buf.WriteByte('0' + x1)
+
 }
 
 func (this *SipHost) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {

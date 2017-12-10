@@ -1,8 +1,8 @@
 package sipparser
 
 import (
-	//"bytes"
-	//"fmt"
+	"bytes"
+	"fmt"
 	"net"
 	"testing"
 )
@@ -253,5 +253,153 @@ func TestSipHostPortParseNOk(t *testing.T) {
 			t.Errorf("TestSipHostPortParseNOk[%d] failed: should return err\n", i)
 			continue
 		}
+	}
+}
+
+func TestWriteByteAsString(t *testing.T) {
+	testdata := []struct {
+		val byte
+		ret string
+	}{
+		{0, "0"},
+		{1, "1"},
+		{9, "9"},
+		{99, "99"},
+		{109, "109"},
+		{255, "255"},
+	}
+
+	buf := bytes.NewBuffer(make([]byte, 1024*64))
+	for i, v := range testdata {
+		buf.Reset()
+		WriteByteAsString(buf, v.val)
+		if buf.String() != v.ret {
+			t.Errorf("TestWriteByteAsString[%d] failed: ret = %v, wanted = %v\n", i, buf.String(), v.ret)
+			continue
+		}
+	}
+}
+
+func TestSipHostWriteIpv4AsString(t *testing.T) {
+	testdata := []struct {
+		ipv4 []byte
+		ret  string
+	}{
+		{[]byte{255, 254, 253, 252}, "255.254.253.252"},
+		{[]byte{255, 0, 0, 252}, "255.0.0.252"},
+		{[]byte{0, 0, 0, 252}, "0.0.0.252"},
+	}
+
+	buf := bytes.NewBuffer(make([]byte, 1024*64))
+	host := SipHost{id: HOST_TYPE_IPV4}
+	for i, v := range testdata {
+		buf.Reset()
+		host.ip[0] = v.ipv4[0]
+		host.ip[1] = v.ipv4[1]
+		host.ip[2] = v.ipv4[2]
+		host.ip[3] = v.ipv4[3]
+		host.WriteIpv4AsString(buf)
+		if buf.String() != v.ret {
+			t.Errorf("TestSipHostWriteIpv4AsString[%d] failed: ret = %v, wanted = %v\n", i, buf.String(), v.ret)
+			continue
+		}
+	}
+}
+
+func BenchmarkWriteByteAsString1(b *testing.B) {
+	b.StopTimer()
+	buf := bytes.NewBuffer(make([]byte, 1024*64))
+	b.SetBytes(2)
+	b.ReportAllocs()
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		buf.Reset()
+		WriteByteAsString(buf, 255)
+	}
+}
+
+func BenchmarkWriteByteAsString2(b *testing.B) {
+	b.StopTimer()
+	buf := bytes.NewBuffer(make([]byte, 1024*64))
+	b.SetBytes(2)
+	b.ReportAllocs()
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		buf.Reset()
+		WriteByteAsString(buf, 0)
+	}
+}
+
+func BenchmarkWriteByteUseFmt1(b *testing.B) {
+	b.StopTimer()
+	buf := bytes.NewBuffer(make([]byte, 1024*64))
+	b.SetBytes(2)
+	b.ReportAllocs()
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		buf.Reset()
+		buf.WriteString(fmt.Sprintf("%d", 255))
+	}
+}
+
+func BenchmarkWriteByteUseFmt2(b *testing.B) {
+	b.StopTimer()
+	buf := bytes.NewBuffer(make([]byte, 1024*64))
+	b.SetBytes(2)
+	b.ReportAllocs()
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		buf.Reset()
+		buf.WriteString(fmt.Sprintf("%d", 0))
+	}
+}
+
+func BenchmarkWriteIpv4String(b *testing.B) {
+	b.StopTimer()
+	ip := []byte{255, 255, 255, 255}
+	buf := bytes.NewBuffer(make([]byte, 1024*64))
+	b.SetBytes(2)
+	b.ReportAllocs()
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		buf.Reset()
+		buf.WriteString(net.IP(ip).String())
+	}
+}
+
+func BenchmarkWriteIpv4UseFmt(b *testing.B) {
+	b.StopTimer()
+	ip := []byte{255, 255, 255, 255}
+	buf := bytes.NewBuffer(make([]byte, 1024*64))
+	b.SetBytes(2)
+	b.ReportAllocs()
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		buf.Reset()
+		buf.WriteString(fmt.Sprintf("%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]))
+	}
+}
+
+func BenchmarkWriteIpv4AsString(b *testing.B) {
+	b.StopTimer()
+	host := SipHost{id: HOST_TYPE_IPV4}
+	host.ip[0] = 255
+	host.ip[1] = 255
+	host.ip[2] = 255
+	host.ip[3] = 255
+	buf := bytes.NewBuffer(make([]byte, 1024*64))
+	b.SetBytes(2)
+	b.ReportAllocs()
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		buf.Reset()
+		host.WriteIpv4AsString(buf)
 	}
 }
