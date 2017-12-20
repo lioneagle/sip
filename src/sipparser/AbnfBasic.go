@@ -221,17 +221,13 @@ func ParseUInt(src []byte, pos int) (digit, num, newPos int, ok bool) {
 		return 0, 0, pos, false
 	}
 
-	num = 0
 	digit = 0
-	newPos = pos
 
-	for newPos < len1 && IsDigit(src[newPos]) {
+	for newPos = pos; newPos < len1 && IsDigit(src[newPos]); {
 		digit = digit*10 + int(src[newPos]) - '0'
 		newPos++
-		num++
 	}
-
-	return digit, num, newPos, true
+	return digit, newPos - pos, newPos, true
 }
 
 func ParseUriScheme(context *ParseContext, src []byte, pos int, scheme *AbnfBuf) (newPos int, err error) {

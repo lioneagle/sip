@@ -403,3 +403,18 @@ func BenchmarkWriteIpv4AsString(b *testing.B) {
 		host.WriteIpv4AsString(buf)
 	}
 }
+
+func BenchmarkSipHostParseIpv4(b *testing.B) {
+	b.StopTimer()
+	host := SipHost{}
+	src := []byte("255.255.255.255")
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+	b.SetBytes(2)
+	b.ReportAllocs()
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		host.parseIpv4(context, src, 0)
+	}
+}
