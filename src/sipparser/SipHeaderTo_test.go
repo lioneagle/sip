@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	"fmt"
 	"testing"
 )
@@ -88,7 +88,8 @@ func BenchmarkSipHeaderToEncode(b *testing.B) {
 	b.SetBytes(2)
 	b.ReportAllocs()
 
-	buf := bytes.NewBuffer(make([]byte, 1024*1024))
+	//buf := bytes.NewBuffer(make([]byte, 1024*1024))
+	buf := &AbnfByteBuffer{}
 
 	b.StartTimer()
 

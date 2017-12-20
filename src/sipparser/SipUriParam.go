@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	//"strings"
 	"unsafe"
@@ -46,7 +46,7 @@ func (this *SipUriParam) Parse(context *ParseContext, src []byte, pos int) (newP
 	return newPos, nil
 }
 
-func (this *SipUriParam) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipUriParam) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	buf.Write(Escape(this.name.GetAsByteSlice(context), IsSipPname))
 	if this.value.Exist() {
 		buf.WriteByte('=')
@@ -159,7 +159,7 @@ func (this *SipUriParams) equalSpecParamsRFC3261(context *ParseContext, rhs *Sip
 	return true
 }
 
-func (this *SipUriParams) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipUriParams) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	e := this.Front(context)
 	if e != nil {
 		e.Value.GetSipUriParam(context).Encode(context, buf)

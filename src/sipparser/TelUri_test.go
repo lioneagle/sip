@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	"fmt"
 	"testing"
 )
@@ -306,7 +306,8 @@ func BenchmarkTelUriEncode(b *testing.B) {
 	uri := addr.GetTelUri(context)
 	uri.Parse(context, v, 0)
 	remain := context.allocator.Used()
-	buf := bytes.NewBuffer(make([]byte, 1024*1024))
+	//buf := bytes.NewBuffer(make([]byte, 1024*1024))
+	buf := &AbnfByteBuffer{}
 	b.ReportAllocs()
 	b.SetBytes(2)
 	b.StartTimer()

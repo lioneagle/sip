@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	"unsafe"
 )
@@ -110,7 +110,7 @@ func (this *SipUri) ParseAfterSchemeWithoutParam(context *ParseContext, src []by
 	return this.hostport.ParseWithoutInit(context, src, newPos)
 }
 
-func (this *SipUri) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipUri) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	buf.WriteString(this.Scheme())
 	buf.WriteByte(':')
 

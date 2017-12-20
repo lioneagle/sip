@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	"unsafe"
 )
@@ -23,7 +23,7 @@ func (this *SipQuotedString) Init() {
 	this.value.Init()
 }
 
-func (this *SipQuotedString) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipQuotedString) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	buf.WriteByte('"')
 	this.value.Encode(context, buf)
 	buf.WriteByte('"')

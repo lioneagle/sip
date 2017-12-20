@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	"unsafe"
 )
@@ -68,7 +68,7 @@ func (this *SipAddr) ParseWithoutInit(context *ParseContext, src []byte, pos int
 	return this.addr.ParseWithoutInit(context, src, newPos)
 }
 
-func (this *SipAddr) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipAddr) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	this.addr.Encode(context, buf)
 }
 

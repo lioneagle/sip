@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	"unsafe"
 )
@@ -67,12 +67,12 @@ func (this *SipHeaderContentLength) ParseValueWithoutInit(context *ParseContext,
 	return newPos, nil
 }
 
-func (this *SipHeaderContentLength) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipHeaderContentLength) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	buf.WriteString(ABNF_NAME_SIP_HDR_CONTENT_LENGTH_COLON)
 	this.EncodeValue(context, buf)
 }
 
-func (this *SipHeaderContentLength) EncodeValue(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipHeaderContentLength) EncodeValue(context *ParseContext, buf *AbnfByteBuffer) {
 	//buf.WriteString(fmt.Sprintf(ABNF_SIP_CONTENT_LENGTH_PRINT_FMT, this.size))
 	EncodeUIntWithWidth(buf, uint64(this.size), 10)
 	this.encodeEnd = uint32(len(buf.Bytes()))
@@ -91,7 +91,7 @@ func ParseSipContentLength(context *ParseContext, src []byte, pos int) (newPos i
 	return newPos, addr, err
 }
 
-func EncodeSipContentLengthValue(parsed AbnfPtr, context *ParseContext, buf *bytes.Buffer) {
+func EncodeSipContentLengthValue(parsed AbnfPtr, context *ParseContext, buf *AbnfByteBuffer) {
 	if parsed == ABNF_PTR_NIL {
 		return
 	}

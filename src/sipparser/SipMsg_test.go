@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	"fmt"
 	"testing"
 	_ "unsafe"
@@ -334,7 +334,8 @@ func BenchmarkSipMsgEncode(b *testing.B) {
 	msg1 := []byte(msg)
 	sipmsg.Parse(context, msg1, 0)
 	remain := context.allocator.Used()
-	buf := bytes.NewBuffer(make([]byte, 1024*1024))
+	//buf := bytes.NewBuffer(make([]byte, 1024*1024))
+	buf := &AbnfByteBuffer{}
 	//fmt.Println("BenchmarkSipMsgEncode: bodies.Size() =", sipmsg.bodies.Size())
 
 	b.SetBytes(2)

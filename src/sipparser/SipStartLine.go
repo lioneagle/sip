@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	_ "bytes"
 	//"fmt"
 	//"strings"
 )
@@ -162,7 +162,7 @@ func (this *SipStartLine) ParseRequestLine(context *ParseContext, src []byte, po
 	return newPos, nil
 }
 
-func (this *SipStartLine) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipStartLine) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	if this.isRequest {
 		this.EncodeRequestLine(context, buf)
 	} else {
@@ -171,7 +171,7 @@ func (this *SipStartLine) Encode(context *ParseContext, buf *bytes.Buffer) {
 	buf.WriteString("\r\n")
 }
 
-func (this *SipStartLine) EncodeRequestLine(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipStartLine) EncodeRequestLine(context *ParseContext, buf *AbnfByteBuffer) {
 	this.method.Encode(context, buf)
 	buf.WriteByte(' ')
 	this.addrspec.Encode(context, buf)
@@ -179,7 +179,7 @@ func (this *SipStartLine) EncodeRequestLine(context *ParseContext, buf *bytes.Bu
 	this.version.Encode(context, buf)
 }
 
-func (this *SipStartLine) EncodeStatusLine(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipStartLine) EncodeStatusLine(context *ParseContext, buf *AbnfByteBuffer) {
 	this.version.Encode(context, buf)
 	buf.WriteByte(' ')
 	EncodeUInt(buf, uint64(this.statusCode))

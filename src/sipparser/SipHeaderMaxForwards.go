@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	"unsafe"
 )
@@ -63,12 +63,12 @@ func (this *SipHeaderMaxForwards) ParseValueWithoutInit(context *ParseContext, s
 	return newPos, nil
 }
 
-func (this *SipHeaderMaxForwards) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipHeaderMaxForwards) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	buf.WriteString("Max-Forwards: ")
 	this.EncodeValue(context, buf)
 }
 
-func (this *SipHeaderMaxForwards) EncodeValue(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipHeaderMaxForwards) EncodeValue(context *ParseContext, buf *AbnfByteBuffer) {
 	EncodeUInt(buf, uint64(this.size))
 }
 
@@ -85,7 +85,7 @@ func ParseSipMaxForwards(context *ParseContext, src []byte, pos int) (newPos int
 	return newPos, addr, err
 }
 
-func EncodeSipMaxForwardsValue(parsed AbnfPtr, context *ParseContext, buf *bytes.Buffer) {
+func EncodeSipMaxForwardsValue(parsed AbnfPtr, context *ParseContext, buf *AbnfByteBuffer) {
 	if parsed == ABNF_PTR_NIL {
 		return
 	}

@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	"unsafe"
 )
@@ -163,7 +163,7 @@ func (this *SipAddrSpec) IsTelUri(context *ParseContext) (uri *TelUri, ok bool) 
 	return uri, ok
 }
 
-func (this *SipAddrSpec) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipAddrSpec) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	if this.uri != ABNF_PTR_NIL {
 		switch this.uriType {
 		case ABNF_SIP_URI:

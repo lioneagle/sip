@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	"unsafe"
 )
@@ -72,12 +72,12 @@ func (this *SipHeaderCseq) ParseValueWithoutInit(context *ParseContext, src []by
 	return this.method.ParseSipToken(context, src, newPos)
 }
 
-func (this *SipHeaderCseq) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipHeaderCseq) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	buf.WriteString("CSeq: ")
 	this.EncodeValue(context, buf)
 }
 
-func (this *SipHeaderCseq) EncodeValue(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipHeaderCseq) EncodeValue(context *ParseContext, buf *AbnfByteBuffer) {
 	EncodeUInt(buf, uint64(this.id))
 	buf.WriteByte(' ')
 	this.method.Encode(context, buf)
@@ -96,7 +96,7 @@ func ParseSipCseq(context *ParseContext, src []byte, pos int) (newPos int, parse
 	return newPos, addr, err
 }
 
-func EncodeSipCseqValue(parsed AbnfPtr, context *ParseContext, buf *bytes.Buffer) {
+func EncodeSipCseqValue(parsed AbnfPtr, context *ParseContext, buf *AbnfByteBuffer) {
 	if parsed == ABNF_PTR_NIL {
 		return
 	}

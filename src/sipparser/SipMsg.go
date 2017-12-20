@@ -191,7 +191,7 @@ func (this *SipMsg) FindOrCreateBoundary(context *ParseContext) (boundary []byte
 	return boundary
 }
 
-func (this *SipMsg) Encode(context *ParseContext, buf *bytes.Buffer) error {
+func (this *SipMsg) Encode(context *ParseContext, buf *AbnfByteBuffer) error {
 	// create Content-Length header if not exist
 	err := this.headers.CreateContentLength(context, 0)
 	if err != nil {
@@ -245,7 +245,7 @@ func (this *SipMsg) Encode(context *ParseContext, buf *bytes.Buffer) error {
 }
 
 func (this *SipMsg) String(context *ParseContext) string {
-	var buf bytes.Buffer
+	var buf AbnfByteBuffer
 	this.Encode(context, &buf)
 	return buf.String()
 }

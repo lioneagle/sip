@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	"unsafe"
 )
@@ -74,12 +74,12 @@ func (this *SipHeaderContentDisposition) ParseValueWithoutInit(context *ParseCon
 	return this.params.ParseWithoutInit(context, src, newPos, ';')
 }
 
-func (this *SipHeaderContentDisposition) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipHeaderContentDisposition) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	buf.WriteString("Content-Disposition: ")
 	this.EncodeValue(context, buf)
 }
 
-func (this *SipHeaderContentDisposition) EncodeValue(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipHeaderContentDisposition) EncodeValue(context *ParseContext, buf *AbnfByteBuffer) {
 	this.dispType.Encode(context, buf)
 	this.params.Encode(context, buf, ';')
 }
@@ -97,7 +97,7 @@ func ParseSipContentDisposition(context *ParseContext, src []byte, pos int) (new
 	return newPos, addr, err
 }
 
-func EncodeSipContentDispositionValue(parsed AbnfPtr, context *ParseContext, buf *bytes.Buffer) {
+func EncodeSipContentDispositionValue(parsed AbnfPtr, context *ParseContext, buf *AbnfByteBuffer) {
 	if parsed == ABNF_PTR_NIL {
 		return
 	}

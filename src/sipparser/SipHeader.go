@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	"strings"
 )
@@ -42,11 +42,11 @@ func GetSipHeaderFullName(name string) (fullName string) {
 type SipHeaderParsed interface {
 	HasValue() bool
 	String(context *ParseContext) string
-	Encode(context *ParseContext, buf *bytes.Buffer)
+	Encode(context *ParseContext, buf *AbnfByteBuffer)
 }
 
 type SipPaseOneHeaderValue func(context *ParseContext, src []byte, pos int) (newPos int, parsed AbnfPtr, err error)
-type SipEncodeOneHeaderValue func(parsed AbnfPtr, context *ParseContext, buf *bytes.Buffer)
+type SipEncodeOneHeaderValue func(parsed AbnfPtr, context *ParseContext, buf *AbnfByteBuffer)
 
 type SipHeaderIndexType uint32
 
@@ -111,7 +111,7 @@ type SipHeaderType interface {
 	//GetHeader() SipHeader
 	//Parse(context, src []byte, pos int) (newPos int, err error)
 	String() string
-	Encode(buf *bytes.Buffer)
+	Encode(buf *AbnfByteBuffer)
 	HasInfo() bool
 	Info() *SipHeaderInfo
 }
@@ -140,7 +140,7 @@ func (this *SipHeaders) Size() int32 {
 }
 func (this *SipHeaders) Empty() bool { return this.Size() == 0 }
 
-func (this *SipHeaders) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipHeaders) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	this.singleHeaders.Encode(context, buf)
 	this.multiHeaders.Encode(context, buf)
 	this.unknownHeaders.Encode(context, buf)

@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	"unsafe"
 )
@@ -51,7 +51,7 @@ func (this *TelUri) String(context *ParseContext) string {
 	return AbnfEncoderToString(context, this)
 }
 
-func (this *TelUri) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *TelUri) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	buf.WriteString("tel:")
 	this.number.Encode(context, buf)
 

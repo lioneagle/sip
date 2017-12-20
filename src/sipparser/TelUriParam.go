@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	"unsafe"
 )
@@ -43,7 +43,7 @@ func (this *TelUriContext) Exist() bool  { return this.exist }
 func (this *TelUriContext) SetExist()    { this.exist = true }
 func (this *TelUriContext) SetNonExist() { this.exist = false }
 
-func (this *TelUriContext) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *TelUriContext) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	if this.exist {
 		buf.WriteString(";phone-context=")
 		buf.Write(Escape(this.desc.GetAsByteSlice(context), IsTelPvalue))
@@ -92,7 +92,7 @@ func (this *TelUriParam) Parse(context *ParseContext, src []byte, pos int) (newP
 	return newPos, nil
 }
 
-func (this *TelUriParam) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *TelUriParam) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	buf.Write(Escape(this.name.GetAsByteSlice(context), IsTelPname))
 	if this.value.Exist() {
 		buf.WriteByte('=')
@@ -161,7 +161,7 @@ func (this *TelUriParams) Equal(context *ParseContext, rhs *TelUriParams) bool {
 	return true
 }
 
-func (this *TelUriParams) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *TelUriParams) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	for e := this.Front(context); e != nil; e = e.Next(context) {
 		buf.WriteByte(';')
 		e.Value.GetTelUriParam(context).Encode(context, buf)

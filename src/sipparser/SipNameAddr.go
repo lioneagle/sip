@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	"unsafe"
 )
@@ -97,7 +97,7 @@ func (this *SipDisplayName) parseTokens(context *ParseContext, src []byte, pos i
 	return newPos, nil
 }
 
-func (this *SipDisplayName) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipDisplayName) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	if this.value != ABNF_PTR_NIL {
 		if this.isQuotedString {
 			this.value.GetSipQuotedString(context).Encode(context, buf)
@@ -177,7 +177,7 @@ func (this *SipNameAddr) ParseWithoutInit(context *ParseContext, src []byte, pos
 	return ParseRightAngleQuote(src, newPos)
 }
 
-func (this *SipNameAddr) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipNameAddr) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	this.displayname.Encode(context, buf)
 	buf.WriteByte('<')
 	this.addrsepc.Encode(context, buf)

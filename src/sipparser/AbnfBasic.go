@@ -471,7 +471,7 @@ func ParseCRLF(src []byte, pos int) (newPos int, err error) {
 	return pos + 2, nil
 }
 
-func EncodeUInt(buf *bytes.Buffer, digit uint64) {
+func EncodeUInt(buf *AbnfByteBuffer, digit uint64) {
 	//buf.WriteString(strconv.FormatUint(uint64(digit), 10))
 	if digit == 0 {
 		buf.WriteByte('0')
@@ -491,7 +491,7 @@ func EncodeUInt(buf *bytes.Buffer, digit uint64) {
 	}
 }
 
-func EncodeUIntWithWidth(buf *bytes.Buffer, digit uint64, width int) {
+func EncodeUIntWithWidth(buf *AbnfByteBuffer, digit uint64, width int) {
 	//buf.WriteString(strconv.FormatUint(uint64(digit), 10))
 	if digit == 0 {
 		width--
@@ -520,7 +520,7 @@ func EncodeUIntWithWidth(buf *bytes.Buffer, digit uint64, width int) {
 	}
 }
 
-func EncodeUInt32(buf *bytes.Buffer, digit uint32) {
+func EncodeUInt32(buf *AbnfByteBuffer, digit uint32) {
 	//buf.WriteString(strconv.FormatUint(uint64(digit), 10))
 	if digit == 0 {
 		buf.WriteByte('0')
@@ -538,4 +538,45 @@ func EncodeUInt32(buf *bytes.Buffer, digit uint32) {
 	for i := 0; i < num; i++ {
 		buf.WriteByte(val[num-i-1])
 	}
+}
+
+type ByteBuffer struct {
+	data []byte
+}
+
+func (this *ByteBuffer) Len() int {
+	return len(this.data)
+}
+
+func (this *ByteBuffer) Bytes() []byte {
+	return this.data
+}
+
+func (this *ByteBuffer) String() string {
+	return ByteSliceToString(this.data)
+}
+
+func (this *ByteBuffer) WriteByte(val byte) error {
+	this.data = append(this.data, val)
+	return nil
+}
+
+func (this *ByteBuffer) Write(val []byte) (int, error) {
+	this.data = append(this.data, val...)
+	return len(val), nil
+}
+
+func (this *ByteBuffer) WriteString(val string) (int, error) {
+	this.data = append(this.data, val...)
+	return len(val), nil
+}
+
+func (this *ByteBuffer) Reset() {
+	this.data = this.data[:0]
+}
+
+func NewAbnfByteBuffer(buf []byte) *AbnfByteBuffer {
+	ret := &AbnfByteBuffer{data: buf}
+	ret.Reset()
+	return ret
 }

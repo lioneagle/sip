@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	"unsafe"
 )
@@ -75,12 +75,12 @@ func (this *SipHeaderCallId) ParseValueWithoutInit(context *ParseContext, src []
 	return newPos, nil
 }
 
-func (this *SipHeaderCallId) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipHeaderCallId) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	buf.WriteString(ABNF_NAME_SIP_HDR_CALL_ID_COLON)
 	this.EncodeValue(context, buf)
 }
 
-func (this *SipHeaderCallId) EncodeValue(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipHeaderCallId) EncodeValue(context *ParseContext, buf *AbnfByteBuffer) {
 	this.id1.Encode(context, buf)
 	if this.id2.Exist() {
 		buf.WriteByte('@')
@@ -101,7 +101,7 @@ func ParseSipCallId(context *ParseContext, src []byte, pos int) (newPos int, par
 	return newPos, addr, err
 }
 
-func EncodeSipCallIdValue(parsed AbnfPtr, context *ParseContext, buf *bytes.Buffer) {
+func EncodeSipCallIdValue(parsed AbnfPtr, context *ParseContext, buf *AbnfByteBuffer) {
 	if parsed == ABNF_PTR_NIL {
 		return
 	}

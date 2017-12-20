@@ -1,12 +1,15 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	"fmt"
 	"reflect"
 	"runtime"
 	"unsafe"
 )
+
+//type AbnfByteBuffer = bytes.Buffer
+type AbnfByteBuffer = ByteBuffer
 
 var print_mem bool = false
 
@@ -20,12 +23,13 @@ const (
 type AbnfIsInCharset func(ch byte) bool
 
 type AbnfEncoder interface {
-	Encode(context *ParseContext, buf *bytes.Buffer)
+	Encode(context *ParseContext, buf *AbnfByteBuffer)
 }
 
 func AbnfEncoderToString(context *ParseContext, encoder AbnfEncoder) string {
-	var buf bytes.Buffer
-	encoder.Encode(context, &buf)
+	//var buf AbnfByteBuffer
+	buf := NewAbnfByteBuffer(make([]byte, 64))
+	encoder.Encode(context, buf)
 	return buf.String()
 }
 

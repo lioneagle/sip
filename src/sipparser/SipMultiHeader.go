@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	"unsafe"
 )
@@ -119,7 +119,7 @@ func (this *SipMultiHeader) parseAsRawHeader(context *ParseContext, src []byte, 
 	return newPos, nil
 }
 
-func (this *SipMultiHeader) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipMultiHeader) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	if this.info != nil {
 		buf.Write(this.info.name)
 	} else {
@@ -245,7 +245,7 @@ func (this *SipMultiHeaders) GenerateAndAddHeader(context *ParseContext, name, v
 	return multiHeader.GenerateAndAddHeader(context, name, value)
 }
 
-func (this *SipMultiHeaders) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipMultiHeaders) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	for e := this.Front(context); e != nil; e = e.Next(context) {
 		v := e.Value.GetSipMultiHeader(context)
 		v.Encode(context, buf)

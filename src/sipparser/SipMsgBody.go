@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	"unsafe"
 )
@@ -29,7 +29,7 @@ func (this *SipMsgBody) SetBody(context *ParseContext, body []byte) {
 	this.body.SetByteSlice(context, body)
 }
 
-func (this *SipMsgBody) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipMsgBody) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	headerPtr, ok := this.headers.GetSingleHeaderParsedByIndex(context, ABNF_SIP_HDR_CONTENT_LENGTH)
 	if ok {
 		headerPtr.GetSipHeaderContentLength(context).SetValue(this.body.Size())
@@ -67,7 +67,7 @@ func (this *SipMsgBodies) AddBody(context *ParseContext, body AbnfPtr) {
 	this.PushBack(context, body)
 }
 
-func (this *SipMsgBodies) EncodeSingle(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipMsgBodies) EncodeSingle(context *ParseContext, buf *AbnfByteBuffer) {
 	e := this.Front(context)
 	if e.Value == ABNF_PTR_NIL {
 		return
@@ -126,7 +126,7 @@ func (this *SipMsgBodies) EncodeSingle(context *ParseContext, buf *bytes.Buffer)
  *                      ; be able to handle padding
  *                      ; added by message transports.
  */
-func (this *SipMsgBodies) EncodeMulti(context *ParseContext, buf *bytes.Buffer, boundary []byte) {
+func (this *SipMsgBodies) EncodeMulti(context *ParseContext, buf *AbnfByteBuffer, boundary []byte) {
 	for e := this.Front(context); e != nil; e = e.Next(context) {
 		v := e.Value.GetSipMsgBody(context)
 		// dash-boundary
@@ -147,13 +147,13 @@ func (this *SipMsgBodies) EncodeMulti(context *ParseContext, buf *bytes.Buffer, 
 }
 
 func (this *SipMsgBodies) StringSingle(context *ParseContext) string {
-	var buf bytes.Buffer
+	var buf AbnfByteBuffer
 	this.EncodeSingle(context, &buf)
 	return buf.String()
 }
 
 func (this *SipMsgBodies) StringMulti(context *ParseContext, boundary []byte) string {
-	var buf bytes.Buffer
+	var buf AbnfByteBuffer
 	this.EncodeMulti(context, &buf, boundary)
 	return buf.String()
 }

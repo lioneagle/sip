@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	"unsafe"
 )
@@ -116,12 +116,12 @@ func (this *SipHeaderVia) ParseValueWithoutInit(context *ParseContext, src []byt
 	return this.params.ParseWithoutInit(context, src, newPos, ';')
 }
 
-func (this *SipHeaderVia) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipHeaderVia) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	buf.WriteString(ABNF_NAME_SIP_HDR_VIA_COLON)
 	this.EncodeValue(context, buf)
 }
 
-func (this *SipHeaderVia) EncodeValue(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipHeaderVia) EncodeValue(context *ParseContext, buf *AbnfByteBuffer) {
 	this.version.Encode(context, buf)
 	buf.WriteByte('/')
 	this.transport.Encode(context, buf)
@@ -135,7 +135,7 @@ func (this *SipHeaderVia) String(context *ParseContext) string {
 }
 
 func (this *SipHeaderVia) StringValue(context *ParseContext) string {
-	var buf bytes.Buffer
+	var buf AbnfByteBuffer
 	this.EncodeValue(context, &buf)
 	return buf.String()
 }
@@ -150,7 +150,7 @@ func ParseSipVia(context *ParseContext, src []byte, pos int) (newPos int, parsed
 	return newPos, addr, err
 }
 
-func EncodeSipViaValue(parsed AbnfPtr, context *ParseContext, buf *bytes.Buffer) {
+func EncodeSipViaValue(parsed AbnfPtr, context *ParseContext, buf *AbnfByteBuffer) {
 	if parsed == ABNF_PTR_NIL {
 		return
 	}

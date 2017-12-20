@@ -269,7 +269,8 @@ func TestWriteByteAsString(t *testing.T) {
 		{255, "255"},
 	}
 
-	buf := bytes.NewBuffer(make([]byte, 1024*64))
+	//buf := bytes.NewBuffer(make([]byte, 1024*64))
+	buf := &AbnfByteBuffer{}
 	for i, v := range testdata {
 		buf.Reset()
 		WriteByteAsString(buf, v.val)
@@ -290,7 +291,8 @@ func TestSipHostWriteIpv4AsString(t *testing.T) {
 		{[]byte{0, 0, 0, 252}, "0.0.0.252"},
 	}
 
-	buf := bytes.NewBuffer(make([]byte, 1024*64))
+	//buf := bytes.NewBuffer(make([]byte, 1024*64))
+	buf := &AbnfByteBuffer{}
 	host := SipHost{id: HOST_TYPE_IPV4}
 	for i, v := range testdata {
 		buf.Reset()
@@ -308,7 +310,8 @@ func TestSipHostWriteIpv4AsString(t *testing.T) {
 
 func BenchmarkWriteByteAsString1(b *testing.B) {
 	b.StopTimer()
-	buf := bytes.NewBuffer(make([]byte, 1024*64))
+	//buf := bytes.NewBuffer(make([]byte, 1024*64))
+	buf := &AbnfByteBuffer{}
 	b.SetBytes(2)
 	b.ReportAllocs()
 	b.StartTimer()
@@ -321,7 +324,8 @@ func BenchmarkWriteByteAsString1(b *testing.B) {
 
 func BenchmarkWriteByteAsString2(b *testing.B) {
 	b.StopTimer()
-	buf := bytes.NewBuffer(make([]byte, 1024*64))
+	//buf := bytes.NewBuffer(make([]byte, 1024*64))
+	buf := &AbnfByteBuffer{}
 	b.SetBytes(2)
 	b.ReportAllocs()
 	b.StartTimer()
@@ -334,7 +338,8 @@ func BenchmarkWriteByteAsString2(b *testing.B) {
 
 func BenchmarkWriteByteUseFmt1(b *testing.B) {
 	b.StopTimer()
-	buf := bytes.NewBuffer(make([]byte, 1024*64))
+	//buf := bytes.NewBuffer(make([]byte, 1024*64))
+	buf := &AbnfByteBuffer{}
 	b.SetBytes(2)
 	b.ReportAllocs()
 	b.StartTimer()
@@ -347,7 +352,8 @@ func BenchmarkWriteByteUseFmt1(b *testing.B) {
 
 func BenchmarkWriteByteUseFmt2(b *testing.B) {
 	b.StopTimer()
-	buf := bytes.NewBuffer(make([]byte, 1024*64))
+	//buf := bytes.NewBuffer(make([]byte, 1024*64))
+	buf := &AbnfByteBuffer{}
 	b.SetBytes(2)
 	b.ReportAllocs()
 	b.StartTimer()
@@ -375,7 +381,8 @@ func BenchmarkWriteIpv4String(b *testing.B) {
 func BenchmarkWriteIpv4UseFmt(b *testing.B) {
 	b.StopTimer()
 	ip := []byte{255, 255, 255, 255}
-	buf := bytes.NewBuffer(make([]byte, 1024*64))
+	//buf := bytes.NewBuffer(make([]byte, 1024*64))
+	buf := &AbnfByteBuffer{}
 	b.SetBytes(2)
 	b.ReportAllocs()
 	b.StartTimer()
@@ -393,7 +400,8 @@ func BenchmarkWriteIpv4AsString(b *testing.B) {
 	host.ip[1] = 255
 	host.ip[2] = 255
 	host.ip[3] = 255
-	buf := bytes.NewBuffer(make([]byte, 1024*64))
+	//buf := bytes.NewBuffer(make([]byte, 1024*64))
+	buf := &AbnfByteBuffer{}
 	b.SetBytes(2)
 	b.ReportAllocs()
 	b.StartTimer()

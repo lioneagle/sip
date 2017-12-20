@@ -34,7 +34,7 @@ func (this *SipHost) Init() {
 	this.data.Init()
 }
 
-func (this *SipHost) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipHost) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	if this.id == HOST_TYPE_UNKNOWN {
 		buf.WriteString("unknown host")
 	} else if this.IsIpv4() {
@@ -105,7 +105,7 @@ func (this *SipHost) GetIpString(context *ParseContext) string {
 	return net.IP(this.ip[0:]).String()
 }
 
-func (this *SipHost) WriteIpv4AsString(buf *bytes.Buffer) {
+func (this *SipHost) WriteIpv4AsString(buf *AbnfByteBuffer) {
 	WriteByteAsString(buf, this.ip[0])
 	buf.WriteByte('.')
 	WriteByteAsString(buf, this.ip[1])
@@ -115,7 +115,7 @@ func (this *SipHost) WriteIpv4AsString(buf *bytes.Buffer) {
 	WriteByteAsString(buf, this.ip[3])
 }
 
-func WriteByteAsString(buf *bytes.Buffer, v byte) {
+func WriteByteAsString(buf *AbnfByteBuffer, v byte) {
 	buf.WriteString(g_byteAsString_table[v])
 	/*
 		if v == 0 {
@@ -294,7 +294,7 @@ func (this *SipHostPort) SetPort(port uint16) {
 	this.port = port
 }
 
-func (this *SipHostPort) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipHostPort) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	this.SipHost.Encode(context, buf)
 	if this.hasPort {
 		buf.WriteByte(':')

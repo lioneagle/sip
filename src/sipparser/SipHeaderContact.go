@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	"unsafe"
 )
@@ -139,12 +139,12 @@ func (this *SipHeaderContact) ParseValueWithoutInit(context *ParseContext, src [
 	return this.params.ParseWithoutInit(context, src, newPos, ';')
 }
 
-func (this *SipHeaderContact) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipHeaderContact) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	buf.WriteString(ABNF_NAME_SIP_HDR_CONTACT_ID_COLON)
 	this.EncodeValue(context, buf)
 }
 
-func (this *SipHeaderContact) EncodeValue(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipHeaderContact) EncodeValue(context *ParseContext, buf *AbnfByteBuffer) {
 	if this.isStar {
 		buf.WriteByte('*')
 	} else {
@@ -166,7 +166,7 @@ func ParseSipContact(context *ParseContext, src []byte, pos int) (newPos int, pa
 	return newPos, addr, err
 }
 
-func EncodeSipContactValue(parsed AbnfPtr, context *ParseContext, buf *bytes.Buffer) {
+func EncodeSipContactValue(parsed AbnfPtr, context *ParseContext, buf *AbnfByteBuffer) {
 	if parsed == ABNF_PTR_NIL {
 		return
 	}

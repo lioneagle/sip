@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	"unsafe"
 )
@@ -66,12 +66,12 @@ func (this *SipHeaderRecordRoute) ParseValueWithoutInit(context *ParseContext, s
 	return this.params.ParseWithoutInit(context, src, newPos, ';')
 }
 
-func (this *SipHeaderRecordRoute) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipHeaderRecordRoute) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	buf.WriteString("Record-Route: ")
 	this.EncodeValue(context, buf)
 }
 
-func (this *SipHeaderRecordRoute) EncodeValue(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipHeaderRecordRoute) EncodeValue(context *ParseContext, buf *AbnfByteBuffer) {
 	this.addr.Encode(context, buf)
 	this.params.Encode(context, buf, ';')
 }
@@ -89,7 +89,7 @@ func ParseSipRecordRoute(context *ParseContext, src []byte, pos int) (newPos int
 	return newPos, addr, err
 }
 
-func EncodeSipRecordRouteValue(parsed AbnfPtr, context *ParseContext, buf *bytes.Buffer) {
+func EncodeSipRecordRouteValue(parsed AbnfPtr, context *ParseContext, buf *AbnfByteBuffer) {
 	if parsed == ABNF_PTR_NIL {
 		return
 	}

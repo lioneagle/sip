@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	"unsafe"
 )
@@ -151,7 +151,7 @@ func (this *SipGenericParam) GetValueAsByteSlice(context *ParseContext) ([]byte,
 	return nil, false
 }
 
-func (this *SipGenericParam) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipGenericParam) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	buf.Write(Escape(this.name.GetAsByteSlice(context), IsSipPname))
 	if this.valueType != SIP_GENERIC_VALUE_TYPE_NOT_EXIST && this.value != ABNF_PTR_NIL {
 		if this.valueType == SIP_GENERIC_VALUE_TYPE_TOKEN {
@@ -245,7 +245,7 @@ func (this *SipGenericParams) ParseWithoutInit(context *ParseContext, src []byte
 	return newPos, nil
 }
 
-func (this *SipGenericParams) Encode(context *ParseContext, buf *bytes.Buffer, seperator byte) {
+func (this *SipGenericParams) Encode(context *ParseContext, buf *AbnfByteBuffer, seperator byte) {
 	for e := this.Front(context); e != nil; e = e.Next(context) {
 		buf.WriteByte(seperator)
 		e.Value.GetSipGenericParam(context).Encode(context, buf)
@@ -253,7 +253,7 @@ func (this *SipGenericParams) Encode(context *ParseContext, buf *bytes.Buffer, s
 }
 
 func (this *SipGenericParams) String(context *ParseContext, seperator byte) string {
-	var buf bytes.Buffer
+	var buf AbnfByteBuffer
 	this.Encode(context, &buf, seperator)
 	return buf.String()
 }

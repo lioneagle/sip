@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	"unsafe"
 )
@@ -69,12 +69,12 @@ func (this *SipHeaderTo) ParseValueWithoutInit(context *ParseContext, src []byte
 	return this.params.ParseWithoutInit(context, src, newPos, ';')
 }
 
-func (this *SipHeaderTo) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipHeaderTo) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	buf.WriteString(ABNF_NAME_SIP_HDR_TO_COLON)
 	this.EncodeValue(context, buf)
 }
 
-func (this *SipHeaderTo) EncodeValue(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipHeaderTo) EncodeValue(context *ParseContext, buf *AbnfByteBuffer) {
 	this.addr.Encode(context, buf)
 	this.params.Encode(context, buf, ';')
 }
@@ -92,7 +92,7 @@ func ParseSipTo(context *ParseContext, src []byte, pos int) (newPos int, parsed 
 	return newPos, addr, err
 }
 
-func EncodeSipToValue(parsed AbnfPtr, context *ParseContext, buf *bytes.Buffer) {
+func EncodeSipToValue(parsed AbnfPtr, context *ParseContext, buf *AbnfByteBuffer) {
 	if parsed == ABNF_PTR_NIL {
 		return
 	}

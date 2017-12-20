@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	//"strings"
 	"unsafe"
@@ -60,7 +60,7 @@ func (this *SipVersion) Parse(context *ParseContext, src []byte, pos int) (newPo
 	return newPos, nil
 }
 
-func (this *SipVersion) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipVersion) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	buf.WriteString("SIP/")
 	this.major.Encode(context, buf)
 	buf.WriteByte('.')

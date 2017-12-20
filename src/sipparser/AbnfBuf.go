@@ -406,7 +406,7 @@ func (this *AbnfBuf) EqualStringNoCase(context *ParseContext, str string) bool {
 	return this.EqualByteSliceNoCase(context, StringToByteSlice(str))
 }
 
-func (this *AbnfBuf) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *AbnfBuf) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	if this.addr != ABNF_PTR_NIL && this.Size() != 0 {
 		buf.Write(this.GetAsByteSlice(context))
 	}

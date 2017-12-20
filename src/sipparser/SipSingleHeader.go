@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	"unsafe"
 )
@@ -81,7 +81,7 @@ func (this *SipSingleHeader) EqualNameString(context *ParseContext, name string)
 	return this.EqualNameByteSlice(context, StringToByteSlice(name))
 }
 
-func (this *SipSingleHeader) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipSingleHeader) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	if this.info != nil {
 		buf.Write(this.info.name)
 	} else {
@@ -91,7 +91,7 @@ func (this *SipSingleHeader) Encode(context *ParseContext, buf *bytes.Buffer) {
 	this.EncodeValue(context, buf)
 }
 
-func (this *SipSingleHeader) EncodeValue(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipSingleHeader) EncodeValue(context *ParseContext, buf *AbnfByteBuffer) {
 	if this.IsParsed() && this.info != nil && this.info.encodeFunc != nil {
 		this.info.encodeFunc(this.parsed, context, buf)
 	} else if this.value.Exist() {
@@ -261,7 +261,7 @@ func (this *SipSingleHeaders) GenerateAndAddHeader(context *ParseContext, name, 
 	return addr
 }
 
-func (this *SipSingleHeaders) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipSingleHeaders) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	for e := this.Front(context); e != nil; e = e.Next(context) {
 		v := e.Value.GetSipSingleHeader(context)
 		v.Encode(context, buf)
@@ -270,7 +270,7 @@ func (this *SipSingleHeaders) Encode(context *ParseContext, buf *bytes.Buffer) {
 	}
 }
 
-func (this *SipSingleHeaders) EncodeSameValues(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipSingleHeaders) EncodeSameValues(context *ParseContext, buf *AbnfByteBuffer) {
 	e := this.Front(context)
 	if e != nil {
 		e.Value.GetSipSingleHeader(context).EncodeValue(context, buf)

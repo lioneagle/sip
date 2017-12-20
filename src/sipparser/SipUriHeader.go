@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	"bytes"
+	//"bytes"
 	//"fmt"
 	//"strings"
 	"unsafe"
@@ -55,7 +55,7 @@ func (this *SipUriHeader) Parse(context *ParseContext, src []byte, pos int) (new
 	return this.value.ParseEscapable(context, src, newPos, IsSipHvalue)
 }
 
-func (this *SipUriHeader) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipUriHeader) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	buf.Write(Escape(this.name.GetAsByteSlice(context), IsSipHname))
 	buf.WriteByte('=')
 	if this.value.Exist() {
@@ -145,7 +145,7 @@ func (this *SipUriHeaders) EqualRFC3261(context *ParseContext, rhs *SipUriHeader
 	return true
 }
 
-func (this *SipUriHeaders) Encode(context *ParseContext, buf *bytes.Buffer) {
+func (this *SipUriHeaders) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	e := this.Front(context)
 	if e != nil {
 		e.Value.GetSipUriHeader(context).Encode(context, buf)
