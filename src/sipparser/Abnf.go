@@ -6,10 +6,16 @@ import (
 	"reflect"
 	"runtime"
 	"unsafe"
+
+	"github.com/lioneagle/goutil/src/buffer"
 )
 
 //type AbnfByteBuffer = bytes.Buffer
-type AbnfByteBuffer = ByteBuffer
+type AbnfByteBuffer = buffer.ByteBuffer
+
+func NewAbnfByteBuffer(buf []byte) *AbnfByteBuffer {
+	return buffer.NewByteBuffer(buf)
+}
 
 var print_mem bool = false
 
