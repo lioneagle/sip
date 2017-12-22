@@ -152,7 +152,9 @@ func (this *SipGenericParam) GetValueAsByteSlice(context *ParseContext) ([]byte,
 }
 
 func (this *SipGenericParam) Encode(context *ParseContext, buf *AbnfByteBuffer) {
-	buf.Write(Escape(this.name.GetAsByteSlice(context), IsSipPname))
+	//buf.Write(Escape(this.name.GetAsByteSlice(context), IsSipPname))
+	//buf.Write(SipPnameEscape(this.name.GetAsByteSlice(context)))
+	WriteSipPnameEscape(buf, this.name.GetAsByteSlice(context))
 	if this.valueType != SIP_GENERIC_VALUE_TYPE_NOT_EXIST && this.value != ABNF_PTR_NIL {
 		if this.valueType == SIP_GENERIC_VALUE_TYPE_TOKEN {
 			buf.WriteByte('=')

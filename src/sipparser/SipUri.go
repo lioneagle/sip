@@ -110,12 +110,21 @@ func (this *SipUri) ParseAfterSchemeWithoutParam(context *ParseContext, src []by
 	return this.hostport.ParseWithoutInit(context, src, newPos)
 }
 
+func (this *SipUri) encodeScheme(buf *AbnfByteBuffer) {
+	if this.isSecure {
+		buf.WriteString("sips:")
+	} else {
+		buf.WriteString("sip:")
+	}
+}
+
 func (this *SipUri) Encode(context *ParseContext, buf *AbnfByteBuffer) {
-	buf.WriteString(this.Scheme())
-	buf.WriteByte(':')
+	this.encodeScheme(buf)
 
 	if this.user.Exist() {
-		buf.Write(Escape(this.user.GetAsByteSlice(context), IsSipUser))
+		//buf.Write(Escape(this.user.GetAsByteSlice(context), IsSipUser))
+		//buf.Write(SipUserEscape(this.user.GetAsByteSlice(context)))
+		WriteSipUserEscape(buf, this.user.GetAsByteSlice(context))
 		if this.password.Exist() {
 			buf.WriteByte(':')
 

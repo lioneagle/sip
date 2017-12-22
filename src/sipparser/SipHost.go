@@ -116,26 +116,26 @@ func (this *SipHost) WriteIpv4AsString(buf *AbnfByteBuffer) {
 }
 
 func WriteByteAsString(buf *AbnfByteBuffer, v byte) {
-	buf.WriteString(g_byteAsString_table[v])
-	/*
-		if v == 0 {
-			buf.WriteByte('0')
-			return
-		}
+	//buf.WriteString(g_byteAsString_table[v])
+	//*
+	if v == 0 {
+		buf.WriteByte('0')
+		return
+	}
 
-		x2 := v / 10
-		x1 := v - x2*10
-		x3 := x2 / 10
-		x2 -= x3 * 10
+	x2 := v / 10
+	x1 := v - x2*10
+	x3 := x2 / 10
+	x2 -= x3 * 10
 
-		if x3 != 0 {
-			buf.WriteByte('0' + x3)
-			buf.WriteByte('0' + x2)
-		} else if x2 != 0 {
-			buf.WriteByte('0' + x2)
-		}
+	if x3 != 0 {
+		buf.WriteByte('0' + x3)
+		buf.WriteByte('0' + x2)
+	} else if x2 != 0 {
+		buf.WriteByte('0' + x2)
+	}
 
-		buf.WriteByte('0' + x1) //*/
+	buf.WriteByte('0' + x1) //*/
 
 }
 

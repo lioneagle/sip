@@ -309,33 +309,3 @@ func BenchmarkParseUInt(b *testing.B) {
 		ParseUInt(src, 0)
 	}
 }
-
-func BenchmarkBytesBufferWrite(b *testing.B) {
-	b.StopTimer()
-	var buf bytes.Buffer
-
-	src := []byte("foobarbaz")
-
-	b.ReportAllocs()
-	b.SetBytes(2)
-	b.StartTimer()
-
-	for i := 0; i < b.N; i++ {
-		buf.Reset()
-		buf.Write(src)
-	}
-}
-
-func BenchmarkByteBufferWrite(b *testing.B) {
-	b.StopTimer()
-	buf := NewAbnfByteBuffer(make([]byte, 1024*100))
-	src := []byte("foobarbaz")
-	b.ReportAllocs()
-	b.SetBytes(2)
-	b.StartTimer()
-
-	for i := 0; i < b.N; i++ {
-		buf.Reset()
-		buf.Write(src)
-	}
-}
