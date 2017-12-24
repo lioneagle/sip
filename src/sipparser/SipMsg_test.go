@@ -325,6 +325,35 @@ func BenchmarkSipMsgParse(b *testing.B) {
 
 }
 
+func BenchmarkSipMsgRawParse(b *testing.B) {
+	b.StopTimer()
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+	addr := NewSipMsg(context)
+	sipmsg := addr.GetSipMsg(context)
+	remain := context.allocator.Used()
+	context.ParseSipHeaderAsRaw = true
+	msg1 := []byte(msg)
+	total_headers = 0
+
+	b.ReportAllocs()
+	b.SetBytes(2)
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		context.allocator.ClearAllocNum()
+		context.allocator.FreePart(remain)
+		print_mem = true
+		_, err := sipmsg.Parse(context, msg1, 0)
+		print_mem = false
+		if err != nil {
+			fmt.Println("parse sip msg failed, err =", err.Error())
+			fmt.Println("msg1 = ", string(msg1))
+			break
+		} //*/
+	}
+}
+
 func BenchmarkSipMsgEncode(b *testing.B) {
 	b.StopTimer()
 	context := NewParseContext()
@@ -334,9 +363,32 @@ func BenchmarkSipMsgEncode(b *testing.B) {
 	msg1 := []byte(msg)
 	sipmsg.Parse(context, msg1, 0)
 	remain := context.allocator.Used()
-	//buf := bytes.NewBuffer(make([]byte, 1024*1024))
 	buf := &AbnfByteBuffer{}
-	//fmt.Println("BenchmarkSipMsgEncode: bodies.Size() =", sipmsg.bodies.Size())
+
+	b.SetBytes(2)
+	b.ReportAllocs()
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		buf.Reset()
+		context.allocator.ClearAllocNum()
+		context.allocator.FreePart(remain)
+		sipmsg.Encode(context, buf)
+	}
+	fmt.Printf("")
+}
+
+func BenchmarkSipMsgRawEncode(b *testing.B) {
+	b.StopTimer()
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+	context.ParseSipHeaderAsRaw = true
+	addr := NewSipMsg(context)
+	sipmsg := addr.GetSipMsg(context)
+	msg1 := []byte(msg)
+	sipmsg.Parse(context, msg1, 0)
+	remain := context.allocator.Used()
+	buf := &AbnfByteBuffer{}
 
 	b.SetBytes(2)
 	b.ReportAllocs()
