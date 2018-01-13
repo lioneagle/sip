@@ -228,10 +228,25 @@ func (this *SipGenericParams) ParseWithoutInit(context *ParseContext, src []byte
 			return newPos, nil
 		}
 
-		newPos, err = ParseSWSMark(src, newPos, seperator)
+		/*
+			newPos, err = ParseSWSMark(src, newPos, seperator)
+			if err != nil {
+				return newPos, nil
+			} //*/
+
+		//*
+		var macthMark bool
+		var newPos1 int
+		newPos1, macthMark, err = ParseSWSMarkCanOmmit(src, newPos, seperator)
 		if err != nil {
+			return newPos, err
+		}
+
+		if !macthMark {
 			return newPos, nil
 		}
+
+		newPos = newPos1 //*/
 
 		addr := NewSipGenericParam(context)
 		if addr == ABNF_PTR_NIL {

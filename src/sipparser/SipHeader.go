@@ -270,7 +270,7 @@ func (this *SipHeaders) Parse(context *ParseContext, src []byte, pos int) (newPo
 		}
 
 		if err != nil {
-			return newPos, nil
+			return newPos, err
 		}
 
 	}
@@ -385,7 +385,8 @@ func FindCrlfRFC3261(src []byte, pos int) (begin, end int, ok bool) {
 	 */
 	end = pos
 	len1 := len(src)
-	for end < len1 {
+	//for end < len1 {
+	for {
 		for ; (end < len1) && (src[end] != '\n'); end++ {
 		}
 		if end >= len1 {

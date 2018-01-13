@@ -7,10 +7,11 @@ import (
 )
 
 type SipHeaderVia struct {
-	version   SipVersion
-	transport AbnfBuf
-	sentBy    SipHostPort
-	params    SipGenericParams
+	protocolName    AbnfBuf
+	protocolVersion AbnfBuf
+	transport       AbnfBuf
+	sentBy          SipHostPort
+	params          SipGenericParams
 }
 
 func NewSipHeaderVia(context *ParseContext) AbnfPtr {
@@ -23,7 +24,8 @@ func NewSipHeaderVia(context *ParseContext) AbnfPtr {
 }
 
 func (this *SipHeaderVia) Init() {
-	this.version.Init()
+	this.protocolName.Init()
+	this.protocolVersion.Init()
 	this.transport.Init()
 	this.sentBy.Init()
 	this.params.Init()
@@ -87,16 +89,26 @@ func (this *SipHeaderVia) ParseValue(context *ParseContext, src []byte, pos int)
 
 func (this *SipHeaderVia) ParseValueWithoutInit(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
-	newPos, err = this.version.Parse(context, src, newPos)
+	newPos, err = this.protocolName.ParseSipToken(context, src, newPos)
 	if err != nil {
 		return newPos, err
 	}
 
-	if src[newPos] != '/' {
-		return newPos, &AbnfError{"Via parse: no slash after protocol-version", src, newPos}
+	newPos, err = ParseSWSMark(src, newPos, '/')
+	if err != nil {
+		return newPos, err
 	}
 
-	newPos++
+	newPos, err = this.protocolVersion.ParseSipToken(context, src, newPos)
+	if err != nil {
+		return newPos, err
+	}
+
+	newPos, err = ParseSWSMark(src, newPos, '/')
+	if err != nil {
+		return newPos, err
+	}
+
 	newPos, err = this.transport.ParseSipToken(context, src, newPos)
 	if err != nil {
 		return newPos, err
@@ -122,7 +134,9 @@ func (this *SipHeaderVia) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 }
 
 func (this *SipHeaderVia) EncodeValue(context *ParseContext, buf *AbnfByteBuffer) {
-	this.version.Encode(context, buf)
+	this.protocolName.Encode(context, buf)
+	buf.WriteByte('/')
+	this.protocolVersion.Encode(context, buf)
 	buf.WriteByte('/')
 	this.transport.Encode(context, buf)
 	buf.WriteByte(' ')
@@ -141,7 +155,6 @@ func (this *SipHeaderVia) StringValue(context *ParseContext) string {
 }
 
 func ParseSipVia(context *ParseContext, src []byte, pos int) (newPos int, parsed AbnfPtr, err error) {
-	//fmt.Println("enter via")
 	addr := NewSipHeaderVia(context)
 	if addr == ABNF_PTR_NIL {
 		return newPos, ABNF_PTR_NIL, &AbnfError{"Via parse: out of memory for new header", src, newPos}

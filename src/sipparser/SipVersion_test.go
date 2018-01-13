@@ -23,6 +23,8 @@ func TestSipVersionParse(t *testing.T) {
 		{"Sip/20^b", false, len("Sip/20"), ""},
 		{"Sip/20.b", false, len("Sip/20."), ""},
 		{"Sip/.b", false, len("Sip/"), ""},
+		{"sip\t/.b", false, 0, ""},
+		{"sip \t/.b", false, 0, ""},
 	}
 
 	context := NewParseContext()

@@ -8,7 +8,7 @@ import (
 )
 
 //*
-func TestSipMsgParse(t *testing.T) {
+func TestSipMsgParse1(t *testing.T) {
 
 	testdata := []struct {
 		src    string
@@ -21,6 +21,7 @@ func TestSipMsgParse(t *testing.T) {
 
 		{" INVITE sip:123@a.com SIP/2.0\r\n", false, 0, ""},
 		{"INVITE sip:123@a.com SIP/2.0\r\n", false, len("INVITE sip:123@a.com SIP/2.0\r\n"), ""},
+		{"INVITE sip:123@a.com SIP/2.0\r\nVia:", false, len("INVITE sip:123@a.com SIP/2.0\r\nVia:"), ""},
 	}
 
 	context := NewParseContext()
@@ -271,6 +272,96 @@ var msg string = "INVITE sip:6135000@24.15.255.4 SIP/2.0\r\n" +
 	"Content-Type: application/sdp\r\n" +
 	"\r\n"
 
+var msg2 string = "INVITE sip:6135000@24.15.255.4 SIP/2.0\r\n" +
+	"Content-Length : 226\r\n" +
+	"Via: SIP/2.0/UDP 24.15.255.101:5060;branch=072c09e5.0\r\n" +
+	"From: \"User ID\" <sip:6140000@24.15.255.4;user=phone>;tag=dab70900252036d7134be-4ec05abe\r\n" +
+	"To: <sip:6135000@24.15.255.4;user=phone>\r\n" +
+	"Call-ID: 0009b7da-0352000f-30a69b83-0e7b53d6@24.15.255.101\r\n" +
+	"CSeq: 101 INVITE\r\n" +
+	"Expires: 180\r\n" +
+	"User-Agent: Cisco-SIP-IP-Phone/2\r\n" +
+	"Accept: application/sdp\r\n" +
+	"Contact: sip:6140000@24.15.255.101:5060\r\n" +
+	"Content-Type: application/sdp\r\n" +
+	"\r\n" +
+	"v=0\r\n" +
+	"o=CiscoSystemsSIP-IPPhone-UserAgent 12748 16809 IN IP4 24.15.255.101\r\n" +
+	"s=SIP Call\r\n" +
+	"c=IN IP4 24.15.255.101\r\n" +
+	"t=0 0\r\nm=audio 26640 RTP/AVP 0 8 18 101\r\n" +
+	"a=rtpmap:0 pcmu/8000\r\n" +
+	"a=rtpmap:101 telephone-event/8000\r\n" +
+	"a=fmtp:101 0-11\r\n"
+
+var msg3 string = "INVITE sip:6135000@24.15.255.4 SIP/2.0\r\n" +
+	"Content-Length : 351\r\n" +
+	"Via: SIP/2.0/UDP 24.15.255.101:5060;branch=072c09e5.0\r\n" +
+	"From: \"User ID\" <sip:6140000@24.15.255.4;user=phone>;tag=dab70900252036d7134be-4ec05abe\r\n" +
+	"To: <sip:6135000@24.15.255.4;user=phone>\r\n" +
+	"Call-ID: 0009b7da-0352000f-30a69b83-0e7b53d6@24.15.255.101\r\n" +
+	"CSeq: 101 INVITE\r\n" +
+	"Expires: 180\r\n" +
+	"User-Agent: Cisco-SIP-IP-Phone/2\r\n" +
+	"Accept: application/sdp\r\n" +
+	"Contact: sip:6140000@24.15.255.101:5060\r\n" +
+	"Content-Type: multipart/mixed;boundary=abcd\r\n" +
+	//"Content-Type: application/sdp;boundary=\"abcd\"\r\n"
+	//"Content-Type: application/sdp;boundary=abcd\r\n"
+	//"Content-Type: application/sdp\r\n"
+	"\r\n" +
+	"--abcd\r\n" +
+	"Content-Type: application/sdp\r\n" +
+	"\r\n" +
+	"v=0\r\n" +
+	"o=CiscoSystemsSIP-IPPhone-UserAgent 12748 16809 IN IP4 24.15.255.101\r\n" +
+	"s=SIP Call\r\n" +
+	"c=IN IP4 24.15.255.101\r\n" +
+	"t=0 0\r\nm=audio 26640 RTP/AVP 0 8 18 101\r\n" +
+	"a=rtpmap:0 pcmu/8000\r\n" +
+	"a=rtpmap:101 telephone-event/8000\r\n" +
+	"a=fmtp:101 0-11\r\n" +
+	"--abcd\r\n" +
+	"Content-Type: application/ISUP;version=nxv3;base=etsi121\r\n" +
+	"\r\n" +
+	"123456\r\n" +
+	"--abcd--"
+
+var msg4 string = "INVITE sip:6135000@24.15.255.4 SIP/2.0\r\n" +
+	"Content-Length \t: \r\n\t 351\r\n" +
+	"Via \t: \r\n\t SIP \r\n\t / \r\n\t 2.0 \r\n\t / \r\n\t UDP \r\n\t 24.15.255.101:5060 \r\n\t ; \r\n\t ttl \r\n\t = \r\n\t 100 \r\n\t ; \r\n\t branch \r\n\t = \r\n\t 072c09e5.0 \r\n\t , \r\n\t SIP \r\n\t / \r\n\t 2.0 \r\n\t / \r\n\t UDP \r\n\t 24.15.255.101:5060 \r\n\t ; \r\n\t ttl \r\n\t = \r\n\t 45 \r\n\t ; \r\n\t branch \r\n\t = \r\n\t 072c09e5.0\r\n" +
+	"Via \t: \r\n\t SIP \r\n\t / \r\n\t 2.0 \r\n\t / \r\n\t UDP \r\n\t 24.15.255.101:5060 \r\n\t ; \r\n\t branch \r\n\t = \r\n\t 072c09e5.0\r\n" +
+	"Via \t: \r\n\t SIP \r\n\t / \r\n\t 2.0 \r\n\t / \r\n\t UDP \r\n\t 24.15.255.101:5060 \r\n\t ; \r\n\t branch \r\n\t = \r\n\t 072c09e5.0\r\n" +
+	"Via \t: \r\n\t SIP \r\n\t / \r\n\t 2.0 \r\n\t / \r\n\t UDP \r\n\t 24.15.255.101:5060 \r\n\t ; \r\n\t branch \r\n\t = \r\n\t 072c09e5.0\r\n" +
+	"From \t: \r\n\t \"User ID\" \r\n\t <sip:6140000@24.15.255.4;user=phone> \r\n\t \r\n\t ; \r\n\t tag \r\n\t = \r\n\t dab70900252036d7134be-4ec05abe\r\n" +
+	"To \t: \r\n\t \r\n\t <sip:6135000@24.15.255.4;user=phone> \r\n\t \r\n" +
+	"Call-ID \t: \r\n\t 0009b7da-0352000f-30a69b83-0e7b53d6@24.15.255.101\r\n" +
+	"CSeq \t: \r\n\t 101 \r\n\t INVITE\r\n" +
+	"Expires \t: \r\n\t 180\r\n" +
+	"User-Agent \t: \r\n\t Cisco-SIP-IP-Phone/2\r\n" +
+	"Accept \t: \r\n\t application \r\n\t / \r\n\t sdp \r\n\t ; \r\n\t q \r\n\t = \r\n\t 0.1 \r\n\t , \r\n\t application \r\n\t / \r\n\t isup \r\n\t ; \r\n\t q \r\n\t = \r\n\t 0.3\r\n" +
+	"Accept \t: \r\n\t application \r\n\t / \r\n\t sdp \r\n\t ; \r\n\t q \r\n\t = \r\n\t 0.4\r\n" +
+	"Contact \t: \r\n\t \r\n\t <sip:6140000@24.15.255.101:5060> \r\n\t \r\n\t ; \r\n\t expires \r\n\t = \r\n\t 1000 \r\n\t , \r\n\t \r\n\t <sip:6140000@24.15.255.101:5060> \r\n\t \r\n\t ; \r\n\t expires \r\n\t = \r\n\t 2000\r\n" +
+	"Contact \t: \r\n\t sip:6140000@24.15.255.101:5060 \r\n\t ; \r\n\t expires \r\n\t = \r\n\t 3000\r\n" +
+	"Content-Type \t: \r\n\t multipart \r\n\t / \r\n\t mixed \r\n\t ; \r\n\t boundary \r\n\t = \r\n\t abcd\r\n" +
+	"\r\n" +
+	"--abcd\r\n" +
+	"Content-Type \t: \r\n\t application \r\n\t / \r\n\t sdp\r\n" +
+	"\r\n" +
+	"v=0\r\n" +
+	"o=CiscoSystemsSIP-IPPhone-UserAgent 12748 16809 IN IP4 24.15.255.101\r\n" +
+	"s=SIP Call\r\n" +
+	"c=IN IP4 24.15.255.101\r\n" +
+	"t=0 0\r\nm=audio 26640 RTP/AVP 0 8 18 101\r\n" +
+	"a=rtpmap:0 pcmu/8000\r\n" +
+	"a=rtpmap:101 telephone-event/8000\r\n" +
+	"a=fmtp:101 0-11\r\n" +
+	"--abcd\r\n" +
+	"Content-Type \t: \r\n\t application \r\n\t / \r\n\t ISUP \r\n\t ; \r\n\t version \r\n\t = \r\n\t nxv3 \r\n\t ; \r\n\t base \r\n\t = \r\n\t etsi121\r\n" +
+	"\r\n" +
+	"123456\r\n" +
+	"--abcd--"
+
 func BenchmarkSipMsgParse(b *testing.B) {
 	b.StopTimer()
 	context := NewParseContext()
@@ -310,7 +401,169 @@ func BenchmarkSipMsgParse(b *testing.B) {
 		fmt.Printf("allocator.AllocNum = %d\n", context.allocator.AllocNum())
 		fmt.Printf("allocator.Used = %d\n", context.allocator.Used()-remain)
 		fmt.Printf("allocator.AllocReqBytes = %d\n", context.allocator.AllocReqBytes()-remainAllocReqBytes)
-		fmt.Printf("len(msg) = %d\n", len(msg))
+		fmt.Printf("len(msg1) = %d\n", len(msg1))
+		fmt.Printf("sizeof(SipMsg) =%d\n", unsafe.Sizeof(AbnfBuf{}))
+		fmt.Printf("sizeof(SipAddrSpec) =%d\n", unsafe.Sizeof(SipAddrSpec{}))
+		fmt.Printf("sizeof(SipAddr) =%d\n", unsafe.Sizeof(SipAddr{}))
+		fmt.Printf("sizeof(SipNameAddr) =%d\n", unsafe.Sizeof(SipNameAddr{}))
+		fmt.Printf("sizeof(SipUri) =%d\n", unsafe.Sizeof(SipUri{}))
+		fmt.Printf("sizeof(AbnfBuf) =%d\n", unsafe.Sizeof(AbnfBuf{}))
+		fmt.Printf("sizeof(SipHostPort) =%d\n", unsafe.Sizeof(SipHostPort{}))
+		fmt.Printf("sizeof(SipUriParams) =%d\n", unsafe.Sizeof(SipUriParams{}))
+		fmt.Printf("sizeof(SipUriHeaders) =%d\n", unsafe.Sizeof(SipUriHeaders{}))
+
+		//*/
+
+}
+
+func BenchmarkSipMsgParse2(b *testing.B) {
+	b.StopTimer()
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+	addr := NewSipMsg(context)
+	sipmsg := addr.GetSipMsg(context)
+	remain := context.allocator.Used()
+	//remainAllocReqBytes := context.allocator.AllocReqBytes()
+	//fmt.Printf("allocator.Used = %d\n", context.allocator.Used())
+	//context.ParseSipHeaderAsRaw = true
+	msg1 := []byte(msg2)
+	//msg2 := make([]byte, len(msg1))
+	total_headers = 0
+
+	b.ReportAllocs()
+	b.SetBytes(2)
+	b.StartTimer()
+
+	//for i := 0; i < 1; i++ {
+	for i := 0; i < b.N; i++ {
+		//copy(msg2, msg1[:len(msg1)])
+		context.allocator.ClearAllocNum()
+		context.allocator.FreePart(remain)
+		print_mem = true
+		_, err := sipmsg.Parse(context, msg1, 0)
+		print_mem = false
+		if err != nil {
+			fmt.Println("parse sip msg failed, err =", err.Error())
+			fmt.Println("msg1 = ", string(msg1))
+			break
+		} //*/
+	}
+	//fmt.Printf("msg = %s\n", sipmsg.String())
+
+	/*
+		fmt.Printf("total_headers = %d\n", total_headers)
+		fmt.Printf("allocator.AllocNum = %d\n", context.allocator.AllocNum())
+		fmt.Printf("allocator.Used = %d\n", context.allocator.Used()-remain)
+		fmt.Printf("allocator.AllocReqBytes = %d\n", context.allocator.AllocReqBytes()-remainAllocReqBytes)
+		fmt.Printf("len(msg1) = %d\n", len(msg1))
+		fmt.Printf("sizeof(SipMsg) =%d\n", unsafe.Sizeof(AbnfBuf{}))
+		fmt.Printf("sizeof(SipAddrSpec) =%d\n", unsafe.Sizeof(SipAddrSpec{}))
+		fmt.Printf("sizeof(SipAddr) =%d\n", unsafe.Sizeof(SipAddr{}))
+		fmt.Printf("sizeof(SipNameAddr) =%d\n", unsafe.Sizeof(SipNameAddr{}))
+		fmt.Printf("sizeof(SipUri) =%d\n", unsafe.Sizeof(SipUri{}))
+		fmt.Printf("sizeof(AbnfBuf) =%d\n", unsafe.Sizeof(AbnfBuf{}))
+		fmt.Printf("sizeof(SipHostPort) =%d\n", unsafe.Sizeof(SipHostPort{}))
+		fmt.Printf("sizeof(SipUriParams) =%d\n", unsafe.Sizeof(SipUriParams{}))
+		fmt.Printf("sizeof(SipUriHeaders) =%d\n", unsafe.Sizeof(SipUriHeaders{}))
+
+		//*/
+
+}
+
+func BenchmarkSipMsgParse3(b *testing.B) {
+	b.StopTimer()
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+	addr := NewSipMsg(context)
+	sipmsg := addr.GetSipMsg(context)
+	remain := context.allocator.Used()
+	//remainAllocReqBytes := context.allocator.AllocReqBytes()
+	//fmt.Printf("allocator.Used = %d\n", context.allocator.Used())
+	//context.ParseSipHeaderAsRaw = true
+	msg1 := []byte(msg3)
+	//msg2 := make([]byte, len(msg1))
+	total_headers = 0
+
+	b.ReportAllocs()
+	b.SetBytes(2)
+	b.StartTimer()
+
+	//for i := 0; i < 1; i++ {
+	for i := 0; i < b.N; i++ {
+		//copy(msg2, msg1[:len(msg1)])
+		context.allocator.ClearAllocNum()
+		context.allocator.FreePart(remain)
+		print_mem = true
+		_, err := sipmsg.Parse(context, msg1, 0)
+		print_mem = false
+		if err != nil {
+			fmt.Println("parse sip msg failed, err =", err.Error())
+			fmt.Println("msg1 = ", string(msg1))
+			break
+		} //*/
+	}
+	//fmt.Printf("msg = %s\n", sipmsg.String(context))
+
+	/*
+		fmt.Printf("total_headers = %d\n", total_headers)
+		fmt.Printf("allocator.AllocNum = %d\n", context.allocator.AllocNum())
+		fmt.Printf("allocator.Used = %d\n", context.allocator.Used()-remain)
+		fmt.Printf("allocator.AllocReqBytes = %d\n", context.allocator.AllocReqBytes()-remainAllocReqBytes)
+		fmt.Printf("len(msg1) = %d\n", len(msg1))
+		fmt.Printf("sizeof(SipMsg) =%d\n", unsafe.Sizeof(AbnfBuf{}))
+		fmt.Printf("sizeof(SipAddrSpec) =%d\n", unsafe.Sizeof(SipAddrSpec{}))
+		fmt.Printf("sizeof(SipAddr) =%d\n", unsafe.Sizeof(SipAddr{}))
+		fmt.Printf("sizeof(SipNameAddr) =%d\n", unsafe.Sizeof(SipNameAddr{}))
+		fmt.Printf("sizeof(SipUri) =%d\n", unsafe.Sizeof(SipUri{}))
+		fmt.Printf("sizeof(AbnfBuf) =%d\n", unsafe.Sizeof(AbnfBuf{}))
+		fmt.Printf("sizeof(SipHostPort) =%d\n", unsafe.Sizeof(SipHostPort{}))
+		fmt.Printf("sizeof(SipUriParams) =%d\n", unsafe.Sizeof(SipUriParams{}))
+		fmt.Printf("sizeof(SipUriHeaders) =%d\n", unsafe.Sizeof(SipUriHeaders{}))
+
+		//*/
+
+}
+
+func BenchmarkSipMsgParse4(b *testing.B) {
+	b.StopTimer()
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 300)
+	addr := NewSipMsg(context)
+	sipmsg := addr.GetSipMsg(context)
+	remain := context.allocator.Used()
+	//remainAllocReqBytes := context.allocator.AllocReqBytes()
+	//fmt.Printf("allocator.Used = %d\n", context.allocator.Used())
+	//context.ParseSipHeaderAsRaw = true
+	msg1 := []byte(msg4)
+	//msg2 := make([]byte, len(msg1))
+	total_headers = 0
+
+	b.ReportAllocs()
+	b.SetBytes(2)
+	b.StartTimer()
+
+	//for i := 0; i < 1; i++ {
+	for i := 0; i < b.N; i++ {
+		//copy(msg2, msg1[:len(msg1)])
+		context.allocator.ClearAllocNum()
+		context.allocator.FreePart(remain)
+		print_mem = true
+		_, err := sipmsg.Parse(context, msg1, 0)
+		print_mem = false
+		if err != nil {
+			fmt.Println("parse sip msg failed, err =", err.Error())
+			fmt.Println("msg1 = ", string(msg1))
+			break
+		} //*/
+	}
+	//fmt.Printf("msg = %s\n", sipmsg.String(context))
+
+	/*
+		fmt.Printf("total_headers = %d\n", total_headers)
+		fmt.Printf("allocator.AllocNum = %d\n", context.allocator.AllocNum())
+		fmt.Printf("allocator.Used = %d\n", context.allocator.Used()-remain)
+		fmt.Printf("allocator.AllocReqBytes = %d\n", context.allocator.AllocReqBytes()-remainAllocReqBytes)
+		fmt.Printf("len(msg1) = %d\n", len(msg1))
 		fmt.Printf("sizeof(SipMsg) =%d\n", unsafe.Sizeof(AbnfBuf{}))
 		fmt.Printf("sizeof(SipAddrSpec) =%d\n", unsafe.Sizeof(SipAddrSpec{}))
 		fmt.Printf("sizeof(SipAddr) =%d\n", unsafe.Sizeof(SipAddr{}))

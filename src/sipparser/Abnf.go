@@ -47,7 +47,11 @@ type AbnfError struct {
 
 func (err *AbnfError) Error() string {
 	if err.pos < len(err.src) {
-		return fmt.Sprintf("%s at src[%d]: %s", err.description, err.pos, string(err.src[err.pos:]))
+		num := 20
+		if len(err.src) < err.pos+num {
+			num = len(err.src) - err.pos
+		}
+		return fmt.Sprintf("%s at src[%d]: %s", err.description, err.pos, string(err.src[err.pos:err.pos+num]))
 	}
 	return err.description
 }

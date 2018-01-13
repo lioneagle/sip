@@ -324,6 +324,26 @@ func ParseHcolon(src []byte, pos int) (newPos int, err error) {
 	return ParseSWS(src, newPos+1)
 }
 
+func ParseSWSMarkCanOmmit(src []byte, pos int, mark byte) (newPos int, matchMark bool, err error) {
+	newPos = pos
+	newPos, err = ParseSWS(src, newPos)
+	if err != nil {
+		return newPos, false, nil
+	}
+
+	if newPos >= len(src) {
+		//fmt.Println("here1")
+		return newPos, false, &AbnfError{"SWSMark parse: reach end before mark", src, newPos}
+	}
+
+	if src[newPos] != mark {
+		return pos, false, nil
+	}
+
+	newPos, err = ParseSWS(src, newPos+1)
+	return newPos, true, err
+}
+
 func ParseSWSMark(src []byte, pos int, mark byte) (newPos int, err error) {
 	/* RFC3261 Section 25.1, page 220
 	 *
@@ -347,6 +367,7 @@ func ParseSWSMark(src []byte, pos int, mark byte) (newPos int, err error) {
 	}
 
 	if src[newPos] != mark {
+		//fmt.Println("here3")
 		return newPos, &AbnfError{"SWSMark parse: not expected mark after SWS", src, newPos}
 	}
 

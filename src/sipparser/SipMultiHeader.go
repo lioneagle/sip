@@ -2,7 +2,7 @@ package sipparser
 
 import (
 	//"bytes"
-	//"fmt"
+	"fmt"
 	"unsafe"
 )
 
@@ -77,6 +77,7 @@ func (this *SipMultiHeader) GenerateAndAddHeader(context *ParseContext, name, va
 }
 
 func (this *SipMultiHeader) Parse(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (newPos int, err error) {
+	this.info = info
 	if info.parseFunc != nil && info.needParse && !context.ParseSipHeaderAsRaw {
 		return this.parseHeader(context, src, pos, info)
 
@@ -86,25 +87,49 @@ func (this *SipMultiHeader) Parse(context *ParseContext, src []byte, pos int, in
 }
 
 func (this *SipMultiHeader) parseHeader(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (newPos int, err error) {
+	if pos >= len(src) {
+		return pos, &AbnfError{"SipMultiHeader  parseHeader: no header", src, newPos}
+	}
 	newPos = pos
 	for newPos < len(src) {
-		addr, newPos, err := parseOneSingleHeader(context, src, newPos, info)
+		var addr AbnfPtr
+
+		addr, newPos, err = parseOneSingleHeader(context, src, newPos, info)
 		if err != nil {
 			return newPos, err
 		}
+
 		this.AddHeader(context, addr)
 
 		// now should be COMMA or CRLF
 		if IsOnlyCRLF(src, newPos) {
 			return newPos + 2, nil
 		}
+		/*
+			var macthMark bool
+			var newPos1 int
 
-		newPos1, err := ParseSWSMark(src, newPos, ',')
+			newPos1, macthMark, err = ParseSWSMarkCanOmmit(src, newPos, ',')
+			if err != nil {
+				return newPos, err
+			}
+
+			if !macthMark {
+				return newPos, nil
+			}
+
+			newPos = newPos1
+			//*/
+
+		//*
+		var newPos1 int
+
+		newPos1, err = ParseSWSMark(src, newPos, ',')
 		if err != nil {
+			fmt.Println("XXX")
 			return newPos + 2, nil
 		}
-		newPos = newPos1
-
+		newPos = newPos1 //*/
 	}
 	return newPos, nil
 }

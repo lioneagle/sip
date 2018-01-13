@@ -5,6 +5,8 @@ import (
 	//"fmt"
 	"reflect"
 	"unsafe"
+
+	//"logger"
 )
 
 type AbnfBuf struct {
@@ -294,6 +296,7 @@ func (this *AbnfBuf) ParseEscapable(context *ParseContext, src []byte, pos int, 
 	}
 
 	if ref.Begin >= ref.End {
+		//logger.PrintStack()
 		return newPos, &AbnfError{"AbnfBuf ParseEscapable: value is empty", src, newPos}
 	}
 

@@ -24,6 +24,7 @@ func TestFindCrlfRFC3261(t *testing.T) {
 		{"122334545\r", false, len("122334545\r"), len("122334545\r")},
 		{"122334545\r\n ", false, len("122334545\r\n "), len("122334545\r\n ")},
 		{"122334545\r\n\t", false, len("122334545\r\n\t"), len("122334545\r\n\t")},
+		{"", false, 0, 0},
 	}
 
 	prefix := FuncName()
