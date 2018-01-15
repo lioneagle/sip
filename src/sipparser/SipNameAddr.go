@@ -113,7 +113,7 @@ func (this *SipDisplayName) String(context *ParseContext) string {
 
 type SipNameAddr struct {
 	displayname SipDisplayName
-	addrsepc    SipAddrSpec
+	addrspec    SipAddrSpec
 }
 
 func NewSipNameAddr(context *ParseContext) AbnfPtr {
@@ -127,7 +127,7 @@ func NewSipNameAddr(context *ParseContext) AbnfPtr {
 
 func (this *SipNameAddr) Init() {
 	this.displayname.Init()
-	this.addrsepc.Init()
+	this.addrspec.Init()
 }
 
 func (this *SipNameAddr) Parse(context *ParseContext, src []byte, pos int) (newPos int, err error) {
@@ -169,7 +169,7 @@ func (this *SipNameAddr) ParseWithoutInit(context *ParseContext, src []byte, pos
 		return newPos, err
 	}
 
-	newPos, err = this.addrsepc.ParseWithoutInit(context, src, newPos)
+	newPos, err = this.addrspec.ParseWithoutInit(context, src, newPos)
 	if err != nil {
 		return newPos, err
 	}
@@ -180,7 +180,7 @@ func (this *SipNameAddr) ParseWithoutInit(context *ParseContext, src []byte, pos
 func (this *SipNameAddr) Encode(context *ParseContext, buf *AbnfByteBuffer) {
 	this.displayname.Encode(context, buf)
 	buf.WriteByte('<')
-	this.addrsepc.Encode(context, buf)
+	this.addrspec.Encode(context, buf)
 	buf.WriteByte('>')
 }
 
