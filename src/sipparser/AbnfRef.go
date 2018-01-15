@@ -73,7 +73,7 @@ func (this *AbnfRef) ParseUriScheme(src []byte, pos int) (end int) {
 	this.Begin = int32(pos)
 	len1 := len(src)
 
-	if pos >= len1 || !IsUriScheme(src[pos]) {
+	if pos >= len1 || !IsAlpha(src[pos]) {
 		this.End = int32(pos)
 		return pos
 	}

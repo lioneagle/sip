@@ -362,7 +362,7 @@ var msg4 string = "INVITE sip:6135000@24.15.255.4 SIP/2.0\r\n" +
 	"123456\r\n" +
 	"--abcd--"
 
-func BenchmarkSipMsgParse(b *testing.B) {
+func BenchmarkSipMsgParse1(b *testing.B) {
 	b.StopTimer()
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
