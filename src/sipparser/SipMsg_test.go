@@ -416,6 +416,60 @@ func BenchmarkSipMsgParse1(b *testing.B) {
 
 }
 
+func BenchmarkSipMsgParse1_Raw(b *testing.B) {
+	b.StopTimer()
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+	addr := NewSipMsg(context)
+	sipmsg := addr.GetSipMsg(context)
+	remain := context.allocator.Used()
+	//remainAllocReqBytes := context.allocator.AllocReqBytes()
+	//fmt.Printf("allocator.Used = %d\n", context.allocator.Used())
+	context.ParseSipHeaderAsRaw = true
+	msg1 := []byte(msg)
+	//msg2 := make([]byte, len(msg1))
+	total_headers = 0
+
+	b.ReportAllocs()
+	b.SetBytes(2)
+	b.StartTimer()
+
+	//for i := 0; i < 1; i++ {
+	for i := 0; i < b.N; i++ {
+		//copy(msg2, msg1[:len(msg1)])
+		context.allocator.ClearAllocNum()
+		context.allocator.FreePart(remain)
+		print_mem = true
+		_, err := sipmsg.Parse(context, msg1, 0)
+		print_mem = false
+		if err != nil {
+			fmt.Println("parse sip msg failed, err =", err.Error())
+			fmt.Println("msg1 = ", string(msg1))
+			break
+		} //*/
+	}
+	//fmt.Printf("msg = %s\n", sipmsg.String())
+
+	/*
+		fmt.Printf("total_headers = %d\n", total_headers)
+		fmt.Printf("allocator.AllocNum = %d\n", context.allocator.AllocNum())
+		fmt.Printf("allocator.Used = %d\n", context.allocator.Used()-remain)
+		fmt.Printf("allocator.AllocReqBytes = %d\n", context.allocator.AllocReqBytes()-remainAllocReqBytes)
+		fmt.Printf("len(msg1) = %d\n", len(msg1))
+		fmt.Printf("sizeof(SipMsg) =%d\n", unsafe.Sizeof(AbnfBuf{}))
+		fmt.Printf("sizeof(SipAddrSpec) =%d\n", unsafe.Sizeof(SipAddrSpec{}))
+		fmt.Printf("sizeof(SipAddr) =%d\n", unsafe.Sizeof(SipAddr{}))
+		fmt.Printf("sizeof(SipNameAddr) =%d\n", unsafe.Sizeof(SipNameAddr{}))
+		fmt.Printf("sizeof(SipUri) =%d\n", unsafe.Sizeof(SipUri{}))
+		fmt.Printf("sizeof(AbnfBuf) =%d\n", unsafe.Sizeof(AbnfBuf{}))
+		fmt.Printf("sizeof(SipHostPort) =%d\n", unsafe.Sizeof(SipHostPort{}))
+		fmt.Printf("sizeof(SipUriParams) =%d\n", unsafe.Sizeof(SipUriParams{}))
+		fmt.Printf("sizeof(SipUriHeaders) =%d\n", unsafe.Sizeof(SipUriHeaders{}))
+
+		//*/
+
+}
+
 func BenchmarkSipMsgParse2(b *testing.B) {
 	b.StopTimer()
 	context := NewParseContext()

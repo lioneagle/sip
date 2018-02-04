@@ -125,7 +125,7 @@ const (
 	ABNF_SIP_HDR_DATE                SipHeaderIndexType = 15
 	ABNF_SIP_HDR_SUBJECT             SipHeaderIndexType = 16
 	ABNF_SIP_HDR_SUPPORTED           SipHeaderIndexType = 17
-	ABNF_SIP_HDR_ALLOW_EVENT         SipHeaderIndexType = 18
+	ABNF_SIP_HDR_ALLOW_EVENTS        SipHeaderIndexType = 18
 	ABNF_SIP_HDR_EVENT               SipHeaderIndexType = 19
 	ABNF_SIP_HDR_REFER_TO            SipHeaderIndexType = 20
 	ABNF_SIP_HDR_ACCEPT_CONTACT      SipHeaderIndexType = 21
@@ -167,7 +167,7 @@ var g_SipHeaderInfos = []*SipHeaderInfo{
 	&SipHeaderInfo{name: []byte("MIME-Version")},
 }
 
-func GetSipHeaderIndex(name []byte) SipHeaderIndexType {
+func GetSipHeaderIndex2(name []byte) SipHeaderIndexType {
 	len1 := len(name)
 	for i := SipHeaderIndexType(1); i < ABNF_SIP_HDR_TOTAL_NUM; i++ {
 		info := g_SipHeaderInfos[i]
