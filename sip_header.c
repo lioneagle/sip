@@ -1,5 +1,5 @@
 /* C code produced by gperf version 3.0.1 */
-/* Command-line: gperf -g -o -j1 -t -p --ignore-case -N getSipHeaderIndex sip_headers.gperf  */
+/* Command-line: gperf -g -o -j1 -t -p -N GetSipHeaderIndex --ignore-case sip_headers.gperf  */
 /* Computed positions: -k'1-2' */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
@@ -32,12 +32,12 @@ error "gperf generated tables don't work with this execution character set. Plea
 #line 1 "sip_headers.gperf"
 struct resword { char *name; short header; };
 
-#define TOTAL_KEYWORDS 43
+#define TOTAL_KEYWORDS 44
 #define MIN_WORD_LENGTH 1
 #define MAX_WORD_LENGTH 19
 #define MIN_HASH_VALUE 1
-#define MAX_HASH_VALUE 43
-/* maximum key range = 43, duplicates = 0 */
+#define MAX_HASH_VALUE 44
+/* maximum key range = 44, duplicates = 0 */
 
 #ifndef GPERF_DOWNCASE
 #define GPERF_DOWNCASE 1
@@ -96,32 +96,32 @@ hash (str, len)
 {
   static unsigned char asso_values[] =
     {
-      44, 44, 44, 44, 44, 44, 44, 44, 44, 44,
-      44, 44, 44, 44, 44, 44, 44, 44, 44, 44,
-      44, 44, 44, 44, 44, 44, 44, 44, 44, 44,
-      44, 44, 44, 44, 44, 44, 44, 44, 44, 44,
-      44, 44, 44, 44, 44, 44, 44, 44, 44, 44,
-      44, 44, 44, 44, 44, 44, 44, 44, 44, 44,
-      44, 44, 44, 44, 44,  3, 39,  0, 32, 10,
-      30, 44, 44,  4, 37, 36,  5, 27, 44,  2,
-      44, 44,  1, 11, 28,  6, 26, 44, 33, 44,
-      44, 44, 44, 44, 44, 44, 44,  3, 39,  0,
-      32, 10, 30, 44, 44,  4, 37, 36,  5, 27,
-      44,  2, 44, 44,  1, 11, 28,  6, 26, 44,
-      33, 44, 44, 44, 44, 44, 44, 44, 44, 44,
-      44, 44, 44, 44, 44, 44, 44, 44, 44, 44,
-      44, 44, 44, 44, 44, 44, 44, 44, 44, 44,
-      44, 44, 44, 44, 44, 44, 44, 44, 44, 44,
-      44, 44, 44, 44, 44, 44, 44, 44, 44, 44,
-      44, 44, 44, 44, 44, 44, 44, 44, 44, 44,
-      44, 44, 44, 44, 44, 44, 44, 44, 44, 44,
-      44, 44, 44, 44, 44, 44, 44, 44, 44, 44,
-      44, 44, 44, 44, 44, 44, 44, 44, 44, 44,
-      44, 44, 44, 44, 44, 44, 44, 44, 44, 44,
-      44, 44, 44, 44, 44, 44, 44, 44, 44, 44,
-      44, 44, 44, 44, 44, 44, 44, 44, 44, 44,
-      44, 44, 44, 44, 44, 44, 44, 44, 44, 44,
-      44, 44, 44, 44, 44, 44
+      45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+      45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+      45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+      45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+      45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+      45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+      45, 45, 45, 45, 45,  3, 43,  0, 33, 10,
+      30, 45, 45,  4, 38, 37,  5, 27, 45,  2,
+      45, 45,  1, 11, 28,  6, 26, 45, 36, 45,
+      45, 45, 45, 45, 45, 45, 45,  3, 43,  0,
+      33, 10, 30, 45, 45,  4, 38, 37,  5, 27,
+      45,  2, 45, 45,  1, 11, 28,  6, 26, 45,
+      36, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+      45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+      45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+      45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+      45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+      45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+      45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+      45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+      45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+      45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+      45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+      45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+      45, 45, 45, 45, 45, 45, 45, 45, 45, 45,
+      45, 45, 45, 45, 45, 45
     };
   register int hval = len;
 
@@ -141,7 +141,7 @@ hash (str, len)
 __inline
 #endif
 struct resword *
-getSipHeaderIndex (str, len)
+GetSipHeaderIndex (str, len)
      register const char *str;
      register unsigned int len;
 {
@@ -149,91 +149,93 @@ getSipHeaderIndex (str, len)
     {
       {""},
 #line 15 "sip_headers.gperf"
-      {"c",  ABNF_SIP_HDR_CONTENT_TYPE},
+      {"c",                    ABNF_SIP_HDR_CONTENT_TYPE},
 #line 35 "sip_headers.gperf"
-      {"r", ABNF_SIP_HDR_REFER_TO},
+      {"r",                    ABNF_SIP_HDR_REFER_TO},
 #line 33 "sip_headers.gperf"
-      {"o", ABNF_SIP_HDR_EVENT},
+      {"o",                    ABNF_SIP_HDR_EVENT},
 #line 37 "sip_headers.gperf"
-      {"a", ABNF_SIP_HDR_ACCEPT_CONTACT},
+      {"a",                    ABNF_SIP_HDR_ACCEPT_CONTACT},
 #line 10 "sip_headers.gperf"
-      {"i",  ABNF_SIP_HDR_CALL_ID},
+      {"i",                    ABNF_SIP_HDR_CALL_ID},
 #line 13 "sip_headers.gperf"
-      {"l",  ABNF_SIP_HDR_CONTENT_LENGTH},
+      {"l",                    ABNF_SIP_HDR_CONTENT_LENGTH},
 #line 31 "sip_headers.gperf"
-      {"u", ABNF_SIP_HDR_ALLOW_EVENTS},
+      {"u",                    ABNF_SIP_HDR_ALLOW_EVENTS},
 #line 19 "sip_headers.gperf"
-      {"Route", ABNF_SIP_HDR_ROUTE},
+      {"Route",                ABNF_SIP_HDR_ROUTE},
 #line 16 "sip_headers.gperf"
-      {"Contact",  ABNF_SIP_HDR_CONTACT},
+      {"Contact",              ABNF_SIP_HDR_CONTACT},
 #line 9 "sip_headers.gperf"
-      {"Call-ID",  ABNF_SIP_HDR_CALL_ID},
+      {"Call-ID",              ABNF_SIP_HDR_CALL_ID},
 #line 24 "sip_headers.gperf"
-      {"e", ABNF_SIP_HDR_CONTENT_ENCODING},
+      {"e",                    ABNF_SIP_HDR_CONTENT_ENCODING},
 #line 27 "sip_headers.gperf"
-      {"s", ABNF_SIP_HDR_SUBJECT},
+      {"s",                    ABNF_SIP_HDR_SUBJECT},
 #line 22 "sip_headers.gperf"
-      {"Allow", ABNF_SIP_HDR_ALLOW},
+      {"Allow",                ABNF_SIP_HDR_ALLOW},
 #line 14 "sip_headers.gperf"
-      {"Content-Type",  ABNF_SIP_HDR_CONTENT_TYPE},
+      {"Content-Type",         ABNF_SIP_HDR_CONTENT_TYPE},
 #line 11 "sip_headers.gperf"
-      {"CSeq",  ABNF_SIP_HDR_CSEQ},
+      {"CSeq",                 ABNF_SIP_HDR_CSEQ},
 #line 12 "sip_headers.gperf"
-      {"Content-Length",  ABNF_SIP_HDR_CONTENT_LENGTH},
+      {"Content-Length",       ABNF_SIP_HDR_CONTENT_LENGTH},
 #line 36 "sip_headers.gperf"
-      {"Accept-Contact", ABNF_SIP_HDR_ACCEPT_CONTACT},
+      {"Accept-Contact",       ABNF_SIP_HDR_ACCEPT_CONTACT},
 #line 23 "sip_headers.gperf"
-      {"Content-Encoding", ABNF_SIP_HDR_CONTENT_ENCODING},
+      {"Content-Encoding",     ABNF_SIP_HDR_CONTENT_ENCODING},
 #line 34 "sip_headers.gperf"
-      {"Refer-To", ABNF_SIP_HDR_REFER_TO},
+      {"Refer-To",             ABNF_SIP_HDR_REFER_TO},
 #line 30 "sip_headers.gperf"
-      {"Allow-Events", ABNF_SIP_HDR_ALLOW_EVENTS},
+      {"Allow-Events",         ABNF_SIP_HDR_ALLOW_EVENTS},
 #line 21 "sip_headers.gperf"
-      {"Content-Disposition", ABNF_SIP_HDR_CONTENT_DISPOSITION},
-#line 41 "sip_headers.gperf"
-      {"Referred-By", ABNF_SIP_HDR_REFERRED_BY},
-#line 20 "sip_headers.gperf"
-      {"Record-Route", ABNF_SIP_HDR_RECORD_ROUTE},
-#line 26 "sip_headers.gperf"
-      {"Subject", ABNF_SIP_HDR_SUBJECT},
-#line 38 "sip_headers.gperf"
-      {"Reject-Contact", ABNF_SIP_HDR_REJECT_CONTACT},
-#line 28 "sip_headers.gperf"
-      {"Supported", ABNF_SIP_HDR_SUPPORTED},
-#line 8 "sip_headers.gperf"
-      {"v",  ABNF_SIP_HDR_VIA},
-#line 17 "sip_headers.gperf"
-      {"m",  ABNF_SIP_HDR_CONTACT},
-#line 6 "sip_headers.gperf"
-      {"t",  ABNF_SIP_HDR_TO},
-#line 40 "sip_headers.gperf"
-      {"Request-Disposition", ABNF_SIP_HDR_REQUEST_DISPOSITION},
-#line 4 "sip_headers.gperf"
-      {"f",  ABNF_SIP_HDR_FROM},
-#line 5 "sip_headers.gperf"
-      {"To",  ABNF_SIP_HDR_TO},
-#line 7 "sip_headers.gperf"
-      {"Via",  ABNF_SIP_HDR_VIA},
-#line 44 "sip_headers.gperf"
-      {"x", ABNF_SIP_HDR_SESSION_EXPIRES},
-#line 3 "sip_headers.gperf"
-      {"From",  ABNF_SIP_HDR_FROM},
-#line 43 "sip_headers.gperf"
-      {"Session-Expires", ABNF_SIP_HDR_SESSION_EXPIRES},
-#line 29 "sip_headers.gperf"
-      {"k", ABNF_SIP_HDR_SUPPORTED},
-#line 39 "sip_headers.gperf"
-      {"j", ABNF_SIP_HDR_REJECT_CONTACT},
-#line 25 "sip_headers.gperf"
-      {"Date", ABNF_SIP_HDR_DATE},
+      {"Content-Disposition",  ABNF_SIP_HDR_CONTENT_DISPOSITION},
 #line 42 "sip_headers.gperf"
-      {"b", ABNF_SIP_HDR_REFERRED_BY},
-#line 32 "sip_headers.gperf"
-      {"Event", ABNF_SIP_HDR_EVENT},
-#line 18 "sip_headers.gperf"
-      {"Max-Forwards",  ABNF_SIP_HDR_MAX_FORWARDS},
+      {"Referred-By",          ABNF_SIP_HDR_REFERRED_BY},
+#line 20 "sip_headers.gperf"
+      {"Record-Route",         ABNF_SIP_HDR_RECORD_ROUTE},
+#line 26 "sip_headers.gperf"
+      {"Subject",              ABNF_SIP_HDR_SUBJECT},
+#line 38 "sip_headers.gperf"
+      {"Reject-Contact",       ABNF_SIP_HDR_REJECT_CONTACT},
+#line 28 "sip_headers.gperf"
+      {"Supported",            ABNF_SIP_HDR_SUPPORTED},
+#line 8 "sip_headers.gperf"
+      {"v",                    ABNF_SIP_HDR_VIA},
+#line 17 "sip_headers.gperf"
+      {"m",                    ABNF_SIP_HDR_CONTACT},
+#line 6 "sip_headers.gperf"
+      {"t",                    ABNF_SIP_HDR_TO},
+#line 40 "sip_headers.gperf"
+      {"Request-Disposition",  ABNF_SIP_HDR_REQUEST_DISPOSITION},
+#line 4 "sip_headers.gperf"
+      {"f",                    ABNF_SIP_HDR_FROM},
+#line 5 "sip_headers.gperf"
+      {"To",                   ABNF_SIP_HDR_TO},
+#line 7 "sip_headers.gperf"
+      {"Via",                  ABNF_SIP_HDR_VIA},
+#line 41 "sip_headers.gperf"
+      {"d",                    ABNF_SIP_HDR_REQUEST_DISPOSITION},
+#line 3 "sip_headers.gperf"
+      {"From",                 ABNF_SIP_HDR_FROM},
+#line 44 "sip_headers.gperf"
+      {"Session-Expires",      ABNF_SIP_HDR_SESSION_EXPIRES},
 #line 45 "sip_headers.gperf"
-      {"MIME-Version", ABNF_SIP_HDR_MIME_VERSION}
+      {"x",                    ABNF_SIP_HDR_SESSION_EXPIRES},
+#line 29 "sip_headers.gperf"
+      {"k",                    ABNF_SIP_HDR_SUPPORTED},
+#line 39 "sip_headers.gperf"
+      {"j",                    ABNF_SIP_HDR_REJECT_CONTACT},
+#line 25 "sip_headers.gperf"
+      {"Date",                 ABNF_SIP_HDR_DATE},
+#line 32 "sip_headers.gperf"
+      {"Event",                ABNF_SIP_HDR_EVENT},
+#line 18 "sip_headers.gperf"
+      {"Max-Forwards",         ABNF_SIP_HDR_MAX_FORWARDS},
+#line 46 "sip_headers.gperf"
+      {"MIME-Version",         ABNF_SIP_HDR_MIME_VERSION},
+#line 43 "sip_headers.gperf"
+      {"b",                    ABNF_SIP_HDR_REFERRED_BY}
     };
 
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
