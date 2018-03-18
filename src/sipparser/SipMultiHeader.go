@@ -1,8 +1,7 @@
 package sipparser
 
 import (
-	//"bytes"
-	"fmt"
+	//"fmt"
 	"unsafe"
 )
 
@@ -77,24 +76,18 @@ func (this *SipMultiHeader) GenerateAndAddHeader(context *ParseContext, name, va
 }
 
 func (this *SipMultiHeader) Parse(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (newPos int, err error) {
-	fmt.Println("here1")
 	this.info = info
-	fmt.Println("this =", this)
-	fmt.Println("info =", info)
 
 	if info.parseFunc != nil && info.needParse && !context.ParseSipHeaderAsRaw {
-		fmt.Println("here2")
 		return this.parseHeader(context, src, pos, info)
 
 	}
 
-	fmt.Println("here3")
 	/* 此时可能存在多个用逗号隔开的同类型头部 */
 	return this.parseAsRawHeader(context, src, pos, info)
 }
 
 func (this *SipMultiHeader) parseHeader(context *ParseContext, src []byte, pos int, info *SipHeaderInfo) (newPos int, err error) {
-	fmt.Println("here2.1")
 	if pos >= len(src) {
 		return pos, &AbnfError{"SipMultiHeader  parseHeader: no header", src, newPos}
 	}
@@ -134,7 +127,6 @@ func (this *SipMultiHeader) parseHeader(context *ParseContext, src []byte, pos i
 
 		newPos1, err = ParseSWSMark(src, newPos, ',')
 		if err != nil {
-			fmt.Println("XXX")
 			return newPos + 2, nil
 		}
 		newPos = newPos1 //*/
