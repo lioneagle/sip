@@ -50,6 +50,20 @@ func TestAbnfSipHeader_GetSipHeaderIndex3(t *testing.T) {
 	}
 }
 
+func TestAbnfSipHeader_GetSipHeaderIndex4(t *testing.T) {
+	for i, v := range g_SipHeaderInfos {
+		v := v
+		j := i
+		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+			t.Parallel()
+
+			test.EXPECT_EQ(t, GetSipHeaderIndex4(v.name), SipHeaderIndexType(j), "header name = %s", v.name)
+			test.EXPECT_EQ(t, GetSipHeaderIndex4(bytes.ToLower(v.name)), SipHeaderIndexType(j), "header name = %s", bytes.ToLower(v.name))
+			test.EXPECT_EQ(t, GetSipHeaderIndex4(bytes.ToUpper(v.name)), SipHeaderIndexType(j), "header name = %s", bytes.ToUpper(v.name))
+		})
+	}
+}
+
 func BenchmarkGetSipHeaderIndex(b *testing.B) {
 	b.StopTimer()
 	b.SetBytes(2)
@@ -88,6 +102,20 @@ func BenchmarkGetSipHeaderIndex3(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		for _, v := range g_SipHeaderInfos {
 			GetSipHeaderIndex3(v.name)
+		}
+	}
+}
+
+func BenchmarkGetSipHeaderIndex4(b *testing.B) {
+	b.StopTimer()
+	b.SetBytes(2)
+	b.ReportAllocs()
+
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		for _, v := range g_SipHeaderInfos {
+			GetSipHeaderIndex4(v.name)
 		}
 	}
 }
