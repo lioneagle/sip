@@ -111,17 +111,32 @@ func TestAbnfRefParseEscapable(t *testing.T) {
 	}
 }
 
-func BenchmarkParseSipToken(b *testing.B) {
+func BenchmarkAbnfRefParseSipToken(b *testing.B) {
 	b.StopTimer()
 
 	b.ReportAllocs()
 	b.SetBytes(2)
 	b.StartTimer()
 
-	data := []byte("012345")
+	data := []byte("a01234567890cde")
 	ref := &AbnfRef{}
 
 	for i := 0; i < b.N; i++ {
 		ref.ParseSipToken(data, 0)
+	}
+}
+
+func BenchmarkAbnfRefParseSipUser(b *testing.B) {
+	b.StopTimer()
+
+	b.ReportAllocs()
+	b.SetBytes(2)
+	b.StartTimer()
+
+	data := []byte("+01234567890%23")
+	ref := &AbnfRef{}
+
+	for i := 0; i < b.N; i++ {
+		ref.ParseEscapableSipUser(data, 0)
 	}
 }
