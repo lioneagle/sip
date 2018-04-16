@@ -48,6 +48,89 @@ func (this *SipMsg) Parse(context *ParseContext, src []byte, pos int) (newPos in
 	return this.ParseMsgBody(context, src, newPos)
 }
 
+func SipMsgRawScan1(src []byte, pos int) (newPos int, err error) {
+	newPos = pos
+	len1 := int(len(src))
+
+	for newPos < len1 {
+		if IsCRLF(src, newPos) {
+			/* reach message-body */
+			return newPos + 2, nil
+		}
+
+		var ok bool
+
+		_, newPos, ok = FindCrlfRFC3261(src, newPos)
+		if !ok {
+			return newPos, &AbnfError{"SipHeaders parse: no CRLF for one header", src, newPos}
+		}
+	}
+	return newPos, nil
+}
+
+func SipMsgRawScan2(src []byte, pos int) (newPos int, err error) {
+	newPos = pos
+	len1 := int(len(src))
+
+	for newPos < len1 {
+		if IsCRLF(src, newPos) {
+			/* reach message-body */
+			return newPos + 2, nil
+		}
+
+		var ok bool
+
+		newPos, ok = FindCrlfRFC3261_2(src, newPos)
+		if !ok {
+			return newPos, &AbnfError{"SipHeaders parse: no CRLF for one header", src, newPos}
+		}
+	}
+	return newPos, nil
+}
+
+func SipMsgRawScan3(src []byte, pos int) (newPos int, err error) {
+	len1 := len(src)
+	p := uintptr(unsafe.Pointer(&src[pos]))
+	begin := p
+	end := begin + uintptr(len1)
+
+	for p < end {
+		if ((p + 1) < end) && (*((*byte)(unsafe.Pointer(p))) == '\r') &&
+			(*((*byte)(unsafe.Pointer(p + 1))) != '\n') {
+			/* reach message-body */
+			return int(p - begin + 2), nil
+		}
+
+		var ok bool
+
+		p, ok = FindCrlfRFC3261_3(p, end)
+		if !ok {
+			return int(p - begin), &AbnfError{"SipHeaders parse: no CRLF for one header", src, newPos}
+		}
+	}
+	return int(p - begin), nil
+}
+
+func SipMsgRawScan4(src []byte, pos int) (newPos int, err error) {
+	newPos = pos
+	len1 := int(len(src))
+
+	for newPos < len1 {
+		if IsCRLF(src, newPos) {
+			/* reach message-body */
+			return newPos + 2, nil
+		}
+
+		var ok bool
+
+		newPos, ok = FindCrlfRFC3261_4(src, newPos)
+		if !ok {
+			return newPos, &AbnfError{"SipHeaders parse: no CRLF for one header", src, newPos}
+		}
+	}
+	return newPos, nil
+}
+
 func (this *SipMsg) ParseMsgBody(context *ParseContext, src []byte, pos int) (newPos int, err error) {
 	newPos = pos
 	headerPtr, ok := this.headers.GetSingleHeaderParsedByIndex(context, ABNF_SIP_HDR_CONTENT_TYPE)

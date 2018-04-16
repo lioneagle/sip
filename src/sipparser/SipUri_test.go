@@ -328,8 +328,8 @@ func BenchmarkSipUriParse(b *testing.B) {
 	//v := []byte("sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com")
 	//v := []byte("sip:biloxi.com")
 	//v := []byte("sip:abc@biloxi.com;transport=tcp")
-	v := []byte("sip:abc@biloxi.com")
-	//v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
+	//v := []byte("sip:abc@biloxi.com")
+	v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
 	addr := NewSipUri(context)
@@ -358,7 +358,8 @@ func BenchmarkSipUriRegexp(b *testing.B) {
 	//v := []byte("sip:biloxi.com")
 	//v := []byte("sip:abc@biloxi.com;transport=tcp")
 	//v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
-	v := []byte("sip:abc@biloxi.com")
+	//v := []byte("sip:abc@biloxi.com")
+	v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
 	//v := "sip:"
 
 	b.ReportAllocs()
@@ -381,7 +382,8 @@ func BenchmarkSipUriString(b *testing.B) {
 	b.StopTimer()
 	//v := "sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com"
 	//v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
-	v := []byte("sip:abc@biloxi.com")
+	//v := []byte("sip:abc@biloxi.com")
+	v := []byte("sip:abc@biloxi.com;transport=tcp;method=REGISTER")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
 	addr := NewSipUri(context)

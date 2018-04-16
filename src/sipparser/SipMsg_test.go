@@ -661,6 +661,98 @@ func BenchmarkSipMsgRawParse(b *testing.B) {
 	}
 }
 
+func BenchmarkSipMsgRawScan1(b *testing.B) {
+	b.StopTimer()
+	msg1 := []byte(msg)
+	b.ReportAllocs()
+	b.SetBytes(2)
+	b.StartTimer()
+
+	//newPos := 0
+	var err error
+
+	for i := 0; i < b.N; i++ {
+		//newPos, err = SipMsgRawScan1(msg1, 0)
+		_, err = SipMsgRawScan1(msg1, 0)
+		if err != nil {
+			fmt.Println("SipMsgRawScan1 failed, err =", err.Error())
+			fmt.Println("msg1 = ", string(msg1))
+			break
+		} //*/
+	}
+
+	//fmt.Println("newPos =", newPos)
+}
+
+func BenchmarkSipMsgRawScan2(b *testing.B) {
+	b.StopTimer()
+	msg1 := []byte(msg)
+	b.ReportAllocs()
+	b.SetBytes(2)
+	b.StartTimer()
+
+	//newPos := 0
+	var err error
+
+	for i := 0; i < b.N; i++ {
+		//newPos, err = SipMsgRawScan2(msg1, 0)
+		_, err = SipMsgRawScan2(msg1, 0)
+		if err != nil {
+			fmt.Println("SipMsgRawScan2 failed, err =", err.Error())
+			fmt.Println("msg1 = ", string(msg1))
+			break
+		} //*/
+	}
+
+	//fmt.Println("newPos =", newPos)
+}
+
+func BenchmarkSipMsgRawScan3(b *testing.B) {
+	b.StopTimer()
+	msg1 := []byte(msg)
+	b.ReportAllocs()
+	b.SetBytes(2)
+	b.StartTimer()
+
+	//newPos := 0
+	var err error
+
+	for i := 0; i < b.N; i++ {
+		//newPos, err = SipMsgRawScan3(msg1, 0)
+		_, err = SipMsgRawScan3(msg1, 0)
+		if err != nil {
+			fmt.Println("SipMsgRawScan3 failed, err =", err.Error())
+			fmt.Println("msg1 = ", string(msg1))
+			break
+		} //*/
+	}
+
+	//fmt.Println("newPos =", newPos)
+}
+
+func BenchmarkSipMsgRawScan4(b *testing.B) {
+	b.StopTimer()
+	msg1 := []byte(msg)
+	b.ReportAllocs()
+	b.SetBytes(2)
+	b.StartTimer()
+
+	//newPos := 0
+	var err error
+
+	for i := 0; i < b.N; i++ {
+		//newPos, err = SipMsgRawScan4(msg1, 0)
+		_, err = SipMsgRawScan4(msg1, 0)
+		if err != nil {
+			fmt.Println("SipMsgRawScan3 failed, err =", err.Error())
+			fmt.Println("msg1 = ", string(msg1))
+			break
+		} //*/
+	}
+
+	//fmt.Println("newPos =", newPos)
+}
+
 func BenchmarkSipMsgEncode(b *testing.B) {
 	b.StopTimer()
 	context := NewParseContext()

@@ -4,6 +4,7 @@ import (
 	//"bytes"
 	//"fmt"
 	"strings"
+	"unsafe"
 )
 
 var total_headers int
@@ -411,4 +412,118 @@ func FindCrlfRFC3261(src []byte, pos int) (begin, end int, ok bool) {
 	}
 
 	return begin, end, true
+}
+
+func FindCrlfRFC3261_2(src []byte, pos int) (end int, ok bool) {
+	/* state diagram
+	 *                                                              other char/found
+	 *       |----------|    CR    |-------|    LF    |---------|---------------------->end
+	 *  |--->| ST_START | -------> | ST_CR |--------->| ST_CRLF |                        ^
+	 *  |    |----------|          |-------|          |---------|                        |
+	 *  |                               |                  |        other char/not found |
+	 *  |                               |------------------+-----------------------------|
+	 *  |            WSP                                   |
+	 *  |--------------------------------------------------|
+	 *
+	 *  it is an error if any character except 'LF' is after 'CR' in this routine.
+	 *  'CR' or 'LF' is not equal to 'CRLF' in this routine
+	 */
+	end = pos
+	len1 := len(src)
+	//for end < len1 {
+	for {
+		for ; (end < len1) && (src[end] != '\n'); end++ {
+		}
+		if end >= len1 {
+			/* no CRLF" */
+			return end, false
+		}
+		end++
+
+		if end >= len1 {
+			break
+		}
+
+		if !IsWspChar(src[end]) {
+			break
+		}
+	}
+
+	return end, true
+}
+
+func FindCrlfRFC3261_3(src, end uintptr) (pos uintptr, ok bool) {
+	/* state diagram
+	 *                                                              other char/found
+	 *       |----------|    CR    |-------|    LF    |---------|---------------------->end
+	 *  |--->| ST_START | -------> | ST_CR |--------->| ST_CRLF |                        ^
+	 *  |    |----------|          |-------|          |---------|                        |
+	 *  |                               |                  |        other char/not found |
+	 *  |                               |------------------+-----------------------------|
+	 *  |            WSP                                   |
+	 *  |--------------------------------------------------|
+	 *
+	 *  it is an error if any character except 'LF' is after 'CR' in this routine.
+	 *  'CR' or 'LF' is not equal to 'CRLF' in this routine
+	 */
+	p := src
+
+	for {
+		for ; (p < end) && (*((*byte)(unsafe.Pointer(p))) != '\n'); p++ {
+		}
+		if p >= end {
+			/* no CRLF" */
+			return p, false
+		}
+		p++
+
+		if p >= end {
+			return p, true
+		}
+
+		if !IsWspChar(*((*byte)(unsafe.Pointer(p)))) {
+			return p, true
+		}
+	}
+
+	return p, true
+}
+
+func FindCrlfRFC3261_4(src []byte, pos int) (newPos int, ok bool) {
+	/* state diagram
+	 *                                                              other char/found
+	 *       |----------|    CR    |-------|    LF    |---------|---------------------->end
+	 *  |--->| ST_START | -------> | ST_CR |--------->| ST_CRLF |                        ^
+	 *  |    |----------|          |-------|          |---------|                        |
+	 *  |                               |                  |        other char/not found |
+	 *  |                               |------------------+-----------------------------|
+	 *  |            WSP                                   |
+	 *  |--------------------------------------------------|
+	 *
+	 *  it is an error if any character except 'LF' is after 'CR' in this routine.
+	 *  'CR' or 'LF' is not equal to 'CRLF' in this routine
+	 */
+	p := uintptr(unsafe.Pointer(&src[pos]))
+	begin := uintptr(unsafe.Pointer(&src[0]))
+	end := begin + uintptr(len(src))
+
+	for {
+		for ; (p < end) && (*((*byte)(unsafe.Pointer(p))) != '\n'); p++ {
+		}
+		if p >= end {
+			/* no CRLF" */
+			return int(p - begin), false
+		}
+		p++
+
+		if p >= end {
+			return int(p - begin), true
+		}
+
+		if !IsWspChar(*((*byte)(unsafe.Pointer(p)))) {
+			return int(p - begin), true
+		}
+	}
+
+	return int(p - begin), true
 }

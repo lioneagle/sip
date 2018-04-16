@@ -81,3 +81,20 @@ func TestSipQuotedStringParseNOK(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkSipQuotedStringParse(b *testing.B) {
+	b.StopTimer()
+	src := []byte("\"0123456789\"")
+	q := &SipQuotedString{}
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024)
+
+	b.ReportAllocs()
+	b.SetBytes(2)
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		context.allocator.FreeAll()
+		q.Parse(context, src, 0)
+	}
+}
