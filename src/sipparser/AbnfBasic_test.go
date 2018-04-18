@@ -309,3 +309,20 @@ func BenchmarkParseUInt(b *testing.B) {
 		ParseUInt(src, 0)
 	}
 }
+
+func BenchmarkParseUriScheme(b *testing.B) {
+	b.StopTimer()
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+	var scheme AbnfBuf
+	src := []byte("sip:abc.com")
+
+	b.ReportAllocs()
+	b.SetBytes(2)
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		context.allocator.FreeAll()
+		ParseUriScheme(context, src, 0, &scheme)
+	}
+}

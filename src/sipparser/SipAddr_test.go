@@ -1,6 +1,7 @@
 package sipparser
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -58,3 +59,25 @@ func TestSipAddrParse(t *testing.T) {
 }
 
 //*/
+
+func BenchmarkSipAddrParse_1(b *testing.B) {
+	b.StopTimer()
+	v := []byte("\"string\" <sip:abc@biloxi.com;transport=tcp;method=REGISTER>")
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+	ptr := NewSipUri(context)
+	addr := ptr.GetSipAddr(context)
+	remain := context.allocator.Used()
+	b.ReportAllocs()
+	b.SetBytes(2)
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		context.allocator.ClearAllocNum()
+		context.allocator.FreePart(remain)
+		addr.Parse(context, v, 0)
+
+	}
+	//fmt.Printf("uri = %s\n", uri.String())
+	fmt.Printf("")
+}

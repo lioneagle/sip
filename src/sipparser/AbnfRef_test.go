@@ -140,3 +140,18 @@ func BenchmarkAbnfRefParseSipUser(b *testing.B) {
 		ref.ParseEscapableSipUser(data, 0)
 	}
 }
+
+func BenchmarkAbnfRefParseUriScheme(b *testing.B) {
+	b.StopTimer()
+
+	b.ReportAllocs()
+	b.SetBytes(2)
+	b.StartTimer()
+
+	data := []byte("sip:abc.com")
+	ref := &AbnfRef{}
+
+	for i := 0; i < b.N; i++ {
+		ref.ParseUriScheme(data, 0)
+	}
+}
