@@ -60,7 +60,7 @@ func TestSipAddrParse(t *testing.T) {
 
 //*/
 
-func BenchmarkSipAddrParse_1(b *testing.B) {
+func BenchmarkSipAddrParseNameAddr(b *testing.B) {
 	b.StopTimer()
 	v := []byte("\"string\" <sip:abc@biloxi.com;transport=tcp;method=REGISTER>")
 	context := NewParseContext()

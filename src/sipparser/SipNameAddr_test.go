@@ -61,7 +61,7 @@ func BenchmarkSipNameAddrSpecParse(b *testing.B) {
 	b.StopTimer()
 	//v := []byte("sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com")
 	//v := []byte("sip:abc@biloxi.com;transport=tcp")
-	v := []byte("<sip:abc@biloxi.com;transport=tcp;method=REGISTER>")
+	v := []byte("\"string\" <sip:abc@biloxi.com;transport=tcp;method=REGISTER>")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
 	addr := NewSipNameAddr(context)

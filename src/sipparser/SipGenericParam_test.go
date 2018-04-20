@@ -2,7 +2,7 @@ package sipparser
 
 import (
 	//"bytes"
-	//"fmt"
+	"fmt"
 	"testing"
 )
 
@@ -157,4 +157,26 @@ func TestGenericParamsParse(t *testing.T) {
 		}
 	}
 
+}
+
+func BenchmarkGenericParamsParse(b *testing.B) {
+	b.StopTimer()
+	v := []byte(";transport=tcp;method=REGISTER")
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+	addr := NewSipGenericParams(context)
+	params := addr.GetSipGenericParams(context)
+	remain := context.allocator.Used()
+	b.ReportAllocs()
+	b.SetBytes(2)
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		context.allocator.ClearAllocNum()
+		context.allocator.FreePart(remain)
+		params.Parse(context, v, 0, ';')
+
+	}
+	//fmt.Printf("uri = %s\n", uri.String())
+	fmt.Printf("")
 }
