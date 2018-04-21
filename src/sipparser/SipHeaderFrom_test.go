@@ -61,7 +61,8 @@ func BenchmarkSipHeaderFromParse(b *testing.B) {
 	//v := []byte("sip:biloxi.com")
 	//v := []byte("sip:abc@biloxi.com;transport=tcp")
 	//v := []byte("From: <sip:abc@biloxi.com;transport=tcp;method=REGISTER>")
-	v := []byte("From: \"User ID\" <sip:6140000@24.15.255.4>;tag=dab70900252036d7134be-4ec05abe")
+	//v := []byte("From: \"User ID\" <sip:6140000@24.15.255.4>;tag=dab70900252036d7134be-4ec05abe")
+	v := []byte("From: \"User ID\" <sip:abc@biloxi.com;transport=tcp;method=REGISTER>;tag=dab70900252036d7134be-4ec05abe")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
 	addr := NewSipHeaderFrom(context)
@@ -84,7 +85,8 @@ func BenchmarkSipHeaderFromEncode(b *testing.B) {
 	b.StopTimer()
 	//v := []byte("sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com")
 	//v := []byte("From: <sip:abc@biloxi.com;transport=tcp;method=REGISTER>")
-	v := []byte("From: \"User ID\" <sip:6140000@24.15.255.4>;tag=dab70900252036d7134be-4ec05abe")
+	v := []byte("From: \"User ID\" <sip:abc@biloxi.com;transport=tcp;method=REGISTER>;tag=dab70900252036d7134be-4ec05abe")
+	//v := []byte("From:<sip:abc@biloxi.com>;tag=dab70900252036d7134be-4ec05abe")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
 	addr := NewSipHeaderFrom(context)
@@ -103,13 +105,15 @@ func BenchmarkSipHeaderFromEncode(b *testing.B) {
 		context.allocator.FreePart(remain)
 		header.Encode(context, buf)
 	}
+
+	//fmt.Println("header =", buf.String())
 }
 
 //*
 func BenchmarkSipHeaderFromString(b *testing.B) {
 	b.StopTimer()
 	//v := []byte("sip:biloxi.com;transport=tcp;method=REGISTER?to=sip:bob%40biloxi.com")
-	v := []byte("From: <sip:abc@biloxi.com;transport=tcp;method=REGISTER>")
+	v := []byte("From: \"User ID\" <sip:abc@biloxi.com;transport=tcp;method=REGISTER>;tag=dab70900252036d7134be-4ec05abe")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
 	addr := NewSipHeaderFrom(context)

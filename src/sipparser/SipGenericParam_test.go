@@ -180,3 +180,28 @@ func BenchmarkGenericParamsParse(b *testing.B) {
 	//fmt.Printf("uri = %s\n", uri.String())
 	fmt.Printf("")
 }
+
+func BenchmarkGenericParamsEncode(b *testing.B) {
+	b.StopTimer()
+	v := []byte(";transport=tcp;method=REGISTER")
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+	addr := NewSipGenericParams(context)
+	params := addr.GetSipGenericParams(context)
+	params.Parse(context, v, 0, ';')
+	remain := context.allocator.Used()
+	buf := NewAbnfByteBuffer(nil)
+	b.ReportAllocs()
+	b.SetBytes(2)
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		buf.Reset()
+		context.allocator.ClearAllocNum()
+		context.allocator.FreePart(remain)
+		params.Encode(context, buf, ';')
+
+	}
+	//fmt.Printf("uri = %s\n", uri.String())
+	fmt.Printf("")
+}
