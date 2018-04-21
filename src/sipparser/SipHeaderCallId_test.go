@@ -104,4 +104,5 @@ func BenchmarkSipHeaderCallIdEncode(b *testing.B) {
 		header.Encode(context, buf)
 	}
 	fmt.Printf("")
+	//fmt.Println("header =", header.String(context))
 }
