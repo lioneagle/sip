@@ -1,2 +1,2 @@
 # sip
-sip stack for golang
+sip stack for Go
