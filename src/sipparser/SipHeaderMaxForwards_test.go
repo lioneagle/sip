@@ -52,3 +52,46 @@ func TestSipHeaderMaxForwardsParse(t *testing.T) {
 	}
 
 }
+
+func BenchmarkSipHeaderMaxForwardsParse(b *testing.B) {
+	b.StopTimer()
+	v := []byte("Max-Forwards: 70")
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+	addr := NewSipHeaderMaxForwards(context)
+	header := addr.GetSipHeaderMaxForwards(context)
+	remain := context.allocator.Used()
+	b.ReportAllocs()
+	b.SetBytes(2)
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		context.allocator.ClearAllocNum()
+		context.allocator.FreePart(remain)
+		header.Parse(context, v, 0)
+	}
+	//fmt.Printf("header = %s\n", header.String())
+}
+
+func BenchmarkSipHeaderMaxForwardsEncode(b *testing.B) {
+	b.StopTimer()
+	v := []byte("Max-Forwards: 70")
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 30)
+	addr := NewSipHeaderMaxForwards(context)
+	header := addr.GetSipHeaderMaxForwards(context)
+	header.Parse(context, v, 0)
+	remain := context.allocator.Used()
+	//buf := bytes.NewBuffer(make([]byte, 1024*1024))
+	buf := &AbnfByteBuffer{}
+	b.SetBytes(2)
+	b.ReportAllocs()
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		buf.Reset()
+		context.allocator.ClearAllocNum()
+		context.allocator.FreePart(remain)
+		header.Encode(context, buf)
+	}
+}
