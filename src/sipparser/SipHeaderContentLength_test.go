@@ -66,7 +66,7 @@ func TestSipHeaderContentLengthParse(t *testing.T) {
 
 func BenchmarkSipHeaderContentLengthParse(b *testing.B) {
 	b.StopTimer()
-	v := []byte("Content-Length: 226")
+	v := []byte("Content-Length: 2226")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
 	addr := NewSipHeaderContentLength(context)
@@ -87,7 +87,7 @@ func BenchmarkSipHeaderContentLengthParse(b *testing.B) {
 
 func BenchmarkSipHeaderContentLengthEncode(b *testing.B) {
 	b.StopTimer()
-	v := []byte("Content-Length: 226")
+	v := []byte("Content-Length: 2226")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
 	addr := NewSipHeaderContentLength(context)
