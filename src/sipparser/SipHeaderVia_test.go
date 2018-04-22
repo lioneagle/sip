@@ -113,7 +113,7 @@ func TestSipHeaderViaParseMulti(t *testing.T) {
 func BenchmarkSipHeaderViaParse(b *testing.B) {
 	b.StopTimer()
 	//v := []byte("Via: SIP/2.0/UDP 10.4.1.1:5070;branch=123")
-	v := []byte("Via: SIP/2.0/UDP 24.15.255.101:5060")
+	v := []byte("Via: SIP/2.0/UDP 24.15.255.101:5060;branch=072c09e5.0")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
 	addr := NewSipHeaderVia(context)
@@ -135,7 +135,7 @@ func BenchmarkSipHeaderViaParse(b *testing.B) {
 func BenchmarkSipHeaderViaEncode(b *testing.B) {
 	b.StopTimer()
 	//v := []byte("Via: SIP/2.0/UDP 10.4.1.1:5070;branch=123")
-	v := []byte("Via: SIP/2.0/UDP 24.15.255.101:5060")
+	v := []byte("Via: SIP/2.0/UDP 24.15.255.101:5060;branch=072c09e5.0")
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
 	addr := NewSipHeaderVia(context)
