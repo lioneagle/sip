@@ -24,6 +24,13 @@ func init() {
 	fmt.Println("sizeof(SipHostPort)          =", unsafe.Sizeof(SipHostPort{}))
 	fmt.Println("sizeof(SipUri)               =", unsafe.Sizeof(SipUri{}))
 	fmt.Println("sizeof(SipAddr)              =", unsafe.Sizeof(SipAddr{}))
+	fmt.Println("sizeof(SipGenericParam)      =", unsafe.Sizeof(SipGenericParam{}))
+	fmt.Println("sizeof(SipHeaderFrom)        =", unsafe.Sizeof(SipHeaderFrom{}))
+	fmt.Println("sizeof(SipHeaderCallId)      =", unsafe.Sizeof(SipHeaderCallId{}))
+	fmt.Println("sizeof(SipHeaderCseq)        =", unsafe.Sizeof(SipHeaderCseq{}))
+	fmt.Println("sizeof(SipHeaderMaxForwards) =", unsafe.Sizeof(SipHeaderMaxForwards{}))
+	fmt.Println("sizeof(SipVersion)           =", unsafe.Sizeof(SipVersion{}))
+	fmt.Println("sizeof(SipStartLine)         =", unsafe.Sizeof(SipStartLine{}))
 }
 
 func toLower(ch byte) byte {

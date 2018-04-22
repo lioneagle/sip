@@ -19,6 +19,7 @@ func TestSipStartLineParse(t *testing.T) {
 		{"SIP/2.0 200 OK\r\n", true, false, len("SIP/2.0 200 OK\r\n"), "SIP/2.0 200 OK\r\n"},
 		{"SIP/2.0 200 OK xx\r\n", true, false, len("SIP/2.0 200 OK xx\r\n"), "SIP/2.0 200 OK xx\r\n"},
 		{"SIP/2.0 200 \r\n", true, false, len("SIP/2.0 200 \r\n"), "SIP/2.0 200 \r\n"},
+		//{"SIP/2.0 200 %23\r\n", true, false, len("SIP/2.0 200 %23\r\n"), "SIP/2.0 200 %23\r\n"},
 
 		{" INVITE sip:123@a.com SIP/2.0\r\n", false, true, 0, ""},
 		{"INVITE", false, true, len("INVITE"), ""},
