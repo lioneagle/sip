@@ -1053,7 +1053,7 @@ func BenchmarkSipMsgsRawParse(b *testing.B) {
 
 			b.StopTimer()
 			context := NewParseContext()
-			context.allocator = NewMemAllocator(1024 * 30)
+			context.allocator = NewMemAllocator(1024 * 10)
 			addr := NewSipMsg(context)
 			sipmsg := addr.GetSipMsg(context)
 			remain := context.allocator.Used()
@@ -1080,6 +1080,41 @@ func BenchmarkSipMsgsRawParse(b *testing.B) {
 	}
 }
 
+func BenchmarkSipMsgsRawEncode(b *testing.B) {
+	bufs := ReadSipMsgBufs()
+
+	testdata := bufs.GetFilteredData(".")
+
+	for _, v := range testdata {
+		v := v
+
+		b.Run(v.Name, func(b *testing.B) {
+			//b.Parallel()
+			b.StopTimer()
+			context := NewParseContext()
+			context.allocator = NewMemAllocator(1024 * 10)
+			addr := NewSipMsg(context)
+			sipmsg := addr.GetSipMsg(context)
+			msg := v.Buf
+			context.ParseSipHeaderAsRaw = true
+			sipmsg.Parse(context, msg, 0)
+			remain := context.allocator.Used()
+			buf := &AbnfByteBuffer{}
+
+			b.SetBytes(2)
+			b.ReportAllocs()
+			b.StartTimer()
+
+			for i := 0; i < b.N; i++ {
+				buf.Reset()
+				context.allocator.ClearAllocNum()
+				context.allocator.FreePart(remain)
+				sipmsg.Encode(context, buf)
+			}
+		})
+	}
+}
+
 func BenchmarkSipMsgsParse(b *testing.B) {
 	bufs := ReadSipMsgBufs()
 
@@ -1093,7 +1128,7 @@ func BenchmarkSipMsgsParse(b *testing.B) {
 
 			b.StopTimer()
 			context := NewParseContext()
-			context.allocator = NewMemAllocator(1024 * 30)
+			context.allocator = NewMemAllocator(1024 * 10)
 			addr := NewSipMsg(context)
 			sipmsg := addr.GetSipMsg(context)
 			remain := context.allocator.Used()
@@ -1115,6 +1150,41 @@ func BenchmarkSipMsgsParse(b *testing.B) {
 					fmt.Println("msg = ", string(msg))
 					break
 				} //*/
+			}
+		})
+	}
+}
+
+func BenchmarkSipMsgsEncode(b *testing.B) {
+	bufs := ReadSipMsgBufs()
+
+	testdata := bufs.GetFilteredData(".")
+
+	for _, v := range testdata {
+		v := v
+
+		b.Run(v.Name, func(b *testing.B) {
+			//b.Parallel()
+			b.StopTimer()
+			context := NewParseContext()
+			context.allocator = NewMemAllocator(1024 * 10)
+			addr := NewSipMsg(context)
+			sipmsg := addr.GetSipMsg(context)
+			msg := v.Buf
+			context.ParseSipHeaderAsRaw = false
+			sipmsg.Parse(context, msg, 0)
+			remain := context.allocator.Used()
+			buf := &AbnfByteBuffer{}
+
+			b.SetBytes(2)
+			b.ReportAllocs()
+			b.StartTimer()
+
+			for i := 0; i < b.N; i++ {
+				buf.Reset()
+				context.allocator.ClearAllocNum()
+				context.allocator.FreePart(remain)
+				sipmsg.Encode(context, buf)
 			}
 		})
 	}
