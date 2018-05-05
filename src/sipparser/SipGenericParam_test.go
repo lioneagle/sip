@@ -14,6 +14,7 @@ func TestGenericParamParse(t *testing.T) {
 		newPos int
 		encode string
 	}{
+		{"a=[asas]", true, len("a=[asas]"), "a=[asas]"},
 		{"a=b", true, len("a=b"), "a=b"},
 		{"a\r\n\t=\r\n\tb", true, len("a\r\n\t=\r\n\tb"), "a=b"},
 		{"a\r\n =\r\n b", true, len("a\r\n =\r\n b"), "a=b"},
@@ -123,7 +124,7 @@ func TestGenericParamsParse(t *testing.T) {
 
 		{";a=", false, len(";a="), ""},
 		{";@=", false, len(";"), ""},
-		{";a\r\n=", false, len(";a"), ""},
+		{";a\r\n =", false, len(";a\r\n ="), ""},
 		{";a=\"ac", false, len(";a=\"ac"), ""},
 		{";a=@", false, len(";a="), ""},
 	}

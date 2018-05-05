@@ -2,7 +2,7 @@ package sipparser
 
 import (
 	"bytes"
-	//"fmt"
+	"fmt"
 	//"strconv"
 	"unsafe"
 )
@@ -332,7 +332,6 @@ func ParseSWSMarkCanOmmit(src []byte, pos int, mark byte) (newPos int, matchMark
 	}
 
 	if newPos >= len(src) {
-		//fmt.Println("here1")
 		return newPos, false, &AbnfError{"SWSMark parse: reach end before mark", src, newPos}
 	}
 
@@ -368,7 +367,7 @@ func ParseSWSMark(src []byte, pos int, mark byte) (newPos int, err error) {
 
 	if src[newPos] != mark {
 		//fmt.Println("here3")
-		return newPos, &AbnfError{"SWSMark parse: not expected mark after SWS", src, newPos}
+		return newPos, &AbnfError{fmt.Sprintf("SWSMark parse: not expected mark(%c) after SWS", mark), src, newPos}
 	}
 
 	return ParseSWS(src, newPos+1)

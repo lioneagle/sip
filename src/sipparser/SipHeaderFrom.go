@@ -68,7 +68,7 @@ func (this *SipHeaderFrom) ParseValueWithoutInit(context *ParseContext, src []by
 }
 
 func (this *SipHeaderFrom) Encode(context *ParseContext, buf *AbnfByteBuffer) {
-	buf.WriteString(ABNF_NAME_SIP_HDR_FROM_COLON)
+	buf.WriteString("From: ")
 	this.EncodeValue(context, buf)
 }
 

@@ -1,7 +1,7 @@
 package sipparser
 
 import (
-	//"bytes"
+	"bytes"
 	//"fmt"
 	"unsafe"
 )
@@ -10,7 +10,7 @@ const (
 	SIP_GENERIC_VALUE_TYPE_NOT_EXIST     = 0
 	SIP_GENERIC_VALUE_TYPE_TOKEN         = 1
 	SIP_GENERIC_VALUE_TYPE_QUOTED_STRING = 2
-	//SIP_GENERIC_VALUE_TYPE_HOST          = 3
+	SIP_GENERIC_VALUE_TYPE_IPV6          = 3
 )
 
 type SipGenericParam struct {
@@ -61,9 +61,15 @@ func (this *SipGenericParam) ParseWithoutInit(context *ParseContext, src []byte,
 		return newPos, nil
 	}
 
-	newPos, err = ParseSWSMark(src, newPos, '=')
+	var matchMark bool
+
+	newPos, matchMark, err = ParseSWSMarkCanOmmit(src, newPos, '=')
 	if err != nil {
 		return newPos, err
+	}
+
+	if !matchMark {
+		return newPos, nil
 	}
 
 	return this.ParseValue(context, src, newPos)
@@ -80,6 +86,8 @@ func (this *SipGenericParam) ParseValue(context *ParseContext, src []byte, pos i
 		return this.parseValueToken(context, src, newPos)
 	} else if (src[newPos] == '"') || IsLwsChar(src[newPos]) {
 		return this.parseValueQuotedString(context, src, newPos)
+	} else if src[newPos] == '[' {
+		return this.parseValueIpv6(context, src, newPos)
 	}
 
 	return newPos, &AbnfError{"generic-param ParseValue: not token nor quoted-string", src, newPos}
@@ -111,6 +119,27 @@ func (this *SipGenericParam) parseValueQuotedString(context *ParseContext, src [
 		return newPos, err
 	}
 	this.valueType = SIP_GENERIC_VALUE_TYPE_QUOTED_STRING
+	this.value = addr
+	return newPos, nil
+}
+
+func (this *SipGenericParam) parseValueIpv6(context *ParseContext, src []byte, pos int) (newPos int, err error) {
+	newPos = pos
+	p1 := bytes.IndexByte(src[newPos:], ']')
+	if p1 == -1 {
+		return newPos, &AbnfError{"no ']' for ipv6 for gen-value", src, newPos}
+	}
+
+	addr := NewAbnfBuf(context)
+	if addr == ABNF_PTR_NIL {
+		return newPos, &AbnfError{"generic-param  ParseValue: out of memory for ipv6 value", src, newPos}
+	}
+
+	buf := addr.GetAbnfBuf(context)
+	buf.SetByteSlice(context, src[newPos:newPos+p1+1])
+
+	newPos += p1 + 1
+	this.valueType = SIP_GENERIC_VALUE_TYPE_IPV6
 	this.value = addr
 	return newPos, nil
 }
@@ -156,7 +185,7 @@ func (this *SipGenericParam) Encode(context *ParseContext, buf *AbnfByteBuffer) 
 	//buf.Write(SipPnameEscape(this.name.GetAsByteSlice(context)))
 	WriteSipPnameEscape(buf, this.name.GetAsByteSlice(context))
 	if this.valueType != SIP_GENERIC_VALUE_TYPE_NOT_EXIST && this.value != ABNF_PTR_NIL {
-		if this.valueType == SIP_GENERIC_VALUE_TYPE_TOKEN {
+		if this.valueType == SIP_GENERIC_VALUE_TYPE_TOKEN || this.valueType == SIP_GENERIC_VALUE_TYPE_IPV6 {
 			buf.WriteByte('=')
 			this.value.GetAbnfBuf(context).Encode(context, buf)
 		} else if this.valueType == SIP_GENERIC_VALUE_TYPE_QUOTED_STRING {

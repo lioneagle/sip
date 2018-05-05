@@ -124,11 +124,17 @@ func (this *SipMultiHeader) parseHeader(context *ParseContext, src []byte, pos i
 
 		//*
 		var newPos1 int
+		var macthMark bool
 
-		newPos1, err = ParseSWSMark(src, newPos, ',')
+		newPos1, macthMark, err = ParseSWSMarkCanOmmit(src, newPos, ',')
 		if err != nil {
 			return newPos + 2, nil
 		}
+
+		if !macthMark {
+			return newPos, nil
+		}
+
 		newPos = newPos1 //*/
 	}
 	return newPos, nil

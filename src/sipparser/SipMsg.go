@@ -5,6 +5,8 @@ import (
 	//"fmt"
 	"strconv"
 	"unsafe"
+
+	"github.com/lioneagle/goutil/src/chars"
 )
 
 type SipMsg struct {
@@ -96,7 +98,7 @@ func SipMsgRawScan3(src []byte, pos int) (newPos int, err error) {
 
 	for p < end {
 		if ((p + 1) < end) && (*((*byte)(unsafe.Pointer(p))) == '\r') &&
-			(*((*byte)(unsafe.Pointer(p + 1))) != '\n') {
+			(*((*byte)(unsafe.Pointer(p + 1))) == '\n') {
 			/* reach message-body */
 			return int(p - begin + 2), nil
 		}
@@ -331,4 +333,42 @@ func (this *SipMsg) String(context *ParseContext) string {
 	var buf AbnfByteBuffer
 	this.Encode(context, &buf)
 	return buf.String()
+}
+
+func ByteSliceIndexNoCase(src []byte, pos int, find []byte) (newPos int, ok bool) {
+	len1 := int(len(src))
+	len2 := int(len(find))
+
+	if len2 <= 0 {
+		return 0, false
+	}
+
+	newPos = pos
+	findPos := 0
+
+	c := chars.ToLower(find[findPos])
+	findPos++
+	len2--
+
+	for {
+		for {
+			if newPos >= len1 {
+				return 0, false
+			}
+			sc := chars.ToLower(src[newPos])
+			newPos++
+			if sc == c {
+				break
+			}
+		}
+		if (newPos + len2) >= len1 {
+			return 0, false
+		}
+
+		if chars.EqualNoCase(src[newPos:newPos+len2], find[findPos:]) {
+			break
+		}
+	}
+
+	return newPos - 1, true
 }

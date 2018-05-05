@@ -1,11 +1,217 @@
 package sipparser
 
 import (
-	//"bytes"
+	"bytes"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"testing"
-	_ "unsafe"
 )
+
+const (
+	SIP_MSG_BUF_SEPERATOR = "========"
+)
+
+type SipMsgBuf struct {
+	Name string
+	Buf  []byte
+}
+
+func NewSipMsgBuf() *SipMsgBuf {
+	return &SipMsgBuf{}
+}
+
+func (this *SipMsgBuf) Read(src []byte, pos int) (newPos int, ret int) {
+	len1 := len(src)
+	newPos = pos
+	p1 := bytes.Index(src[newPos:], []byte(SIP_MSG_BUF_SEPERATOR))
+	if p1 == -1 {
+		return newPos, -1
+	}
+	newPos += p1
+
+	p1 = bytes.IndexByte(src[newPos:], '\n')
+	if p1 == -1 {
+		return newPos, -1
+	}
+	newPos += p1 + 1
+
+	for ; newPos < len1; newPos++ {
+		if !IsWspChar(src[newPos]) {
+			break
+		}
+	}
+
+	if newPos >= len1 {
+		return newPos, -1
+	}
+
+	if !bytes.Equal(src[newPos:newPos+4], []byte("name")) {
+		fmt.Printf("ERROR: not name after seperator at %d\n", newPos)
+		return newPos, 1
+	}
+
+	newPos += 4
+
+	for ; newPos < len1; newPos++ {
+		if !IsWspChar(src[newPos]) {
+			break
+		}
+	}
+
+	if newPos >= len1 {
+		fmt.Printf("ERROR: reach end after name at %d\n", newPos)
+		return newPos, 2
+	}
+
+	if src[newPos] != '=' {
+		fmt.Errorf("ERROR: not '=' after name at %d\n", newPos)
+		return newPos, 3
+	}
+	newPos++
+
+	for ; newPos < len1; newPos++ {
+		if !IsWspChar(src[newPos]) {
+			break
+		}
+	}
+
+	if newPos >= len1 {
+		fmt.Printf("ERROR: reach end after '=' at %d\n", newPos)
+		return newPos, 4
+	}
+
+	if src[newPos] != '"' {
+		fmt.Printf("ERROR: not '\"' after '=' at %d\n", newPos)
+		return newPos, 5
+	}
+
+	newPos++
+
+	nameBegin := newPos
+
+	p1 = bytes.IndexByte(src[newPos:], '"')
+	if p1 == -1 {
+		fmt.Printf("ERROR: not '\"' after name-value at %d\n", newPos)
+		return newPos, 6
+	}
+	newPos += p1
+
+	this.Name = string(src[nameBegin:newPos])
+
+	newPos++
+
+	for ; newPos < len1; newPos++ {
+		if !IsLwsChar(src[newPos]) {
+			break
+		}
+	}
+
+	if newPos >= len1 {
+		fmt.Printf("ERROR: reach end after name-value at %d\n", newPos)
+		return newPos, 7
+	}
+
+	bufBegin := newPos
+
+	p1 = bytes.Index(src[newPos:], []byte(SIP_MSG_BUF_SEPERATOR))
+	if p1 == -1 {
+		fmt.Printf("ERROR: reach end after msg-value at %d\n", newPos)
+		return newPos, 8
+	}
+
+	newPos += p1
+
+	this.Buf = src[bufBegin : newPos-2]
+
+	return newPos, 0
+}
+
+type SipMsgBufs struct {
+	Size  int
+	Data  map[string]*SipMsgBuf
+	Names []string
+}
+
+func NewSipMsgBufs() *SipMsgBufs {
+	return &SipMsgBufs{Data: make(map[string]*SipMsgBuf)}
+}
+
+func (this *SipMsgBufs) ReadFromFile(filename string) bool {
+	if this.Size > 0 {
+		return true
+	}
+
+	src, err := ioutil.ReadFile(filename)
+	if err != nil {
+		fmt.Errorf("ERROR: read file %s failed, err =\n", filename, err.Error())
+		return false
+	}
+
+	pos := 0
+	len1 := len(src)
+
+	var ret int
+
+	for {
+		buf := NewSipMsgBuf()
+		pos, ret = buf.Read(src, pos)
+		if ret == -1 {
+			return true
+		} else if ret != 0 {
+			fmt.Println("ERROR: ret =", ret)
+			return false
+		}
+
+		this.Data[buf.Name] = buf
+		this.Names = append(this.Names, buf.Name)
+		this.Size++
+
+		if pos >= len1 {
+			break
+		}
+	}
+
+	return true
+}
+
+func (this *SipMsgBufs) GetFilteredData(filter string) (ret []*SipMsgBuf) {
+	if len(filter) == 0 {
+		filter = "."
+	}
+
+	if filter != "." {
+		for _, v := range this.Names {
+			_, ok := ByteSliceIndexNoCase([]byte(v), 0, []byte(filter))
+			if ok {
+				ret = append(ret, this.Data[v])
+			}
+		}
+	} else {
+		for _, v := range this.Names {
+			ret = append(ret, this.Data[v])
+		}
+	}
+
+	return ret
+}
+
+var g_sip_msgs *SipMsgBufs = NewSipMsgBufs()
+
+func ReadSipMsgBufs() *SipMsgBufs {
+	filename := filepath.FromSlash(os.Args[len(os.Args)-1] + "/src/testdata/sip_msg.txt")
+	g_sip_msgs.ReadFromFile(filename)
+	//fmt.Println("g_sip_msgs.Size", g_sip_msgs.Size)
+	return g_sip_msgs
+}
+
+/*func TestSipMsgBufsReadFromFile(t *testing.T) {
+	bufs := ReadSipMsgBufs()
+	p := bufs.Data["sip_flow_reg_message_200"]
+
+	fmt.Printf("bufs[\"sip_flow_reg_message_200\"] = \n%s", string(p.Buf))
+}*/
 
 //*
 func TestSipMsgParse1(t *testing.T) {
@@ -744,7 +950,7 @@ func BenchmarkSipMsgRawScan4(b *testing.B) {
 		//newPos, err = SipMsgRawScan4(msg1, 0)
 		_, err = SipMsgRawScan4(msg1, 0)
 		if err != nil {
-			fmt.Println("SipMsgRawScan3 failed, err =", err.Error())
+			fmt.Println("SipMsgRawScan4 failed, err =", err.Error())
 			fmt.Println("msg1 = ", string(msg1))
 			break
 		} //*/
@@ -800,4 +1006,116 @@ func BenchmarkSipMsgRawEncode(b *testing.B) {
 		sipmsg.Encode(context, buf)
 	}
 	fmt.Printf("")
+}
+
+func BenchmarkSipMsgsRawScan(b *testing.B) {
+	bufs := ReadSipMsgBufs()
+
+	testdata := bufs.GetFilteredData(".")
+
+	for _, v := range testdata {
+		v := v
+
+		b.Run(v.Name, func(b *testing.B) {
+			//b.Parallel()
+
+			b.StopTimer()
+
+			msg := v.Buf
+			context := NewParseContext()
+			context.allocator = NewMemAllocator(1024 * 10)
+
+			b.StartTimer()
+
+			var err error
+			for i := 0; i < b.N; i++ {
+				_, err = SipMsgRawScan1(msg, 0)
+				if err != nil {
+					fmt.Println("SipMsgRawScan4 failed, err =", err.Error())
+					fmt.Println("msg1 = ", string(msg))
+					break
+				}
+			}
+		})
+	}
+}
+
+func BenchmarkSipMsgsRawParse(b *testing.B) {
+	bufs := ReadSipMsgBufs()
+
+	testdata := bufs.GetFilteredData(".")
+
+	for _, v := range testdata {
+		v := v
+
+		b.Run(v.Name, func(b *testing.B) {
+			//b.Parallel()
+
+			b.StopTimer()
+			context := NewParseContext()
+			context.allocator = NewMemAllocator(1024 * 30)
+			addr := NewSipMsg(context)
+			sipmsg := addr.GetSipMsg(context)
+			remain := context.allocator.Used()
+			context.ParseSipHeaderAsRaw = true
+			msg := v.Buf
+
+			b.ReportAllocs()
+			b.SetBytes(2)
+			b.StartTimer()
+
+			for i := 0; i < b.N; i++ {
+				context.allocator.ClearAllocNum()
+				context.allocator.FreePart(remain)
+				print_mem = true
+				_, err := sipmsg.Parse(context, msg, 0)
+				print_mem = false
+				if err != nil {
+					fmt.Println("parse sip msg failed, err =", err.Error())
+					fmt.Println("msg = ", string(msg))
+					break
+				} //*/
+			}
+		})
+	}
+}
+
+func BenchmarkSipMsgsParse(b *testing.B) {
+	bufs := ReadSipMsgBufs()
+
+	testdata := bufs.GetFilteredData(".")
+
+	for _, v := range testdata {
+		v := v
+
+		b.Run(v.Name, func(b *testing.B) {
+			//b.Parallel()
+
+			b.StopTimer()
+			context := NewParseContext()
+			context.allocator = NewMemAllocator(1024 * 30)
+			addr := NewSipMsg(context)
+			sipmsg := addr.GetSipMsg(context)
+			remain := context.allocator.Used()
+			context.ParseSipHeaderAsRaw = false
+			msg := v.Buf
+
+			b.ReportAllocs()
+			b.SetBytes(2)
+			b.StartTimer()
+
+			for i := 0; i < b.N; i++ {
+				context.allocator.ClearAllocNum()
+				context.allocator.FreePart(remain)
+				print_mem = true
+				_, err := sipmsg.Parse(context, msg, 0)
+				print_mem = false
+				if err != nil {
+					fmt.Println("parse sip msg failed, err =", err.Error())
+					fmt.Println("msg = ", string(msg))
+					break
+				} //*/
+			}
+		})
+	}
 }

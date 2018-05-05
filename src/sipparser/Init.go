@@ -31,6 +31,8 @@ func init() {
 	fmt.Println("sizeof(SipHeaderMaxForwards) =", unsafe.Sizeof(SipHeaderMaxForwards{}))
 	fmt.Println("sizeof(SipVersion)           =", unsafe.Sizeof(SipVersion{}))
 	fmt.Println("sizeof(SipStartLine)         =", unsafe.Sizeof(SipStartLine{}))
+	fmt.Println("sizeof(SipHeaders)           =", unsafe.Sizeof(SipHeaders{}))
+	fmt.Println("sizeof(SipSingleHeader)      =", unsafe.Sizeof(SipSingleHeader{}))
 }
 
 func toLower(ch byte) byte {

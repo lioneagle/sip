@@ -388,13 +388,19 @@ func FindCrlfRFC3261(src []byte, pos int) (begin, end int, ok bool) {
 	len1 := len(src)
 	//for end < len1 {
 	for {
+		//*
 		for ; (end < len1) && (src[end] != '\n'); end++ {
 		}
 		if end >= len1 {
-			/* no CRLF" */
+			// no CRLF"
 			return end, end, false
 		}
-		end++
+		end++ //*/
+		/*p1 := bytes.IndexByte(src[end:], '\n')
+		if p1 == -1 {
+			return len1, len1, false
+		}
+		end += p1 + 1*/
 
 		if end >= len1 {
 			break
