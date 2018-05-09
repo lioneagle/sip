@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	//"sort"
+	"io"
 )
 
 const (
@@ -204,6 +206,77 @@ func ReadSipMsgBufs() *SipMsgBufs {
 	g_sip_msgs.ReadFromFile(filename)
 	//fmt.Println("g_sip_msgs.Size", g_sip_msgs.Size)
 	return g_sip_msgs
+}
+
+func printSipMsgsParseMemUsed() {
+
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 10)
+	context.ParseSipHeaderAsRaw = false
+
+	type memUsed struct {
+		name    string
+		srcLen  int
+		memUsed int
+	}
+
+	var memUsedList []*memUsed
+
+	bufs := ReadSipMsgBufs()
+
+	testdata := bufs.GetFilteredData(".")
+
+	maxNameLen := 0
+
+	for _, v := range testdata {
+		msg := v.Buf
+		context.allocator.FreeAll()
+		addr := NewSipMsg(context)
+		sipmsg := addr.GetSipMsg(context)
+		_, err := sipmsg.Parse(context, msg, 0)
+		if err != nil {
+			fmt.Println("parse sip msg failed, err =", err.Error())
+			fmt.Println("msg = ", string(msg))
+			return
+		}
+
+		mem := &memUsed{}
+		mem.name = v.Name
+		mem.srcLen = len(v.Buf)
+		mem.memUsed = int(context.allocator.Used())
+
+		if len(mem.name) > maxNameLen {
+			maxNameLen = len(mem.name)
+		}
+
+		memUsedList = append(memUsedList, mem)
+	}
+
+	//sort.Slice(memUsedList,func(i,j int){ return memUsedList[i].name < memUsedList[j].name})
+
+	fmt.Printf("name")
+	PrintIndent(os.Stdout, maxNameLen+4+len("MemUsed/"))
+	fmt.Printf("%-5s  %-5s  %-5s  %-5s", "src,", "mem,", "delta,", "percent\n")
+
+	totalSrcLen := 0
+	totalMemUsed := 0
+	for _, v := range memUsedList {
+		totalSrcLen += v.srcLen
+		totalMemUsed += v.memUsed
+		fmt.Printf("MemUsed/%s", v.name)
+		PrintIndent(os.Stdout, maxNameLen+4-len(v.name))
+		delta := v.memUsed - v.srcLen
+		fmt.Printf(":  %5d, %5d,  %5d,  %.2f%%\n", v.srcLen, v.memUsed, delta, 100*float64(delta)/float64(v.srcLen))
+	}
+	totalDelta := totalMemUsed - totalSrcLen
+	fmt.Printf("MemUsed/total")
+	PrintIndent(os.Stdout, maxNameLen+4-len("total"))
+	fmt.Printf(":  %5d, %5d,  %5d,  %.2f%%\n", totalSrcLen, totalMemUsed, totalDelta, 100*float64(totalDelta)/float64(totalSrcLen))
+
+}
+
+func PrintIndent(w io.Writer, indent int) {
+	fmt.Fprintf(w, fmt.Sprintf("%%%ds", indent), "")
 }
 
 /*func TestSipMsgBufsReadFromFile(t *testing.T) {
@@ -591,9 +664,7 @@ func BenchmarkSipMsg1Parse(b *testing.B) {
 		//copy(msg2, msg1[:len(msg1)])
 		context.allocator.ClearAllocNum()
 		context.allocator.FreePart(remain)
-		print_mem = true
 		_, err := sipmsg.Parse(context, msg1, 0)
-		print_mem = false
 		if err != nil {
 			fmt.Println("parse sip msg failed, err =", err.Error())
 			fmt.Println("msg1 = ", string(msg1))
@@ -645,9 +716,7 @@ func BenchmarkSipMsg1RawParse(b *testing.B) {
 		//copy(msg2, msg1[:len(msg1)])
 		context.allocator.ClearAllocNum()
 		context.allocator.FreePart(remain)
-		print_mem = true
 		_, err := sipmsg.Parse(context, msg1, 0)
-		print_mem = false
 		if err != nil {
 			fmt.Println("parse sip msg failed, err =", err.Error())
 			fmt.Println("msg1 = ", string(msg1))
@@ -699,9 +768,7 @@ func BenchmarkSipMsg2Parse(b *testing.B) {
 		//copy(msg2, msg1[:len(msg1)])
 		context.allocator.ClearAllocNum()
 		context.allocator.FreePart(remain)
-		print_mem = true
 		_, err := sipmsg.Parse(context, msg1, 0)
-		print_mem = false
 		if err != nil {
 			fmt.Println("parse sip msg failed, err =", err.Error())
 			fmt.Println("msg1 = ", string(msg1))
@@ -753,9 +820,7 @@ func BenchmarkSipMsg3Parse(b *testing.B) {
 		//copy(msg2, msg1[:len(msg1)])
 		context.allocator.ClearAllocNum()
 		context.allocator.FreePart(remain)
-		print_mem = true
 		_, err := sipmsg.Parse(context, msg1, 0)
-		print_mem = false
 		if err != nil {
 			fmt.Println("parse sip msg failed, err =", err.Error())
 			fmt.Println("msg1 = ", string(msg1))
@@ -807,9 +872,7 @@ func BenchmarkSipMsg4Parse(b *testing.B) {
 		//copy(msg2, msg1[:len(msg1)])
 		context.allocator.ClearAllocNum()
 		context.allocator.FreePart(remain)
-		print_mem = true
 		_, err := sipmsg.Parse(context, msg1, 0)
-		print_mem = false
 		if err != nil {
 			fmt.Println("parse sip msg failed, err =", err.Error())
 			fmt.Println("msg1 = ", string(msg1))
@@ -1038,9 +1101,7 @@ func BenchmarkSipMsgsRawParse(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				context.allocator.ClearAllocNum()
 				context.allocator.FreePart(remain)
-				print_mem = true
 				_, err := sipmsg.Parse(context, msg, 0)
-				print_mem = false
 				if err != nil {
 					fmt.Println("parse sip msg failed, err =", err.Error())
 					fmt.Println("msg = ", string(msg))
@@ -1113,9 +1174,7 @@ func BenchmarkSipMsgsParse(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				context.allocator.ClearAllocNum()
 				context.allocator.FreePart(remain)
-				print_mem = true
 				_, err := sipmsg.Parse(context, msg, 0)
-				print_mem = false
 				if err != nil {
 					fmt.Println("parse sip msg failed, err =", err.Error())
 					fmt.Println("msg = ", string(msg))

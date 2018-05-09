@@ -33,6 +33,8 @@ func init() {
 	fmt.Println("sizeof(SipStartLine)         =", unsafe.Sizeof(SipStartLine{}))
 	fmt.Println("sizeof(SipHeaders)           =", unsafe.Sizeof(SipHeaders{}))
 	fmt.Println("sizeof(SipSingleHeader)      =", unsafe.Sizeof(SipSingleHeader{}))
+
+	printSipMsgsParseMemUsed()
 }
 
 func toLower(ch byte) byte {

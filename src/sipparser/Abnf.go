@@ -17,8 +17,6 @@ func NewAbnfByteBuffer(buf []byte) *AbnfByteBuffer {
 	return buffer.NewByteBuffer(buf)
 }
 
-var print_mem bool = false
-
 const (
 
 	// single characters
