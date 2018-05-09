@@ -568,7 +568,7 @@ var msg4 string = "INVITE sip:6135000@24.15.255.4 SIP/2.0\r\n" +
 	"123456\r\n" +
 	"--abcd--"
 
-func BenchmarkSipMsgParse1(b *testing.B) {
+func BenchmarkSipMsg1Parse(b *testing.B) {
 	b.StopTimer()
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
@@ -622,7 +622,7 @@ func BenchmarkSipMsgParse1(b *testing.B) {
 
 }
 
-func BenchmarkSipMsgParse1_Raw(b *testing.B) {
+func BenchmarkSipMsg1RawParse(b *testing.B) {
 	b.StopTimer()
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
@@ -676,7 +676,7 @@ func BenchmarkSipMsgParse1_Raw(b *testing.B) {
 
 }
 
-func BenchmarkSipMsgParse2(b *testing.B) {
+func BenchmarkSipMsg2Parse(b *testing.B) {
 	b.StopTimer()
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
@@ -730,7 +730,7 @@ func BenchmarkSipMsgParse2(b *testing.B) {
 
 }
 
-func BenchmarkSipMsgParse3(b *testing.B) {
+func BenchmarkSipMsg3Parse(b *testing.B) {
 	b.StopTimer()
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
@@ -784,7 +784,7 @@ func BenchmarkSipMsgParse3(b *testing.B) {
 
 }
 
-func BenchmarkSipMsgParse4(b *testing.B) {
+func BenchmarkSipMsg4Parse(b *testing.B) {
 	b.StopTimer()
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 300)
@@ -838,36 +838,7 @@ func BenchmarkSipMsgParse4(b *testing.B) {
 
 }
 
-func BenchmarkSipMsgRawParse(b *testing.B) {
-	b.StopTimer()
-	context := NewParseContext()
-	context.allocator = NewMemAllocator(1024 * 30)
-	addr := NewSipMsg(context)
-	sipmsg := addr.GetSipMsg(context)
-	remain := context.allocator.Used()
-	context.ParseSipHeaderAsRaw = true
-	msg1 := []byte(msg)
-	total_headers = 0
-
-	b.ReportAllocs()
-	b.SetBytes(2)
-	b.StartTimer()
-
-	for i := 0; i < b.N; i++ {
-		context.allocator.ClearAllocNum()
-		context.allocator.FreePart(remain)
-		print_mem = true
-		_, err := sipmsg.Parse(context, msg1, 0)
-		print_mem = false
-		if err != nil {
-			fmt.Println("parse sip msg failed, err =", err.Error())
-			fmt.Println("msg1 = ", string(msg1))
-			break
-		} //*/
-	}
-}
-
-func BenchmarkSipMsgRawScan1(b *testing.B) {
+func BenchmarkSipMsg1RawScan1(b *testing.B) {
 	b.StopTimer()
 	msg1 := []byte(msg)
 	b.ReportAllocs()
@@ -890,7 +861,7 @@ func BenchmarkSipMsgRawScan1(b *testing.B) {
 	//fmt.Println("newPos =", newPos)
 }
 
-func BenchmarkSipMsgRawScan2(b *testing.B) {
+func BenchmarkSipMsg1RawScan2(b *testing.B) {
 	b.StopTimer()
 	msg1 := []byte(msg)
 	b.ReportAllocs()
@@ -913,7 +884,7 @@ func BenchmarkSipMsgRawScan2(b *testing.B) {
 	//fmt.Println("newPos =", newPos)
 }
 
-func BenchmarkSipMsgRawScan3(b *testing.B) {
+func BenchmarkSipMsg1RawScan3(b *testing.B) {
 	b.StopTimer()
 	msg1 := []byte(msg)
 	b.ReportAllocs()
@@ -936,7 +907,7 @@ func BenchmarkSipMsgRawScan3(b *testing.B) {
 	//fmt.Println("newPos =", newPos)
 }
 
-func BenchmarkSipMsgRawScan4(b *testing.B) {
+func BenchmarkSipMsg1RawScan4(b *testing.B) {
 	b.StopTimer()
 	msg1 := []byte(msg)
 	b.ReportAllocs()
@@ -959,7 +930,7 @@ func BenchmarkSipMsgRawScan4(b *testing.B) {
 	//fmt.Println("newPos =", newPos)
 }
 
-func BenchmarkSipMsgEncode(b *testing.B) {
+func BenchmarkSipMsg1Encode(b *testing.B) {
 	b.StopTimer()
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
@@ -983,7 +954,7 @@ func BenchmarkSipMsgEncode(b *testing.B) {
 	fmt.Printf("")
 }
 
-func BenchmarkSipMsgRawEncode(b *testing.B) {
+func BenchmarkSipMsg1RawEncode(b *testing.B) {
 	b.StopTimer()
 	context := NewParseContext()
 	context.allocator = NewMemAllocator(1024 * 30)
@@ -1005,7 +976,7 @@ func BenchmarkSipMsgRawEncode(b *testing.B) {
 		context.allocator.FreePart(remain)
 		sipmsg.Encode(context, buf)
 	}
-	fmt.Printf("")
+	//fmt.Println("msg =", buf.String())
 }
 
 func BenchmarkSipMsgsRawScan(b *testing.B) {

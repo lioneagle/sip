@@ -64,7 +64,7 @@ func TestAbnfSipHeader_GetSipHeaderIndex4(t *testing.T) {
 	}
 }
 
-func BenchmarkGetSipHeaderIndex(b *testing.B) {
+func BenchmarkGetSipHeaderIndex1(b *testing.B) {
 	b.StopTimer()
 	b.SetBytes(2)
 	b.ReportAllocs()

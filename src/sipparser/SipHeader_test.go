@@ -2,7 +2,7 @@ package sipparser
 
 import (
 	//"bytes"
-	//"fmt"
+	"fmt"
 	"testing"
 )
 
@@ -157,3 +157,24 @@ func TestSipHeaders(t *testing.T) {
 }
 
 //*/
+
+func BenchmarkParseHeaderNameAndGetSipHeaderIndex1(b *testing.B) {
+	b.StopTimer()
+	b.SetBytes(2)
+	b.ReportAllocs()
+	context := NewParseContext()
+	context.allocator = NewMemAllocator(1024 * 10)
+	var testdata [][]byte
+	for _, v := range g_SipHeaderInfos {
+		name := []byte(fmt.Sprintf("%s: ", string(v.name)))
+		testdata = append(testdata, name)
+	}
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		for _, v := range testdata {
+			name, _, _ := ParseHeaderName(context, v, 0)
+			GetSipHeaderIndex(v[name.Begin:name.End])
+		}
+	}
+}
